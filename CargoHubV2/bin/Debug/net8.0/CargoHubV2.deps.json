@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v8.0": {
-      "CargoHubV2/1.0.0": {
+      "CargohubV2/1.0.0": {
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "8.0.10",
           "Microsoft.EntityFrameworkCore": "9.0.5",
@@ -16,7 +16,7 @@
           "Swashbuckle.AspNetCore": "6.6.2"
         },
         "runtime": {
-          "CargoHubV2.dll": {}
+          "CargohubV2.dll": {}
         }
       },
       "Humanizer.Core/2.14.1": {
@@ -720,7 +720,7 @@
     }
   },
   "libraries": {
-    "CargoHubV2/1.0.0": {
+    "CargohubV2/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

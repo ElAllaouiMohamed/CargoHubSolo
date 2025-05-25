@@ -1,14 +1,15 @@
+﻿using CargohubV2.DataConverters;
 using Newtonsoft.Json;
 
-namespace CargoHubV2.Models
+namespace CargohubV2.Models
 {
     public class Item
     {
         [JsonProperty("id")]
-        public int Id { get; set; } 
+        public int Id { get; set; }
 
         [JsonProperty("uid")]
-        public string? Uid { get; set; }
+        public string? UId { get; set; }
 
         [JsonProperty("code")]
         public string? Code { get; set; }
@@ -27,15 +28,18 @@ namespace CargoHubV2.Models
 
         [JsonProperty("commodity_code")]
         public string? CommodityCode { get; set; }
+        public Item_Line? ItemLine { get; set; }
 
         [JsonProperty("item_line")]
-        public int ItemLine { get; set; }
+        public int? ItemLineId { get; set; }
+        public Item_Group? ItemGroup { get; set; }
 
         [JsonProperty("item_group")]
-        public int ItemGroup { get; set; }
+        public int? ItemGroupId { get; set; }
+        public Item_Type? ItemType { get; set; }
 
         [JsonProperty("item_type")]
-        public int ItemType { get; set; }
+        public int? ItemTypeId { get; set; }
 
         [JsonProperty("unit_purchase_quantity")]
         public int UnitPurchaseQuantity { get; set; }
@@ -45,6 +49,9 @@ namespace CargoHubV2.Models
 
         [JsonProperty("pack_order_quantity")]
         public int PackOrderQuantity { get; set; }
+
+        [JsonProperty("supplier")]
+        public Supplier? Supplier { get; set; }
 
         [JsonProperty("supplier_id")]
         public int SupplierId { get; set; }
@@ -56,11 +63,17 @@ namespace CargoHubV2.Models
         public string? SupplierPartNumber { get; set; }
 
         [JsonProperty("created_at")]
+        [JsonConverter(typeof(FlexibleDateTimeConverter))]
         public DateTime CreatedAt { get; set; }
 
         [JsonProperty("updated_at")]
+        [JsonConverter(typeof(FlexibleDateTimeConverter))]
         public DateTime UpdatedAt { get; set; }
 
+        [JsonProperty("weight_in_kg")]
+        public int WeightInKg { get; set; }
+
         public bool IsDeleted { get; set; } = false;
+
     }
 }

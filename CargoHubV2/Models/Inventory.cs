@@ -1,6 +1,7 @@
+﻿using CargohubV2.DataConverters;
 using Newtonsoft.Json;
 
-namespace CargoHubV2.Models
+namespace CargohubV2.Models
 {
     public class Inventory
     {
@@ -17,7 +18,7 @@ namespace CargoHubV2.Models
         public string? ItemReference { get; set; }
 
         [JsonProperty("locations")]
-        public List<int> Locations { get; set; } = new();
+        public List<int>? Locations { get; set; }
 
         [JsonProperty("total_on_hand")]
         public int TotalOnHand { get; set; }
@@ -35,11 +36,13 @@ namespace CargoHubV2.Models
         public int TotalAvailable { get; set; }
 
         [JsonProperty("created_at")]
+        [JsonConverter(typeof(FlexibleDateTimeConverter))]
         public DateTime CreatedAt { get; set; }
 
         [JsonProperty("updated_at")]
+        [JsonConverter(typeof(FlexibleDateTimeConverter))]
         public DateTime UpdatedAt { get; set; }
-
         public bool IsDeleted { get; set; } = false;
+
     }
 }

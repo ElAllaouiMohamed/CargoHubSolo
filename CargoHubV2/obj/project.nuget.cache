@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "+C+vBPvJoe4=",
+  "dgSpecHash": "WEIQSTFL5ig=",
   "success": true,
-  "projectFilePath": "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\CargoHubV2.csproj",
+  "projectFilePath": "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\CargohubV2.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\mootj\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\mootj\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.10\\microsoft.aspnetcore.openapi.8.0.10.nupkg.sha512",

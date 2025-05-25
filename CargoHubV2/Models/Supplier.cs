@@ -1,6 +1,7 @@
+﻿using CargohubV2.DataConverters;
 using Newtonsoft.Json;
 
-namespace CargoHubV2.Models
+namespace CargohubV2.Models
 {
     public class Supplier
     {
@@ -41,11 +42,13 @@ namespace CargoHubV2.Models
         public string? Reference { get; set; }
 
         [JsonProperty("created_at")]
+        [JsonConverter(typeof(FlexibleDateTimeConverter))]
         public DateTime CreatedAt { get; set; }
 
         [JsonProperty("updated_at")]
+        [JsonConverter(typeof(FlexibleDateTimeConverter))]
         public DateTime UpdatedAt { get; set; }
-
         public bool IsDeleted { get; set; } = false;
+
     }
 }

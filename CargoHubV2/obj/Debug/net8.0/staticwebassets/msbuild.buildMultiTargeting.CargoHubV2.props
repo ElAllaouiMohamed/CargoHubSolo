@@ -1,3 +1,3 @@
 ﻿<Project>
-  <Import Project="..\build\CargoHubV2.props" />
+  <Import Project="..\build\CargohubV2.props" />
 </Project>

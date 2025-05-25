@@ -1,20 +1,17 @@
-using CargoHubV2.Data;
+using CargohubV2.Contexts;
+using CargohubV2.DataConverters;
 using Microsoft.EntityFrameworkCore;
-using CargoHubV2.Seeding; // Of jouw juiste namespace
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<CargoHubContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<CargoHubDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("CargoHubDatabase")));
 
-
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddControllers();
-
 var app = builder.Build();
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -22,15 +19,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
 app.MapControllers();
 
-app.Run();
-using (var scope = app.Services.CreateScope())
+if (args.Length > 0 && args[0] == "seed")
 {
-    var context = scope.ServiceProvider.GetRequiredService<CargoHubContext>();
-    await DatabaseJSON.SeedAsync(context);
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<CargoHubDbContext>();
+    DataToJSON.ImportData(context);
 }
+
+app.Run();
