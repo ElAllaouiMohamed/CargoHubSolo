@@ -18,7 +18,6 @@ namespace CargohubV2.Contexts
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Global query filters voor soft delete
             modelBuilder.Entity<Client>().HasQueryFilter(c => !c.IsDeleted);
             modelBuilder.Entity<Location>().HasQueryFilter(l => !l.IsDeleted);
             modelBuilder.Entity<Inventory>().HasQueryFilter(i => !i.IsDeleted);
@@ -32,10 +31,8 @@ namespace CargohubV2.Contexts
             modelBuilder.Entity<Order>().HasQueryFilter(o => !o.IsDeleted);
             modelBuilder.Entity<Shipment>().HasQueryFilter(sh => !sh.IsDeleted);
 
-            // Voorbeeld: complexere configuratie voor Warehouse (indien nodig)
             modelBuilder.Entity<Warehouse>().OwnsOne(w => w.Contact);
 
-            // Voorbeeld Stock TPH (Table-per-hierarchy)
             modelBuilder.Entity<Stock>()
                 .ToTable("Stocks")
                 .HasDiscriminator<string>("StockType")
@@ -58,5 +55,7 @@ namespace CargohubV2.Contexts
         public DbSet<Order> Orders { get; set; }
         public DbSet<Shipment> Shipments { get; set; }
         public DbSet<LogEntry> LogEntries { get; set; }
+        public DbSet<ApiKey> ApiKeys { get; set; }
+
     }
 }

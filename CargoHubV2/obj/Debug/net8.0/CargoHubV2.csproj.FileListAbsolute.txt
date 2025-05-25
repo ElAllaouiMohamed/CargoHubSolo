@@ -147,3 +147,8 @@ C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debu
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\obj\Debug\net8.0\CargohubV2.AssemblyInfoInputs.cache
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\obj\Debug\net8.0\CargohubV2.AssemblyInfo.cs
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\FluentAssertions.dll
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\xunit.abstractions.dll
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\xunit.assert.dll
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\xunit.core.dll
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\xunit.execution.dotnet.dll

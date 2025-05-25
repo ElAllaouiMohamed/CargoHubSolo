@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 builder.Services.AddDbContext<CargoHubDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("CargoHubDatabase")));
 
@@ -22,11 +23,15 @@ builder.Services.AddScoped<SupplierService>();
 builder.Services.AddScoped<TransferService>();
 builder.Services.AddScoped<WarehouseService>();
 builder.Services.AddScoped<ReportingService>();
-
+builder.Services.AddScoped<IApiKeyService, ApiKeyService>();
+builder.Services.AddScoped<ApiKeyFilter>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddControllers(options =>
+{
+    options.Filters.AddService<ApiKeyFilter>();
+});
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -42,6 +47,7 @@ if (args.Length > 0 && args[0] == "seed")
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<CargoHubDbContext>();
     DataToJSON.ImportData(context);
+    DataSeeder.SeedApiKeys(context);
 }
 
 app.Run();
