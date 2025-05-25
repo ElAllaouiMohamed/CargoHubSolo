@@ -23,7 +23,7 @@ public class ApiKeyFilter : IAsyncActionFilter
 
         if (!httpContext.Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey))
         {
-            httpContext.Response.StatusCode = 401; // Unauthorized
+            httpContext.Response.StatusCode = 401; 
             await httpContext.Response.WriteAsync("API Key is missing.");
             return;
         }
@@ -40,7 +40,7 @@ public class ApiKeyFilter : IAsyncActionFilter
         }
         else
         {
-            httpContext.Response.StatusCode = 403; // Forbidden
+            httpContext.Response.StatusCode = 403; 
             await httpContext.Response.WriteAsync("Unauthorized client.");
         }
     }
