@@ -135,3 +135,15 @@ C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\obj\Debu
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\obj\Debug\net8.0\CargoHubV2.genruntimeconfig.cache
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\obj\Debug\net8.0\ref\CargoHubV2.dll
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\Newtonsoft.Json.dll
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\jsonfiles\clients.json
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\jsonfiles\inventories.json
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\jsonfiles\items.json
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\jsonfiles\item_groups.json
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\jsonfiles\item_lines.json
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\jsonfiles\item_types.json
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\jsonfiles\locations.json
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\jsonfiles\orders.json
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\jsonfiles\shipments.json
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\jsonfiles\suppliers.json
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\jsonfiles\transfers.json
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\jsonfiles\warehouses.json

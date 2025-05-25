@@ -2,6 +2,19 @@ using Newtonsoft.Json;
 
 namespace CargoHubV2.Models
 {
+    public class WarehouseContact
+    {
+        public int Id { get; set; }
+        [JsonProperty("name")]
+        public string? Name { get; set; }
+
+        [JsonProperty("phone")]
+        public string? Phone { get; set; }
+
+        [JsonProperty("email")]
+        public string? Email { get; set; }
+    }
+
     public class Warehouse
     {
         [JsonProperty("id")]
@@ -16,11 +29,26 @@ namespace CargoHubV2.Models
         [JsonProperty("address")]
         public string? Address { get; set; }
 
+        [JsonProperty("zip")]
+        public string? Zip { get; set; }
+
         [JsonProperty("city")]
         public string? City { get; set; }
 
-        [JsonProperty("hazmat_level")]
-        public string? HazmatLevel { get; set; }
+        [JsonProperty("province")]
+        public string? Province { get; set; }
+
+        [JsonProperty("country")]
+        public string? Country { get; set; }
+
+        [JsonProperty("contact")]
+        public WarehouseContact? Contact { get; set; }
+
+        [JsonProperty("created_at")]
+        public DateTime CreatedAt { get; set; }
+
+        [JsonProperty("updated_at")]
+        public DateTime UpdatedAt { get; set; }
 
         public bool IsDeleted { get; set; } = false;
     }
