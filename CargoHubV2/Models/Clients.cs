@@ -19,17 +19,26 @@ namespace CargoHubV2.Models
         [JsonProperty("zip_code")]
         public string? ZipCode { get; set; }
 
+        [JsonProperty("province")]
+        public string? Province { get; set; }
+
         [JsonProperty("country")]
         public string? Country { get; set; }
 
         [JsonProperty("contact_name")]
         public string? ContactName { get; set; }
 
+        [JsonProperty("contact_phone")]
+        public string? ContactPhone { get; set; }
+
         [JsonProperty("contact_email")]
         public string? ContactEmail { get; set; }
 
-        [JsonProperty("contact_phone")]
-        public string? ContactPhone { get; set; }
+        [JsonProperty("created_at")]
+        public DateTime CreatedAt { get; set; }
+
+        [JsonProperty("updated_at")]
+        public DateTime UpdatedAt { get; set; }
 
         public bool IsDeleted { get; set; } = false;
     }
