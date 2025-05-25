@@ -59,7 +59,6 @@
 
         public static void ImportData(CargoHubDbContext context)
         {
-            // Import Clients
             var clients = LoadDataFromFile<Client>("data/clients.json");
             foreach (var client in clients)
             {
@@ -70,7 +69,6 @@
             context.Clients.AddRange(clients);
             context.SaveChanges();
 
-            // Import Inventories
             var inventories = LoadDataFromFile<Inventory>("data/inventories.json");
             foreach (var inventory in inventories)
             {
@@ -81,7 +79,6 @@
             context.Inventories.AddRange(inventories);
             context.SaveChanges();
 
-            // Import Suppliers
             var suppliers = LoadDataFromFile<Supplier>("data/suppliers.json");
             foreach (var supplier in suppliers)
             {
@@ -92,7 +89,6 @@
             context.Suppliers.AddRange(suppliers);
             context.SaveChanges();
 
-            // Import Item Groups
             var itemGroups = LoadDataFromFile<Item_Group>("data/item_groups.json");
             foreach (var itemGroup in itemGroups)
             {
@@ -100,10 +96,9 @@
                 itemGroup.UpdatedAt = ToUtc(itemGroup.UpdatedAt);
                 itemGroup.Id = 0;
             }
-            context.Items_Groups.AddRange(itemGroups);
+            context.ItemGroups.AddRange(itemGroups);
             context.SaveChanges();
 
-            // Import Item Lines
             var itemLines = LoadDataFromFile<Item_Line>("data/item_lines.json");
             foreach (var itemLine in itemLines)
             {
@@ -111,10 +106,9 @@
                 itemLine.UpdatedAt = ToUtc(itemLine.UpdatedAt);
                 itemLine.Id = 0;
             }
-            context.Items_Lines.AddRange(itemLines);
+            context.ItemLines.AddRange(itemLines);
             context.SaveChanges();
 
-            // Import Item Types
             var itemTypes = LoadDataFromFile<Item_Type>("data/item_types.json");
             foreach (var itemType in itemTypes)
             {
@@ -122,10 +116,9 @@
                 itemType.UpdatedAt = ToUtc(itemType.UpdatedAt);
                 itemType.Id = 0;
             }
-            context.Items_Types.AddRange(itemTypes);
+            context.ItemTypes.AddRange(itemTypes);
             context.SaveChanges();
 
-            // Import Items
             var items = LoadDataFromFile<Item>("data/items.json");
             foreach (var item in items)
             {
@@ -136,7 +129,6 @@
             context.Items.AddRange(items);
             context.SaveChanges();
 
-            // Import Warehouses
             var warehouses = LoadDataFromFile<Warehouse>("data/warehouses.json");
             foreach (var warehouse in warehouses)
             {
@@ -147,7 +139,6 @@
             context.Warehouses.AddRange(warehouses);
             context.SaveChanges();
 
-            // Import Orders
             var orders = LoadDataFromFile<Order>("data/orders.json");
             foreach (var order in orders)
             {
@@ -160,7 +151,6 @@
             context.Orders.AddRange(orders);
             context.SaveChanges();
 
-            // Import Shipments
             var shipments = LoadDataFromFile<Shipment>("data/shipments.json");
             foreach (var shipment in shipments)
             {
@@ -171,7 +161,6 @@
             context.Shipments.AddRange(shipments);
             context.SaveChanges();
 
-            // Import Transfers
             var transfers = LoadDataFromFile<Transfer>("data/transfers.json");
             foreach (var transfer in transfers)
             {
@@ -182,7 +171,6 @@
             context.Transfers.AddRange(transfers);
             context.SaveChanges();
 
-            // Import Locations
             var locations = LoadDataFromFile<Location>("data/locations.json");
             foreach (var location in locations)
             {
@@ -193,7 +181,6 @@
             context.Locations.AddRange(locations);
             context.SaveChanges();
 
-            // Stocks toevoegen via tijdelijke lijsten om collection modified error te voorkomen
 
             var shipmentStocks = new List<ShipmentStock>();
             foreach (var shipment in shipments)

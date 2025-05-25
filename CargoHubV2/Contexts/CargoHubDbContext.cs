@@ -18,8 +18,7 @@ namespace CargohubV2.Contexts
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
-            // Global query filter for soft delete
+            // Global query filters voor soft delete
             modelBuilder.Entity<Client>().HasQueryFilter(c => !c.IsDeleted);
             modelBuilder.Entity<Location>().HasQueryFilter(l => !l.IsDeleted);
             modelBuilder.Entity<Inventory>().HasQueryFilter(i => !i.IsDeleted);
@@ -33,18 +32,17 @@ namespace CargohubV2.Contexts
             modelBuilder.Entity<Order>().HasQueryFilter(o => !o.IsDeleted);
             modelBuilder.Entity<Shipment>().HasQueryFilter(sh => !sh.IsDeleted);
 
+            // Voorbeeld: complexere configuratie voor Warehouse (indien nodig)
+            modelBuilder.Entity<Warehouse>().OwnsOne(w => w.Contact);
 
-            // Configure one-to-many relationship between Order and StockOfItems
-            modelBuilder.Entity<Warehouse>()
-                .OwnsOne(w => w.Contact);
+            // Voorbeeld Stock TPH (Table-per-hierarchy)
             modelBuilder.Entity<Stock>()
-            .ToTable("Stocks")
-            .HasDiscriminator<string>("StockType")
-            .HasValue<OrderStock>("Order")
-            .HasValue<ShipmentStock>("Shipment")
-            .HasValue<TransferStock>("Transfer");
+                .ToTable("Stocks")
+                .HasDiscriminator<string>("StockType")
+                .HasValue<OrderStock>("Order")
+                .HasValue<ShipmentStock>("Shipment")
+                .HasValue<TransferStock>("Transfer");
         }
-
 
         public DbSet<Client> Clients { get; set; }
         public DbSet<Location> Locations { get; set; }
@@ -54,12 +52,11 @@ namespace CargohubV2.Contexts
         public DbSet<Stock> Stocks { get; set; }
         public DbSet<Warehouse> Warehouses { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
-        public DbSet<Item_Group> Items_Groups { get; set; }
-        public DbSet<Item_Line> Items_Lines { get; set; }
-        public DbSet<Item_Type> Items_Types { get; set; }
+        public DbSet<Item_Group> ItemGroups { get; set; }
+        public DbSet<Item_Line> ItemLines { get; set; }
+        public DbSet<Item_Type> ItemTypes { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Shipment> Shipments { get; set; }
-
-
+        public DbSet<LogEntry> LogEntries { get; set; }
     }
 }
