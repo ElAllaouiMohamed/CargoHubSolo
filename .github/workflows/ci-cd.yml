@@ -55,10 +55,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run C# linting
+      - name: Run C# linting and fix line endings
         run: |
-          dotnet tool install --global dotnet-format
-          dotnet format CargoHubV2/CargoHubV2.csproj --verify-no-changes
+          dotnet tool install -g dotnet-format
+          dotnet format ${{ env.SOLUTION_PATH }} --fix-whitespace
 
       - name: Run Python linting
         run: flake8 IntegrationTests --max-line-length=120
