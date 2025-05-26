@@ -12,6 +12,7 @@ namespace UnitTests
     [TestClass]
     public class UnitTest_Reporting
     {
+
         private CargoHubDbContext _dbContext;
         private ReportingService _reportingService;
 
@@ -22,9 +23,12 @@ namespace UnitTests
             var options = new DbContextOptionsBuilder<CargoHubDbContext>()
                 .UseInMemoryDatabase(databaseName: "TestDb")
                 .Options;
+            
 
             _dbContext = new CargoHubDbContext(options);
-
+            _dbContext.Database.EnsureDeleted();  // Verwijdert oude database
+            _dbContext.Database.EnsureCreated();  // Maakt een nieuwe database aan
+            
             // Voeg testdata toe
             var orders = new List<Order>
             {
