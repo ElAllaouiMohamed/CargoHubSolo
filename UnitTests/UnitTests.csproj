@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CargoHubV2\CargoHubV2.csproj" />
+    <ExcludeFromCodeCoverage Include="CargohubV2.Migrations.*" />
   </ItemGroup>
 
   <ItemGroup>
