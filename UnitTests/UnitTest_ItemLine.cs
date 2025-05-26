@@ -53,7 +53,7 @@ namespace UnitTests
         [TestMethod]
         public async Task GetByIdAsync_ShouldReturnItemLine_WhenExists()
         {
-            var itemLine = new Item_Line { Name = "existing" };
+            var itemLine = new Item_Line { Name = "existing", Description = "oldDesc" };
             _dbContext.ItemLines.Add(itemLine);
             await _dbContext.SaveChangesAsync();
 
@@ -69,6 +69,7 @@ namespace UnitTests
             var result = await _itemLineService.GetByIdAsync(-1);
             Assert.IsNull(result);
         }
+        
 
         [TestMethod]
         public async Task UpdateItemLineAsync_ShouldUpdateAndLog_WhenExists()
@@ -91,7 +92,7 @@ namespace UnitTests
         [TestMethod]
         public async Task UpdateItemLineAsync_ShouldReturnNull_WhenNotExists()
         {
-            var updated = new Item_Line { Name = "newName" };
+            var updated = new Item_Line { Name = "newName", Description = "oldDesc" };
             var result = await _itemLineService.UpdateItemLineAsync(-1, updated);
             Assert.IsNull(result);
         }
@@ -99,7 +100,7 @@ namespace UnitTests
         [TestMethod]
         public async Task SoftDeleteByIdAsync_ShouldSoftDeleteAndLog_WhenExists()
         {
-            var itemLine = new Item_Line { Name = "toDelete" };
+            var itemLine = new Item_Line { Name = "toDelete", Description = "oldDesc" };
             _dbContext.ItemLines.Add(itemLine);
             await _dbContext.SaveChangesAsync();
 
