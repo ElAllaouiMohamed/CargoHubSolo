@@ -23,7 +23,7 @@ namespace CargohubV2.Controllers
             return Ok(report);
         }
 
-  
+
         [HttpGet("orders-csv/{warehouseId}")]
         public IActionResult GetOrdersCsv(int warehouseId)
         {

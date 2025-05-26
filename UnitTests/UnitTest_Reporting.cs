@@ -22,11 +22,11 @@ namespace UnitTests
             var options = new DbContextOptionsBuilder<CargoHubDbContext>()
                 .UseInMemoryDatabase(databaseName: "TestDb")
                 .Options;
-            
+
 
             _dbContext = new CargoHubDbContext(options);
-            _dbContext.Database.EnsureDeleted();  
-            _dbContext.Database.EnsureCreated();  
+            _dbContext.Database.EnsureDeleted();
+            _dbContext.Database.EnsureCreated();
             var orders = new List<Order>
             {
                 new Order

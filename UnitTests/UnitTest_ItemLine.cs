@@ -69,7 +69,7 @@ namespace UnitTests
             var result = await _itemLineService.GetByIdAsync(-1);
             Assert.IsNull(result);
         }
-        
+
 
         [TestMethod]
         public async Task UpdateItemLineAsync_ShouldUpdateAndLog_WhenExists()

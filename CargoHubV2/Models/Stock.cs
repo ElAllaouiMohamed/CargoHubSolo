@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace CargohubV2.Models
 {
@@ -17,20 +17,20 @@ namespace CargohubV2.Models
     {
         public Order? Order { get; set; }
         public int OrderId { get; set; }
-                                         
+
     }
 
     public class ShipmentStock : Stock
     {
         public Shipment? Shipment { get; set; }
         public int ShipmentId { get; set; }
-                                            
+
     }
 
     public class TransferStock : Stock
     {
         public Transfer? Transfer { get; set; }
         public int TransferId { get; set; }
-                                            
+
     }
 }
