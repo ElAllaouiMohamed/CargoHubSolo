@@ -1,445 +1,233 @@
-namespace UnitTests;
-using CargoHubV2.Data;
-using CargoHubV2;
-using CargohubV2.Models;
-using CargohubV2.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CargohubV2.Contexts;
+using CargohubV2.Models;
+using CargohubV2.Services;
 
-[TestClass]
-public class UnitTest_Transfers
+namespace UnitTests
 {
-    private CargoHubDbContext _dbContext;
-    private TransferService _transferService;
-
-    [TestInitialize]
-    public void Setup()
+    [TestClass]
+    public class TransferServiceTests
     {
-        var options = new DbContextOptionsBuilder<CargoHubDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
+        private CargoHubDbContext _dbContext = null!;
+        private TransferService _transferService = null!;
+        private Mock<LoggingService> _mockLoggingService = null!;
 
-        _dbContext = new CargoHubDbContext(options);
-        SeedDatabase(_dbContext);
-        _transferService = new TransferService(_dbContext);
-    }
-
-    private void SeedDatabase(CargoHubDbContext context)
-    {
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
-
-        context.Locations.AddRange(new List<Location>
+        [TestInitialize]
+        public void Setup()
         {
-            new Location
-            {
-                LocationId = 1,
-                WarehouseId = 1,
-                Code = "LOC001",
-                Name = "Source Location",
-                MaxWeight = 100,
-                MaxWidth = 10,
-                MaxHeight = 10,
-                MaxDepth = 10,
-                IsDock = false,
-                ItemAmounts = new Dictionary<string, int> { { "ITEM001", 10 }, { "ITEM002", 5 }, { "ITEM004", 2 } },
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Location
-            {
-                LocationId = 2,
-                WarehouseId = 1,
-                Code = "LOC002",
-                Name = "Destination Location",
-                MaxWeight = 100,
-                MaxWidth = 10,
-                MaxHeight = 10,
-                MaxDepth = 10,
-                IsDock = false,
-                ItemAmounts = new Dictionary<string, int>(),
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Location
-            {
-                LocationId = 3,
-                WarehouseId = 2,
-                Code = "LOC003",
-                Name = "Other Warehouse Location",
-                MaxWeight = 100,
-                MaxWidth = 10,
-                MaxHeight = 10,
-                MaxDepth = 10,
-                IsDock = false,
-                ItemAmounts = new Dictionary<string, int>(),
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Location
-            {
-                LocationId = 4,
-                WarehouseId = 1,
-                Code = "LOC004",
-                Name = "No stock Location",
-                MaxWeight = 10000,
-                MaxWidth = 10000,
-                MaxHeight = 10000,
-                MaxDepth = 10000,
-                IsDock = false,
-                ItemAmounts = new Dictionary<string, int> { { "ITEM001", 1 }, { "ITEM002", 1 } },
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            }
-        });
+            var options = new DbContextOptionsBuilder<CargoHubDbContext>()
+                .UseInMemoryDatabase(databaseName: $"TestCargoHubDb_{Guid.NewGuid()}")
+                .Options;
 
-        context.Items.AddRange(new List<Item>
-        {
-            new Item
-            {
-                Uid = "ITEM001",
-                Code = "CODE001",
-                Description = "Item 001 Description",
-                ShortDescription = "Item 001",
-                UpcCode = "UPC001",
-                ModelNumber = "MOD001",
-                CommodityCode = "COM001",
-                SupplierCode = "SUP001",
-                SupplierPartNumber = "PART001",
-                Height = 1,
-                Width = 1,
-                Depth = 1,
-                Weight = 1,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Item
-            {
-                Uid = "ITEM002",
-                Code = "CODE002",
-                Description = "Item 002 Description",
-                ShortDescription = "Item 002",
-                UpcCode = "UPC002",
-                ModelNumber = "MOD002",
-                CommodityCode = "COM002",
-                SupplierCode = "SUP002",
-                SupplierPartNumber = "PART002",
-                Height = 1,
-                Width = 1,
-                Depth = 1,
-                Weight = 3,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Item
-            {
-                Uid = "ITEM003",
-                Code = "CODE003",
-                Description = "Item 003 Description",
-                ShortDescription = "Item 003",
-                UpcCode = "UPC003",
-                ModelNumber = "MOD003",
-                CommodityCode = "COM003",
-                SupplierCode = "SUP003",
-                SupplierPartNumber = "PART003",
-                Height = 5,
-                Width = 5,
-                Depth = 5,
-                Weight = 10,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Item
-            {
-                Uid = "ITEM004",
-                Code = "CODE004",
-                Description = "Too Large Item",
-                ShortDescription = "Item 004",
-                UpcCode = "UPC004",
-                ModelNumber = "MOD004",
-                CommodityCode = "COM004",
-                SupplierCode = "SUP004",
-                SupplierPartNumber = "PART004",
-                Height = 5000,
-                Width = 5000,
-                Depth = 5000,
-                Weight = 10000,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            }
-        });
+            _dbContext = new CargoHubDbContext(options);
+            _mockLoggingService = new Mock<LoggingService>();
+            _transferService = new TransferService(_dbContext, _mockLoggingService.Object);
 
-        context.Transfers.AddRange(new List<Transfer>
+            SeedDatabase(_dbContext);
+        }
+
+        [TestCleanup]
+        public void Cleanup()
         {
-            new Transfer
-            {
-                TransferId = 1,
-                Reference = "REF001",
-                TransferFrom = 1,
-                TransferTo = 2,
-                TransferStatus = "Pending",
-                Items = new List<TransferItem>
+            _dbContext.Database.EnsureDeleted();
+            _dbContext.Dispose();
+        }
+
+        private void SeedDatabase(CargoHubDbContext context)
+        {
+            context.Transfers.AddRange(
+                new Transfer
                 {
-                    new TransferItem { ItemId = "ITEM001", Amount = 2 },
-                    new TransferItem { ItemId = "ITEM002", Amount = 1 }
+                    Id = 1,
+                    Reference = "TRF001",
+                    TransferFrom = 10,
+                    TransferTo = 20,
+                    TransferStatus = "Pending",
+                    CreatedAt = DateTime.UtcNow.AddDays(-2),
+                    UpdatedAt = DateTime.UtcNow.AddDays(-2),
+                    IsDeleted = false,
+                    Stocks = new List<TransferStock> {
+                        new TransferStock { Id = 1, TransferId = 1, ItemId = "1", Quantity = 5 }
+                    }
                 },
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Transfer
-            {
-                TransferId = 2,
-                Reference = "REF002",
-                TransferFrom = 999,
-                TransferTo = 2,
-                TransferStatus = "Pending",
-                Items = new List<TransferItem>
+                new Transfer
                 {
-                    new TransferItem { ItemId = "ITEM001", Amount = 2 },
-                    new TransferItem { ItemId = "ITEM002", Amount = 1 }
+                    Id = 2,
+                    Reference = "TRF002",
+                    TransferFrom = 11,
+                    TransferTo = 21,
+                    TransferStatus = "Completed",
+                    CreatedAt = DateTime.UtcNow.AddDays(-1),
+                    UpdatedAt = DateTime.UtcNow.AddDays(-1),
+                    IsDeleted = false,
+                    Stocks = new List<TransferStock> {
+                        new TransferStock { Id = 2, TransferId = 2, ItemId = "2", Quantity = 10 }
+                    }
                 },
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            }
-        });
+                new Transfer
+                {
+                    Id = 3,
+                    Reference = "TRF003",
+                    TransferFrom = 12,
+                    TransferTo = 22,
+                    TransferStatus = "Cancelled",
+                    CreatedAt = DateTime.UtcNow.AddDays(-3),
+                    UpdatedAt = DateTime.UtcNow.AddDays(-3),
+                    IsDeleted = true // deleted transfer
+                }
+            );
 
-        context.SaveChanges();
-    }
+            context.SaveChanges();
+        }
 
-    [TestMethod]
-    public async Task TestGetAllTransfers()
-    {
-        var transfers = await _transferService.GetAllTransfersAsync();
-        Assert.AreEqual(2, transfers.Count);
-    }
-
-    [TestMethod]
-    public async Task TestGetTransferById_ValidId()
-    {
-        var transfer = await _transferService.GetTransferByIdAsync(1);
-        Assert.IsNotNull(transfer);
-        Assert.AreEqual("REF001", transfer.Reference);
-    }
-
-    [TestMethod]
-    public async Task TestGetTransferById_InvalidId()
-    {
-        var transfer = await _transferService.GetTransferByIdAsync(999);
-        Assert.IsNull(transfer);
-    }
-
-    [TestMethod]
-    public async Task TestAddTransfer_ValidData()
-    {
-        var transfer = new Transfer
+        [TestMethod]
+        public async Task GetTransfersAsync_ShouldReturnLimitedNonDeletedTransfers()
         {
-            Reference = "REF003",
-            TransferFrom = 1,
-            TransferTo = 2,
-            Items = new List<TransferItem>
-            {
-                new TransferItem { ItemId = "ITEM001", Amount = 2 },
-                new TransferItem { ItemId = "ITEM002", Amount = 3 }
-            }
-        };
+            var transfers = await _transferService.GetTransfersAsync(2);
+            Assert.AreEqual(2, transfers.Count);
+            Assert.IsTrue(transfers.All(t => !t.IsDeleted));
+            Assert.AreEqual("TRF001", transfers[0].Reference);
+            Assert.AreEqual("TRF002", transfers[1].Reference);
+            Assert.AreEqual(1, transfers[0].Stocks.Count);
+            Assert.AreEqual(5, transfers[0].Stocks[0].Quantity);
+        }
 
-        var result = await _transferService.AddTransferAsync(transfer);
-        Assert.AreEqual("Transfer successfully created.", result.message);
-        Assert.IsNotNull(result.transfer);
-        Assert.AreEqual(3, result.transfer.TransferId);
-    }
-
-    [TestMethod]
-    public async Task TestAddTransfer_InvalidItem()
-    {
-        var transfer = new Transfer
+        [TestMethod]
+        public async Task GetAllTransfersAsync_ShouldReturnAllNonDeletedTransfers()
         {
-            Reference = "REF003",
-            TransferFrom = 1,
-            TransferTo = 2,
-            Items = new List<TransferItem>
-            {
-                new TransferItem { ItemId = "INVALID_ITEM", Amount = 1 }
-            }
-        };
+            var transfers = await _transferService.GetAllTransfersAsync();
+            Assert.AreEqual(2, transfers.Count);
+            Assert.IsTrue(transfers.All(t => !t.IsDeleted));
+            Assert.IsTrue(transfers.Any(t => t.Reference == "TRF001"));
+            Assert.IsTrue(transfers.Any(t => t.Reference == "TRF002"));
+        }
 
-        var result = await _transferService.AddTransferAsync(transfer);
-        Assert.AreEqual("Item INVALID_ITEM does not exist.", result.message);
-        Assert.IsNull(result.transfer);
-    }
-
-    [TestMethod]
-    public async Task TestUpdateTransferStatus_Valid()
-    {
-        var result = await _transferService.UpdateTransferStatusAsync(1, "InProgress");
-        Assert.AreEqual("Transfer status successfully updated.", result);
-
-        var transfer = await _transferService.GetTransferByIdAsync(1);
-        Assert.IsNotNull(transfer);
-        Assert.AreEqual("InProgress", transfer.TransferStatus);
-    }
-
-    [TestMethod]
-    public async Task TestUpdateTransferStatus_InvalidId()
-    {
-        var result = await _transferService.UpdateTransferStatusAsync(999, "InProgress");
-        Assert.AreEqual("Transfer not found.", result);
-    }
-
-    [TestMethod]
-    public async Task TestDeleteTransfer_ValidId()
-    {
-        var result = await _transferService.DeleteTransferAsync(1);
-        Assert.AreEqual("Transfer successfully deleted.", result);
-
-        var transfer = await _transferService.GetTransferByIdAsync(1);
-        Assert.IsNull(transfer);
-    }
-
-    [TestMethod]
-    public async Task TestDeleteTransfer_InvalidId()
-    {
-        var result = await _transferService.DeleteTransferAsync(999);
-        Assert.AreEqual("Transfer not found.", result);
-    }
-
-    [TestMethod]
-    public async Task TestAddTransfer_ReusesDeletedId()
-    {
-        await _transferService.DeleteTransferAsync(1);
-
-        var transfer = new Transfer
+        [TestMethod]
+        public async Task GetByIdAsync_ExistingId_ShouldReturnTransfer()
         {
-            Reference = "REF004",
-            TransferFrom = 1,
-            TransferTo = 2,
-            Items = new List<TransferItem>
-            {
-                new TransferItem { ItemId = "ITEM001", Amount = 1 }
-            }
-        };
+            var transfer = await _transferService.GetByIdAsync(1);
+            Assert.IsNotNull(transfer);
+            Assert.AreEqual("TRF001", transfer.Reference);
+            Assert.IsFalse(transfer.IsDeleted);
+            Assert.AreEqual(1, transfer.Stocks.Count);
+        }
 
-        var result = await _transferService.AddTransferAsync(transfer);
-        Assert.AreEqual("Transfer successfully created.", result.message);
-        Assert.IsNotNull(result.transfer);
-        Assert.AreEqual(1, result.transfer.TransferId); // ID should be reused
-    }
-
-    [TestMethod]
-    public async Task TestAddTransfer_AcrossDifferentWarehouses()
-    {
-        var transfer = new Transfer
+        [TestMethod]
+        public async Task GetByIdAsync_NonExistingId_ShouldReturnNull()
         {
-            Reference = "REF005",
-            TransferFrom = 1,
-            TransferTo = 3, // Different warehouse location
-            Items = new List<TransferItem>
-            {
-                new TransferItem { ItemId = "ITEM001", Amount = 1 }
-            }
-        };
+            var transfer = await _transferService.GetByIdAsync(999);
+            Assert.IsNull(transfer);
+        }
 
-        var result = await _transferService.AddTransferAsync(transfer);
-        Assert.AreEqual("Transfers must remain within the same warehouse.", result.message);
-        Assert.IsNull(result.transfer);
-    }
-
-    [TestMethod]
-    public async Task TestAddTransfer_ExceedingDestinationConstraints()
-    {
-        var transfer = new Transfer
+        [TestMethod]
+        public async Task AddTransferAsync_ShouldAddAndLog()
         {
-            Reference = "REF006",
-            TransferFrom = 1,
-            TransferTo = 2,
-            Items = new List<TransferItem>
+            var newTransfer = new Transfer
             {
-                new TransferItem { ItemId = "ITEM004", Amount = 1 } // Exceeds constraints
-            }
-        };
+                Reference = "TRF004",
+                TransferFrom = 15,
+                TransferTo = 25,
+                TransferStatus = "New",
+                Stocks = new List<TransferStock>
+                {
+                    new TransferStock { ItemId = "3", Quantity = 8 }
+                }
+            };
 
-        var result = await _transferService.AddTransferAsync(transfer);
-        Assert.AreEqual($"Item ITEM004 exceeds destination location's constraints.", result.message);
-        Assert.IsNull(result.transfer);
-    }
+            var added = await _transferService.AddTransferAsync(newTransfer);
+            Assert.IsNotNull(added);
+            Assert.AreEqual("TRF004", added.Reference);
+            Assert.IsFalse(added.IsDeleted);
+            Assert.IsTrue(added.CreatedAt > DateTime.MinValue);
+            Assert.IsTrue(added.UpdatedAt > DateTime.MinValue);
+            Assert.AreEqual(1, added.Stocks.Count);
+            Assert.AreEqual(8, added.Stocks[0].Quantity);
 
-    [TestMethod]
-    public async Task TestUpdateTransfer_InvalidData()
-    {
-        var transfer = new Transfer
+            var dbEntity = await _dbContext.Transfers.FindAsync(added.Id);
+            Assert.IsNotNull(dbEntity);
+            Assert.AreEqual("TRF004", dbEntity.Reference);
+
+            _mockLoggingService.Verify(ls => ls.LogAsync(
+                "system", "Transfer", "Create", "/api/v1/transfers", $"Created transfer {added.Id}"), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task UpdateTransferAsync_ExistingId_ShouldUpdateAndLog()
         {
-            Reference = "REF007",
-            TransferFrom = 999, // Invalid source location
-            TransferTo = 2,
-            Items = new List<TransferItem>
+            var updated = new Transfer
             {
-                new TransferItem { ItemId = "ITEM001", Amount = 1 }
-            }
-        };
+                Reference = "TRF001-Updated",
+                TransferFrom = 10,
+                TransferTo = 20,
+                TransferStatus = "Updated",
+                Stocks = new List<TransferStock> {
+                    new TransferStock { ItemId = "1", Quantity = 10 }
+                }
+            };
 
-        var result = await _transferService.UpdateTransferAsync(1, transfer);
-        Assert.AreEqual("Invalid source or destination location.", result.message);
-        Assert.IsNull(result.transfer);
-    }
+            var result = await _transferService.UpdateTransferAsync(1, updated);
+            Assert.IsNotNull(result);
+            Assert.AreEqual("TRF001-Updated", result.Reference);
+            Assert.AreEqual("Updated", result.TransferStatus);
+            Assert.IsTrue(result.UpdatedAt > result.CreatedAt);
+            Assert.AreEqual(1, result.Stocks.Count);
+            Assert.AreEqual(10, result.Stocks[0].Quantity);
 
-    [TestMethod]
-    public async Task TestUpdateTransferStatus_SourceLocationMissing()
-    {
-        var result = await _transferService.UpdateTransferStatusAsync(2, "InProgress");
-        Assert.AreEqual("Source location not found.", result);
-    }
+            var dbEntity = await _dbContext.Transfers.Include(t => t.Stocks).FirstOrDefaultAsync(t => t.Id == 1);
+            Assert.IsNotNull(dbEntity);
+            Assert.AreEqual("TRF001-Updated", dbEntity.Reference);
 
-    [TestMethod]
-    public async Task TestUpdateTransferStatus_InsufficientStock()
-    {
-        var transfer = new Transfer
+            _mockLoggingService.Verify(ls => ls.LogAsync(
+                "system", "Transfer", "Update", "/api/v1/transfers/1", "Updated transfer 1"), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task UpdateTransferAsync_NonExistingId_ShouldReturnNull()
         {
-            Reference = "REF010",
-            TransferFrom = 4,
-            TransferTo = 1,
-            Items = new List<TransferItem>
+            var updated = new Transfer
             {
-                new TransferItem { ItemId = "ITEM001", Amount = 15 } // More than available stock
-            }
-        };
+                Reference = "TRF999",
+                TransferFrom = 10,
+                TransferTo = 20,
+                TransferStatus = "Updated"
+            };
 
-        var addResult = await _transferService.AddTransferAsync(transfer);
-        Assert.AreEqual($"Not enough stock for item ITEM001 in the source location.", addResult.message);
-        Assert.IsNull(addResult.transfer);
-    }
+            var result = await _transferService.UpdateTransferAsync(999, updated);
+            Assert.IsNull(result);
 
-    [TestMethod]
-    public async Task TestCompleteTransfer_StockUpdated()
-    {
-        await _transferService.UpdateTransferStatusAsync(1, "InProgress");
-        var result = await _transferService.UpdateTransferStatusAsync(1, "Completed");
-        Assert.AreEqual("Transfer status successfully updated.", result);
+            _mockLoggingService.Verify(ls => ls.LogAsync(
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
 
-        var toLocation = await _dbContext.Locations.FirstOrDefaultAsync(l => l.LocationId == 2);
-        Assert.IsNotNull(toLocation);
-        Assert.AreEqual(2, toLocation.ItemAmounts["ITEM001"]);
-        Assert.AreEqual(1, toLocation.ItemAmounts["ITEM002"]);
-    }
+        [TestMethod]
+        public async Task SoftDeleteByIdAsync_ExistingId_ShouldSoftDeleteAndLog()
+        {
+            var result = await _transferService.SoftDeleteByIdAsync(1);
+            Assert.IsTrue(result);
 
-    [TestMethod]
-    public async Task WrongTransferStatusTransition()
-    {
-        var result = await _transferService.UpdateTransferStatusAsync(1, "Completed");
-        Assert.AreEqual("Invalid status transition or status. You can only update a transfer from 'Pending' to 'InProgress', or 'InProgress' to 'Completed'.", result);
-    }
+            var transfer = await _dbContext.Transfers.FindAsync(1);
+            Assert.IsNotNull(transfer);
+            Assert.IsTrue(transfer.IsDeleted);
+            Assert.IsTrue(transfer.UpdatedAt > transfer.CreatedAt);
 
-    [TestMethod]
-    public async Task TestDeleteTransfer_Incomplete()
-    {
-        await _transferService.DeleteTransferAsync(1);
+            _mockLoggingService.Verify(ls => ls.LogAsync(
+                "system", "Transfer", "Delete", "/api/v1/transfers/1", "Soft deleted transfer 1"), Times.Once);
+        }
 
-        var fromLocation = await _dbContext.Locations.FirstOrDefaultAsync(l => l.LocationId == 1);
-        Assert.IsNotNull(fromLocation);
-        Assert.AreEqual(12, fromLocation.ItemAmounts["ITEM001"]); // Restored stock
-        Assert.AreEqual(6, fromLocation.ItemAmounts["ITEM002"]);
+        [TestMethod]
+        public async Task SoftDeleteByIdAsync_NonExistingId_ShouldReturnFalse()
+        {
+            var result = await _transferService.SoftDeleteByIdAsync(999);
+            Assert.IsFalse(result);
+
+            _mockLoggingService.Verify(ls => ls.LogAsync(
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
     }
 }

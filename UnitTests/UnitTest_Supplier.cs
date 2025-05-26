@@ -1,155 +1,270 @@
-namespace UnitTests;
-using CargoHubV2;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CargohubV2.Contexts;
 using CargohubV2.Models;
 using CargohubV2.Services;
 
-[TestClass]
-public class UnitTest_Supplier
+namespace UnitTests
 {
-    private CargoHubDbContext _dbContext;
-    private SupplierService _supplierService;
-    public TestContext TestContext { get; set; }
-
-    [TestInitialize]
-    public void Setup()
+    [TestClass]
+    public class SupplierServiceTests
     {
-        var options = new DbContextOptionsBuilder<CargoHubDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // Unieke DB per test run
-            .Options;
+        private CargoHubDbContext? _dbContext;
+        private SupplierService? _supplierService;
+        private Mock<LoggingService>? _mockLoggingService;
 
-        _dbContext = new CargoHubDbContext(options);
-        SeedDatabase(_dbContext);
-        _supplierService = new SupplierService(_dbContext);
-    }
-
-    private void SeedDatabase(CargoHubDbContext context)
-    {
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
-
-        context.Suppliers.AddRange(
-            new Supplier
-            {
-                SupplierId = 1,
-                Code = "SUP001",
-                Name = "Supplier One",
-                Address = "123 Main Street",
-                AddressExtra = "Building A",
-                City = "Metropolis",
-                ZipCode = "12345",
-                Province = "Central",
-                Country = "Wonderland",
-                ContactName = "John Doe",
-                PhoneNumber = "123-456-7890",
-                Reference = "REF123",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Supplier
-            {
-                SupplierId = 2,
-                Code = "SUP002",
-                Name = "Supplier Two",
-                Address = "456 Side Street",
-                AddressExtra = "Building B",
-                City = "Gotham",
-                ZipCode = "67890",
-                Province = "Central",
-                Country = "Neverland",
-                ContactName = "Jane Smith",
-                PhoneNumber = "098-765-4321",
-                Reference = "REF124",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            }
-        );
-        context.SaveChanges();
-    }
-
-    [TestMethod]
-    public async Task TestGetAllSuppliers()
-    {
-        var supplierList = await _supplierService.GetAllSuppliersAsync();
-        Assert.IsTrue(supplierList.Count >= 2);
-    }
-
-    [TestMethod]
-    [DataRow(1, true)]
-    [DataRow(999, false)]
-    public async Task TestGetSupplierById(int supplierId, bool expectedResult)
-    {
-        var supplier = await _supplierService.GetSupplierByIdAsync(supplierId);
-        Assert.AreEqual(expectedResult, supplier != null);
-    }
-
-    [TestMethod]
-    [DataRow(3, "SUP003", "Supplier Three", "123 Example Street", "Example City", "EX123", "Exampleland", "Alice Johnson", "123-123-1234", true)]
-    [DataRow(4, null, "Invalid Supplier", "No Address", "No City", "NOZIP", "Noland", "Invalid Contact", "987-654-3210", false)]
-    public async Task TestPostSupplier(int supplierId, string code, string name, string address, string city, string zipCode, string country, string contactName, string phoneNumber, bool expectedResult)
-    {
-        var supplier = new Supplier
+        [TestInitialize]
+        public void Setup()
         {
-            SupplierId = supplierId,
-            Code = code,
-            Name = name,
-            Address = address,
-            City = city,
-            ZipCode = zipCode,
-            Country = country,
-            ContactName = contactName,
-            PhoneNumber = phoneNumber,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            Reference = ""
-        };
+            var options = new DbContextOptionsBuilder<CargoHubDbContext>()
+                .UseInMemoryDatabase(databaseName: $"TestCargoHubDatabase_{Guid.NewGuid()}")
+                .Options;
 
-        var returnedSupplier = await _supplierService.CreateSupplierAsync(supplier);
-        Assert.AreEqual(expectedResult, returnedSupplier != null);
-    }
+            _dbContext = new CargoHubDbContext(options);
+            _mockLoggingService = new Mock<LoggingService>();
+            _supplierService = new SupplierService(_dbContext, _mockLoggingService.Object);
+            SeedDatabase(_dbContext);
+        }
 
-    [TestMethod]
-    [DataRow(1, "Updated Supplier", "SUP001-NEW", "789 Update Ave", "Updated City", "UP123", "Updateland", "Updated Contact", "456-456-4567", true)]
-    [DataRow(999, null, null, null, null, null, null, null, null, false)]
-    public async Task TestPutSupplier(int supplierId, string name, string code, string address, string city, string zipCode, string country, string contactName, string phoneNumber, bool expectedResult)
-    {
-        var supplier = new Supplier
+        [TestCleanup]
+        public void Cleanup()
         {
-            SupplierId = supplierId,
-            Code = code,
-            Name = name,
-            Address = address,
-            City = city,
-            ZipCode = zipCode,
-            Country = country,
-            ContactName = contactName,
-            PhoneNumber = phoneNumber,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+            _dbContext?.Database.EnsureDeleted();
+            _dbContext?.Dispose();
+        }
 
-        var updated = await _supplierService.UpdateSupplierAsync(supplierId, supplier);
-        Assert.AreEqual(expectedResult, updated);
-    }
+        private void SeedDatabase(CargoHubDbContext context)
+        {
+            context.Suppliers.AddRange(
+                new Supplier
+                {
+                    Id = 1,
+                    Code = "SUP001",
+                    Name = "Supplier A",
+                    Address = "123 Main St",
+                    AddressExtra = "Unit 1",
+                    City = "Amsterdam",
+                    ZipCode = "1012 AB",
+                    Province = "Noord-Holland",
+                    Country = "Netherlands",
+                    ContactName = "John Doe",
+                    PhoneNumber = "+31201234567",
+                    Reference = "REF001",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                new Supplier
+                {
+                    Id = 2,
+                    Code = "SUP002",
+                    Name = "Supplier B",
+                    Address = "456 High St",
+                    AddressExtra = "Unit 2",
+                    City = "Brussels",
+                    ZipCode = "1000",
+                    Province = "Brussels",
+                    Country = "Belgium",
+                    ContactName = "Jane Smith",
+                    PhoneNumber = "+3229876543",
+                    Reference = "REF002",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                new Supplier
+                {
+                    Id = 3,
+                    Code = "SUP003",
+                    Name = "Supplier C",
+                    Address = "789 Broad St",
+                    AddressExtra = "Unit 3",
+                    City = "Berlin",
+                    ZipCode = "10115",
+                    Province = "Berlin",
+                    Country = "Germany",
+                    ContactName = "Max Mustermann",
+                    PhoneNumber = "+49301234567",
+                    Reference = "REF003",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsDeleted = true
+                }
+            );
 
-    [TestMethod]
-    [DataRow(1, true)]
-    [DataRow(999, false)]
-    public async Task TestDeleteSupplier(int supplierId, bool expectedResult)
-    {
-        var deleted = await _supplierService.DeleteSupplierAsync(supplierId);
-        Assert.AreEqual(expectedResult, deleted);
-    }
+            context.SaveChanges();
+        }
 
-    [TestMethod]
-    public async Task TestDeleteAllSuppliers()
-    {
-        var deleted = await _supplierService.DeleteAllSuppliersAsync();
-        Assert.IsTrue(deleted);
+        [TestMethod]
+        public async Task GetSuppliersAsync_ShouldReturnLimitedNonDeletedSuppliers()
+        {
+            var suppliers = await _supplierService!.GetSuppliersAsync(2);
+            Assert.AreEqual(2, suppliers.Count);
+            Assert.IsTrue(suppliers.All(s => !s.IsDeleted));
+            Assert.AreEqual("Supplier A", suppliers[0].Name);
+            Assert.AreEqual("Supplier B", suppliers[1].Name);
+        }
+
+        [TestMethod]
+        public async Task GetAllSuppliersAsync_ShouldReturnAllNonDeletedSuppliers()
+        {
+            var suppliers = await _supplierService!.GetAllSuppliersAsync();
+            Assert.AreEqual(2, suppliers.Count);
+            Assert.IsTrue(suppliers.All(s => !s.IsDeleted));
+            Assert.IsTrue(suppliers.Any(s => s.Name == "Supplier A"));
+            Assert.IsTrue(suppliers.Any(s => s.Name == "Supplier B"));
+        }
+
+        [TestMethod]
+        public async Task GetByIdAsync_ExistingId_ShouldReturnSupplier()
+        {
+            var supplier = await _supplierService!.GetByIdAsync(1);
+            Assert.IsNotNull(supplier);
+            Assert.AreEqual("Supplier A", supplier.Name);
+            Assert.IsFalse(supplier.IsDeleted);
+        }
+
+        [TestMethod]
+        public async Task GetByIdAsync_NonExistingId_ShouldReturnNull()
+        {
+            var supplier = await _supplierService!.GetByIdAsync(999);
+            Assert.IsNull(supplier);
+        }
+
+        [TestMethod]
+        public async Task GetByIdAsync_DeletedId_ShouldReturnNull()
+        {
+            var supplier = await _supplierService!.GetByIdAsync(3);
+            Assert.IsNull(supplier);
+        }
+
+        [TestMethod]
+        public async Task AddSupplierAsync_ValidSupplier_ShouldAddAndLog()
+        {
+            var newSupplier = new Supplier
+            {
+                Code = "SUP004",
+                Name = "Supplier D",
+                Address = "101 Park Ave",
+                AddressExtra = "Unit 4",
+                City = "Paris",
+                ZipCode = "75001",
+                Province = "Île-de-France",
+                Country = "France",
+                ContactName = "Alice Dupont",
+                PhoneNumber = "+33123456789",
+                Reference = "REF004"
+            };
+
+            var addedSupplier = await _supplierService!.AddSupplierAsync(newSupplier);
+            Assert.IsNotNull(addedSupplier);
+            Assert.AreEqual("Supplier D", addedSupplier.Name);
+            Assert.IsFalse(addedSupplier.IsDeleted);
+            Assert.IsTrue(addedSupplier.CreatedAt > DateTime.MinValue);
+            Assert.IsTrue(addedSupplier.UpdatedAt > DateTime.MinValue);
+
+            var dbSupplier = await _dbContext!.Suppliers.FindAsync(addedSupplier.Id);
+            Assert.IsNotNull(dbSupplier);
+            Assert.AreEqual("Supplier D", dbSupplier.Name);
+
+            _mockLoggingService!.Verify(
+                ls => ls.LogAsync("system", "Supplier", "Create", "/api/v1/suppliers", $"Created supplier {addedSupplier.Id}"),
+                Times.Once());
+        }
+
+        [TestMethod]
+        public async Task UpdateSupplierAsync_ExistingId_ShouldUpdateAndLog()
+        {
+            var updatedSupplier = new Supplier
+            {
+                Code = "SUP001-Updated",
+                Name = "Supplier A-Updated",
+                Address = "123 Updated St",
+                AddressExtra = "Unit 1-Updated",
+                City = "Rotterdam",
+                ZipCode = "3012 CD",
+                Province = "Zuid-Holland",
+                Country = "Netherlands",
+                ContactName = "Bob Johnson",
+                PhoneNumber = "+31109876543",
+                Reference = "REF001-Updated"
+            };
+
+            var result = await _supplierService!.UpdateSupplierAsync(1, updatedSupplier);
+            Assert.IsNotNull(result);
+            Assert.AreEqual("Supplier A-Updated", result.Name);
+            Assert.AreEqual("SUP001-Updated", result.Code);
+            Assert.IsTrue(result.UpdatedAt > result.CreatedAt);
+
+            var dbSupplier = await _dbContext!.Suppliers.FindAsync(1);
+            Assert.IsNotNull(dbSupplier);
+            Assert.AreEqual("Supplier A-Updated", dbSupplier.Name);
+
+            _mockLoggingService!.Verify(
+                ls => ls.LogAsync("system", "Supplier", "Update", "/api/v1/suppliers/1", "Updated supplier 1"),
+                Times.Once());
+        }
+
+        [TestMethod]
+        public async Task UpdateSupplierAsync_NonExistingId_ShouldReturnNull()
+        {
+            var updatedSupplier = new Supplier
+            {
+                Code = "SUP999",
+                Name = "Supplier X",
+                Address = "999 Unknown St",
+                City = "Unknown",
+                ZipCode = "0000",
+                Country = "Unknown",
+                ContactName = "Unknown",
+                PhoneNumber = "+9999999999",
+                Reference = "REF999"
+            };
+
+            var result = await _supplierService!.UpdateSupplierAsync(999, updatedSupplier);
+            Assert.IsNull(result);
+            _mockLoggingService!.Verify(
+                ls => ls.LogAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never());
+        }
+
+        [TestMethod]
+        public async Task SoftDeleteByIdAsync_ExistingId_ShouldSoftDeleteAndLog()
+        {
+            var result = await _supplierService!.SoftDeleteByIdAsync(1);
+            Assert.IsTrue(result);
+            var supplier = await _dbContext!.Suppliers.FindAsync(1);
+            Assert.IsNotNull(supplier);
+            Assert.IsTrue(supplier.IsDeleted);
+            Assert.IsTrue(supplier.UpdatedAt > supplier.CreatedAt);
+
+            _mockLoggingService!.Verify(
+                ls => ls.LogAsync("system", "Supplier", "Delete", "/api/v1/suppliers/1", "Soft deleted supplier 1"),
+                Times.Once());
+        }
+
+        [TestMethod]
+        public async Task SoftDeleteByIdAsync_NonExistingId_ShouldReturnFalse()
+        {
+            var result = await _supplierService!.SoftDeleteByIdAsync(999);
+            Assert.IsFalse(result);
+            _mockLoggingService!.Verify(
+                ls => ls.LogAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never());
+        }
+
+        [TestMethod]
+        public async Task SoftDeleteByIdAsync_AlreadyDeletedId_ShouldReturnFalse()
+        {
+            var result = await _supplierService!.SoftDeleteByIdAsync(3);
+            Assert.IsFalse(result);
+            _mockLoggingService!.Verify(
+                ls => ls.LogAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never());
+        }
     }
 }

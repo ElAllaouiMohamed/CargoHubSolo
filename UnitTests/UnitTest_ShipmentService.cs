@@ -1,169 +1,312 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 using CargohubV2.Contexts;
 using CargohubV2.Models;
 using CargohubV2.Services;
-using CargoHubV2.Data;
-using CargoHubV2;
+
 namespace UnitTests
 {
     [TestClass]
-    public class UnitTest_ShipmentService
+    public class ShipmentServiceTests
     {
-        private CargoHubDbContext _dbContext;
-        private ShipmentService _shipmentService;
-        private Mock<LoggingService> _mockLoggingService;
+        private CargoHubDbContext? _dbContext;
+        private ShipmentService? _shipmentService;
+        private Mock<LoggingService>? _mockLoggingService;
 
         [TestInitialize]
         public void Setup()
         {
             var options = new DbContextOptionsBuilder<CargoHubDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // unieker DB per test run
+                .UseInMemoryDatabase(databaseName: $"TestCargoHubDatabase_{Guid.NewGuid()}")
                 .Options;
 
             _dbContext = new CargoHubDbContext(options);
-            SeedDatabase(_dbContext);
-
             _mockLoggingService = new Mock<LoggingService>();
-            _mockLoggingService.Setup(l => l.LogAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                               .Returns(Task.CompletedTask);
-
             _shipmentService = new ShipmentService(_dbContext, _mockLoggingService.Object);
+            SeedDatabase(_dbContext);
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            _dbContext?.Database.EnsureDeleted();
+            _dbContext?.Dispose();
         }
 
         private void SeedDatabase(CargoHubDbContext context)
         {
-            context.Database.EnsureDeleted();
-            context.Database.EnsureCreated();
-
-            // Voeg Items, Warehouses, Shipments toe (vereist voor Shipment tests)
-            context.Items.AddRange(
-                new Item { Uid = "P000001", Code = "Item1", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new Item { Uid = "P000002", Code = "Item2", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
-            );
-
-            context.Warehouses.Add(new Warehouse
-            {
-                WarehouseId = 1,
-                Code = "WH001",
-                Name = "Main Warehouse",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            });
-
-            context.Shipments.Add(new Shipment
-            {
-                Id = 1,
-                WarehouseId = 1,
-                ShipmentStatus = "Pending",
-                CreatedAt = DateTime.UtcNow.AddDays(-1),
-                UpdatedAt = DateTime.UtcNow.AddDays(-1),
-                Stocks = new List<ShipmentStock> {
-                    new ShipmentStock { ItemId = "P000001", Quantity = 10 },
-                    new ShipmentStock { ItemId = "P000002", Quantity = 5 }
+            context.Shipments.AddRange(
+                new Shipment
+                {
+                    Id = 1,
+                    OrderId = 1,
+                    SourceId = 1,
+                    OrderDate = "2025-05-25",
+                    RequestDate = "2025-05-26",
+                    ShipmentDate = "2025-05-27",
+                    ShipmentType = "Standard",
+                    ShipmentStatus = "Pending",
+                    Notes = "Note1",
+                    CarrierCode = "DHL",
+                    CarrierDescription = "DHL Express",
+                    ServiceCode = "EXP",
+                    PaymentType = "Prepaid",
+                    TransferMode = "Road",
+                    TotalPackageCount = 5,
+                    TotalPackageWeight = 25.5,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsDeleted = false,
+                    Stocks = new List<ShipmentStock>
+                    {
+                        new ShipmentStock { Id = 1, ShipmentId = 1, ItemId = "1", Quantity = 10 }
+                    }
+                },
+                new Shipment
+                {
+                    Id = 2,
+                    OrderId = 2,
+                    SourceId = 2,
+                    OrderDate = "2025-05-24",
+                    RequestDate = "2025-05-25",
+                    ShipmentDate = "2025-05-26",
+                    ShipmentType = "Express",
+                    ShipmentStatus = "Shipped",
+                    Notes = "Note2",
+                    CarrierCode = "UPS",
+                    CarrierDescription = "UPS Standard",
+                    ServiceCode = "STD",
+                    PaymentType = "COD",
+                    TransferMode = "Air",
+                    TotalPackageCount = 3,
+                    TotalPackageWeight = 15.75,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsDeleted = false,
+                    Stocks = new List<ShipmentStock>
+                    {
+                        new ShipmentStock { Id = 2, ShipmentId = 2, ItemId = "2", Quantity = 5 }
+                    }
+                },
+                new Shipment
+                {
+                    Id = 3,
+                    OrderId = 3,
+                    SourceId = 3,
+                    OrderDate = "2025-05-23",
+                    RequestDate = "2025-05-24",
+                    ShipmentDate = "2025-05-25",
+                    ShipmentType = "Standard",
+                    ShipmentStatus = "Cancelled",
+                    Notes = "Note3",
+                    CarrierCode = "FEDEX",
+                    CarrierDescription = "FedEx Ground",
+                    ServiceCode = "GND",
+                    PaymentType = "Prepaid",
+                    TransferMode = "Road",
+                    TotalPackageCount = 2,
+                    TotalPackageWeight = 10.0,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsDeleted = true
                 }
-            });
+            );
 
             context.SaveChanges();
         }
 
         [TestMethod]
-        public async Task TestGetShipmentsAsync_ReturnsCorrectCount()
+        public async Task GetShipmentsAsync_ShouldReturnLimitedNonDeletedShipments()
         {
-            var result = await _shipmentService.GetShipmentsAsync(10);
-            Assert.IsNotNull(result);
-            Assert.AreEqual(1, result.Count);
+            var shipments = await _shipmentService!.GetShipmentsAsync(2);
+            Assert.AreEqual(2, shipments.Count);
+            Assert.IsTrue(shipments.All(s => !s.IsDeleted));
+            Assert.AreEqual("Pending", shipments[0].ShipmentStatus);
+            Assert.AreEqual("Shipped", shipments[1].ShipmentStatus);
+            Assert.IsTrue(shipments[0].Stocks.Any(s => s.Quantity == 10));
+            Assert.IsTrue(shipments[1].Stocks.Any(s => s.Quantity == 5));
         }
 
         [TestMethod]
-        public async Task TestGetAllShipmentsAsync_ReturnsAll()
+        public async Task GetAllShipmentsAsync_ShouldReturnAllNonDeletedShipments()
         {
-            var result = await _shipmentService.GetAllShipmentsAsync();
-            Assert.IsNotNull(result);
-            Assert.AreEqual(1, result.Count);
+            var shipments = await _shipmentService!.GetAllShipmentsAsync();
+            Assert.AreEqual(2, shipments.Count);
+            Assert.IsTrue(shipments.All(s => !s.IsDeleted));
+            Assert.IsTrue(shipments.Any(s => s.ShipmentStatus == "Pending"));
+            Assert.IsTrue(shipments.Any(s => s.ShipmentStatus == "Shipped"));
         }
 
         [TestMethod]
-        public async Task TestGetByIdAsync_ReturnsShipment()
+        public async Task GetByIdAsync_ExistingId_ShouldReturnShipment()
         {
-            var shipment = await _shipmentService.GetByIdAsync(1);
+            var shipment = await _shipmentService!.GetByIdAsync(1);
             Assert.IsNotNull(shipment);
-            Assert.AreEqual(1, shipment.Id);
-            Assert.AreEqual(2, shipment.Stocks.Count);
+            Assert.AreEqual("Pending", shipment.ShipmentStatus);
+            Assert.IsFalse(shipment.IsDeleted);
+            Assert.AreEqual(1, shipment.Stocks.Count);
+            Assert.AreEqual(10, shipment.Stocks[0].Quantity);
         }
 
         [TestMethod]
-        public async Task TestAddShipmentAsync_AddsAndLogs()
+        public async Task GetByIdAsync_NonExistingId_ShouldReturnNull()
+        {
+            var shipment = await _shipmentService!.GetByIdAsync(999);
+            Assert.IsNull(shipment);
+        }
+
+        [TestMethod]
+        public async Task GetByIdAsync_DeletedId_ShouldReturnNull()
+        {
+            var shipment = await _shipmentService!.GetByIdAsync(3);
+            Assert.IsNull(shipment);
+        }
+
+        [TestMethod]
+        public async Task AddShipmentAsync_ValidShipment_ShouldAddAndLog()
         {
             var newShipment = new Shipment
             {
-                WarehouseId = 1,
+                OrderId = 4,
+                SourceId = 4,
+                OrderDate = "2025-05-28",
+                RequestDate = "2025-05-29",
+                ShipmentDate = "2025-05-30",
+                ShipmentType = "Express",
                 ShipmentStatus = "New",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                Stocks = new List<ShipmentStock> {
-                    new ShipmentStock { ItemId = "P000001", Quantity = 3 }
+                Notes = "Note4",
+                CarrierCode = "DHL",
+                CarrierDescription = "DHL Express",
+                ServiceCode = "EXP",
+                PaymentType = "Prepaid",
+                TransferMode = "Air",
+                TotalPackageCount = 4,
+                TotalPackageWeight = 20.0,
+                Stocks = new List<ShipmentStock>
+                {
+                    new ShipmentStock { ItemId = "3", Quantity = 15 }
                 }
             };
 
-            var result = await _shipmentService.AddShipmentAsync(newShipment);
-            Assert.IsNotNull(result);
-            Assert.IsTrue(result.Id > 0);
+            var addedShipment = await _shipmentService!.AddShipmentAsync(newShipment);
+            Assert.IsNotNull(addedShipment);
+            Assert.AreEqual("New", addedShipment.ShipmentStatus);
+            Assert.IsFalse(addedShipment.IsDeleted);
+            Assert.IsTrue(addedShipment.CreatedAt > DateTime.MinValue);
+            Assert.IsTrue(addedShipment.UpdatedAt > DateTime.MinValue);
+            Assert.AreEqual(1, addedShipment.Stocks.Count);
+            Assert.AreEqual(15, addedShipment.Stocks[0].Quantity);
 
-            _mockLoggingService.Verify(l => l.LogAsync("system", "Shipment", "Create", "/api/v1/shipments", It.IsAny<string>()), Times.Once);
+            var dbShipment = await _dbContext!.Shipments.FindAsync(addedShipment.Id);
+            Assert.IsNotNull(dbShipment);
+            Assert.AreEqual("New", dbShipment.ShipmentStatus);
+
+            _mockLoggingService!.Verify(
+                ls => ls.LogAsync("system", "Shipment", "Create", "/api/v1/shipments", $"Created shipment {addedShipment.Id}"),
+                Times.Once());
         }
 
         [TestMethod]
-        public async Task TestUpdateShipmentAsync_UpdatesAndLogs()
+        public async Task UpdateShipmentAsync_ExistingId_ShouldUpdateAndLog()
         {
             var updatedShipment = new Shipment
             {
-                Id = 1,
-                WarehouseId = 1,
-                ShipmentStatus = "Updated",
-                Stocks = new List<ShipmentStock> {
-                    new ShipmentStock { ItemId = "P000001", Quantity = 15 }
+                OrderId = 1,
+                SourceId = 1,
+                OrderDate = "2025-05-26",
+                RequestDate = "2025-05-27",
+                ShipmentDate = "2025-05-28",
+                ShipmentType = "Standard",
+                ShipmentStatus = "Processing",
+                Notes = "Updated Note",
+                CarrierCode = "UPS",
+                CarrierDescription = "UPS Standard",
+                ServiceCode = "STD",
+                PaymentType = "COD",
+                TransferMode = "Road",
+                TotalPackageCount = 6,
+                TotalPackageWeight = 30.0,
+                Stocks = new List<ShipmentStock>
+                {
+                    new ShipmentStock { ItemId = "1", Quantity = 20 }
                 }
             };
 
-            var result = await _shipmentService.UpdateShipmentAsync(1, updatedShipment);
+            var result = await _shipmentService!.UpdateShipmentAsync(1, updatedShipment);
             Assert.IsNotNull(result);
-            Assert.AreEqual("Updated", result.ShipmentStatus);
+            Assert.AreEqual("Processing", result.ShipmentStatus);
+            Assert.IsTrue(result.UpdatedAt > result.CreatedAt);
             Assert.AreEqual(1, result.Stocks.Count);
+            Assert.AreEqual(20, result.Stocks[0].Quantity);
 
-            _mockLoggingService.Verify(l => l.LogAsync("system", "Shipment", "Update", "/api/v1/shipments/1", It.IsAny<string>()), Times.Once);
+            var dbShipment = await _dbContext!.Shipments.Include(s => s.Stocks).FirstOrDefaultAsync(s => s.Id == 1);
+            Assert.IsNotNull(dbShipment);
+            Assert.AreEqual("Processing", dbShipment.ShipmentStatus);
+
+            _mockLoggingService!.Verify(
+                ls => ls.LogAsync("system", "Shipment", "Update", "/api/v1/shipments/1", "Updated shipment 1"),
+                Times.Once());
         }
 
         [TestMethod]
-        public async Task TestUpdateShipmentAsync_ReturnsNull_WhenNotFound()
+        public async Task UpdateShipmentAsync_NonExistingId_ShouldReturnNull()
         {
-            var updatedShipment = new Shipment { Id = 999 };
-            var result = await _shipmentService.UpdateShipmentAsync(999, updatedShipment);
+            var updatedShipment = new Shipment
+            {
+                OrderId = 999,
+                SourceId = 999,
+                OrderDate = "2025-05-28",
+                RequestDate = "2025-05-29",
+                ShipmentDate = "2025-05-30",
+                ShipmentStatus = "New",
+                TotalPackageCount = 1,
+                TotalPackageWeight = 5.0
+            };
+
+            var result = await _shipmentService!.UpdateShipmentAsync(999, updatedShipment);
             Assert.IsNull(result);
+            _mockLoggingService!.Verify(
+                ls => ls.LogAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never());
         }
 
         [TestMethod]
-        public async Task TestSoftDeleteByIdAsync_DeletesAndLogs()
+        public async Task SoftDeleteByIdAsync_ExistingId_ShouldSoftDeleteAndLog()
         {
-            var result = await _shipmentService.SoftDeleteByIdAsync(1);
+            var result = await _shipmentService!.SoftDeleteByIdAsync(1);
             Assert.IsTrue(result);
+            var shipment = await _dbContext!.Shipments.FindAsync(1);
+            Assert.IsNotNull(shipment);
+            Assert.IsTrue(shipment.IsDeleted);
+            Assert.IsTrue(shipment.UpdatedAt > shipment.CreatedAt);
 
-            var deletedShipment = await _shipmentService.GetByIdAsync(1);
-            Assert.IsNull(deletedShipment);
-
-            _mockLoggingService.Verify(l => l.LogAsync("system", "Shipment", "Delete", "/api/v1/shipments/1", It.IsAny<string>()), Times.Once);
+            _mockLoggingService!.Verify(
+                ls => ls.LogAsync("system", "Shipment", "Delete", "/api/v1/shipments/1", "Soft deleted shipment 1"),
+                Times.Once());
         }
 
         [TestMethod]
-        public async Task TestSoftDeleteByIdAsync_ReturnsFalse_WhenNotFound()
+        public async Task SoftDeleteByIdAsync_NonExistingId_ShouldReturnFalse()
         {
-            var result = await _shipmentService.SoftDeleteByIdAsync(999);
+            var result = await _shipmentService!.SoftDeleteByIdAsync(999);
             Assert.IsFalse(result);
+            _mockLoggingService!.Verify(
+                ls => ls.LogAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never());
+        }
+
+        [TestMethod]
+        public async Task SoftDeleteByIdAsync_AlreadyDeletedId_ShouldReturnFalse()
+        {
+            var result = await _shipmentService!.SoftDeleteByIdAsync(3);
+            Assert.IsFalse(result);
+            _mockLoggingService!.Verify(
+                ls => ls.LogAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never());
         }
     }
 }

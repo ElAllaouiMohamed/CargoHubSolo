@@ -1,12 +1,11 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CargoHubV2;
-using CargoHubV2.Models;
-using CargoHubV2.Services;
-using CargoHubV2.Data;
+using CargohubV2.Contexts;
+using CargohubV2.Models;
+using CargohubV2.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UnitTests
 {
@@ -19,126 +18,75 @@ namespace UnitTests
         [TestInitialize]
         public void Setup()
         {
+            // In-memory database options
             var options = new DbContextOptionsBuilder<CargoHubDbContext>()
-                .UseInMemoryDatabase("TestCargoHubDatabase")
+                .UseInMemoryDatabase(databaseName: "TestDb")
                 .Options;
 
             _dbContext = new CargoHubDbContext(options);
-            SeedDatabase(_dbContext);
+
+            // Voeg testdata toe
+            var orders = new List<Order>
+            {
+                new Order
+                {
+                    Id = 1,
+                    WarehouseId = 123,
+                    TotalAmount = 100.5,
+                    CreatedAt = new DateTime(2025, 1, 15),
+                    Stocks = new List<OrderStock>
+                    {
+                        new OrderStock { Quantity = 5 },
+                        new OrderStock { Quantity = 3 }
+                    }
+                },
+                new Order
+                {
+                    Id = 2,
+                    WarehouseId = 123,
+                    TotalAmount = 200.75,
+                    CreatedAt = new DateTime(2025, 1, 20),
+                    Stocks = new List<OrderStock>
+                    {
+                        new OrderStock { Quantity = 2 }
+                    }
+                }
+            };
+
+            _dbContext.Orders.AddRange(orders);
+            _dbContext.SaveChanges();
+
             _reportingService = new ReportingService(_dbContext);
         }
 
-        private void SeedDatabase(CargoHubDbContext context)
+        [TestMethod]
+        public void TestGetWarehouseReport_ReturnsCorrectTotals()
         {
-            context.Database.EnsureDeleted();
-            context.Database.EnsureCreated();
+            var result = _reportingService.GetWarehouseReport(123);
 
-            context.Clients.AddRange(new List<Client>
-            {
-                new Client { ClientId = 1, Name = "Alice", CreatedAt = new DateTime(2023, 1, 1), IsDeleted = false },
-                new Client { ClientId = 2, Name = "Bob", CreatedAt = new DateTime(2023, 6, 1), IsDeleted = false },
-                new Client { ClientId = 3, Name = "Charlie", CreatedAt = new DateTime(2023, 5, 1), IsDeleted = true } // deleted client
-            });
-
-            context.Warehouses.AddRange(new List<Warehouse>
-            {
-                new Warehouse { WarehouseId = 1, Name = "Warehouse A", CreatedAt = new DateTime(2023, 2, 1), IsDeleted = false },
-                new Warehouse { WarehouseId = 2, Name = "Warehouse B", CreatedAt = new DateTime(2023, 7, 1), IsDeleted = false },
-                new Warehouse { WarehouseId = 3, Name = "Warehouse C", CreatedAt = new DateTime(2023, 3, 1), IsDeleted = true }
-            });
-
-            context.Orders.AddRange(new List<Order>
-            {
-                new Order { Id = 1, CreatedAt = new DateTime(2023, 4, 1) },
-                new Order { Id = 2, CreatedAt = new DateTime(2023, 8, 1) }
-            });
-
-            context.SaveChanges();
+            Assert.AreEqual(2, result.TotalOrders);
+            Assert.AreEqual(10, result.TotalItems); // 5+3+2=10
         }
 
         [TestMethod]
-        public void GenerateReport_ReturnsClientsWithinDateRange()
+        public void TestGenerateCsvReport_ContainsExpectedData()
         {
-            var result = _reportingService.GenerateReport(
-                "clients",
-                new DateTime(2023, 1, 1),
-                new DateTime(2023, 12, 31),
-                null);
+            var csv = _reportingService.GenerateCsvReport(123);
 
-            Assert.IsNotNull(result);
-            var clients = result.Cast<Client>().ToList();
-
-            Assert.AreEqual(2, clients.Count); // only 2 non-deleted clients in range
-            Assert.IsFalse(clients.Any(c => c.IsDeleted));
+            Assert.IsTrue(csv.Contains("Order ID, Warehouse ID, Order Price"));
+            Assert.IsTrue(csv.Contains("1, 123, 100.5"));
+            Assert.IsTrue(csv.Contains("2, 123, 200.75"));
         }
 
         [TestMethod]
-        public void GenerateReport_ReturnsWarehousesWithinDateRange_FilteredByWarehouseId()
+        public void TestGetRevenueBetweenDates_ReturnsCorrectSum()
         {
-            var result = _reportingService.GenerateReport(
-                "warehouses",
-                new DateTime(2023, 1, 1),
-                new DateTime(2023, 12, 31),
-                2);
+            var start = new DateTime(2025, 1, 10);
+            var end = new DateTime(2025, 1, 30);
 
-            Assert.IsNotNull(result);
-            var warehouses = result.Cast<Warehouse>().ToList();
+            var revenue = _reportingService.GetRevenueBetweenDates(start, end);
 
-            Assert.AreEqual(1, warehouses.Count);
-            Assert.AreEqual(2, warehouses[0].WarehouseId);
-        }
-
-        [TestMethod]
-        public void GenerateReport_ReturnsAllWarehousesWithinDateRange_WhenNoWarehouseId()
-        {
-            var result = _reportingService.GenerateReport(
-                "warehouses",
-                new DateTime(2023, 1, 1),
-                new DateTime(2023, 12, 31),
-                null);
-
-            Assert.IsNotNull(result);
-            var warehouses = result.Cast<Warehouse>().ToList();
-
-            Assert.AreEqual(2, warehouses.Count); // excludes deleted one
-            Assert.IsFalse(warehouses.Any(w => w.IsDeleted));
-        }
-
-        [TestMethod]
-        public void GenerateReport_ReturnsOrdersWithinDateRange()
-        {
-            var result = _reportingService.GenerateReport(
-                "orders",
-                new DateTime(2023, 1, 1),
-                new DateTime(2023, 12, 31),
-                null);
-
-            Assert.IsNotNull(result);
-            var orders = result.Cast<Order>().ToList();
-
-            Assert.AreEqual(2, orders.Count);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void GenerateReport_ThrowsExceptionForInvalidEntity()
-        {
-            _reportingService.GenerateReport(
-                "invalid_entity",
-                new DateTime(2023, 1, 1),
-                new DateTime(2023, 12, 31),
-                null);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void GenerateReport_ThrowsExceptionForInvalidDateRange()
-        {
-            _reportingService.GenerateReport(
-                "clients",
-                new DateTime(2024, 1, 1),
-                new DateTime(2023, 1, 1),
-                null);
+            Assert.AreEqual(301.25, revenue.TotalRevenue);
         }
     }
 }

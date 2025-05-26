@@ -1,246 +1,129 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Linq;
-using CargohubV2.Contexts;
+using Microsoft.EntityFrameworkCore;
 using CargohubV2.Models;
+using CargohubV2.Contexts;
 using CargohubV2.Services;
-using CargoHubV2.Data;
-using CargoHubV2;
+
 namespace UnitTests
 {
     [TestClass]
-    public class UnitTest_ItemLine
+    public class UnitTest_ItemLineService
     {
         private CargoHubDbContext _dbContext;
+        private Mock<LoggingService> _mockLogging;
         private ItemLineService _itemLineService;
 
         [TestInitialize]
         public void Setup()
         {
             var options = new DbContextOptionsBuilder<CargoHubDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestCargoHubDatabase")
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
 
             _dbContext = new CargoHubDbContext(options);
-            _itemLineService = new ItemLineService(_dbContext);
-            SeedDatabase(_dbContext);
+            _mockLogging = new Mock<LoggingService>();
+            _itemLineService = new ItemLineService(_dbContext, _mockLogging.Object);
         }
 
-        private void SeedDatabase(CargoHubDbContext context)
+        [TestMethod]
+        public async Task AddItemLineAsync_ShouldAddItemLineAndLog()
         {
-            context.Database.EnsureDeleted();
-            context.Database.EnsureCreated();
-
-            context.Items_Groups.AddRange(
-                new Item_Group
-                {
-                    Id = 1,
-                    Name = "dummy",
-                    Description = "Dummy",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    IsDeleted = false
-                },
-                new Item_Group
-                {
-                    Id = 2,
-                    Name = "dummy2",
-                    Description = "Dummy2",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    IsDeleted = false
-                }
-            );
-
-            context.Items_Types.AddRange(
-                new Item_Type
-                {
-                    Id = 1,
-                    Name = "dummy",
-                    Description = "Dummy",
-                    ItemLineId = 1,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    IsDeleted = false
-                },
-                new Item_Type
-                {
-                    Id = 2,
-                    Name = "dummy2",
-                    Description = "Dummy2",
-                    ItemLineId = 2,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    IsDeleted = false
-                }
-            );
-
-            context.Items_Lines.AddRange(
-                new Item_Line
-                {
-                    Id = 1,
-                    Name = "dummy",
-                    Description = "Dummy",
-                    ItemGroupId = 1,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    IsDeleted = false
-                },
-                new Item_Line
-                {
-                    Id = 2,
-                    Name = "dummy2",
-                    Description = "Dummy2",
-                    ItemGroupId = 2,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    IsDeleted = false
-                },
-                new Item_Line
-                {
-                    Id = 100,
-                    Name = "dummy100",
-                    Description = "Dummy100",
-                    ItemGroupId = 1,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    IsDeleted = false
-                }
-            );
-
-            context.Items.AddRange(
-                new Item
-                {
-                    Id = 1,
-                    UId = "P000001",
-                    Code = "Dummy",
-                    Description = "dummy",
-                    ShortDescription = "dummy",
-                    UpcCode = "null",
-                    ModelNumber = "null",
-                    CommodityCode = "null",
-                    ItemLineId = 1,
-                    ItemGroupId = 1,
-                    ItemTypeId = 1,
-                    UnitPurchaseQuantity = 1,
-                    UnitOrderQuantity = 1,
-                    PackOrderQuantity = 1,
-                    SupplierId = 1,
-                    SupplierCode = "null",
-                    SupplierPartNumber = "null",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    IsDeleted = false
-                },
-                new Item
-                {
-                    Id = 2,
-                    UId = "P000002",
-                    Code = "Dummy2",
-                    Description = "dummy2",
-                    ShortDescription = "dummy2",
-                    UpcCode = "null",
-                    ModelNumber = "null",
-                    CommodityCode = "null",
-                    ItemLineId = 2,
-                    ItemGroupId = 2,
-                    ItemTypeId = 2,
-                    UnitPurchaseQuantity = 1,
-                    UnitOrderQuantity = 1,
-                    PackOrderQuantity = 1,
-                    SupplierId = 2,
-                    SupplierCode = "null",
-                    SupplierPartNumber = "null",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    IsDeleted = false
-                }
-            );
-
-            context.Inventories.Add(new Inventory
+            var itemLine = new Item_Line
             {
-                Id = 1,
-                ItemId = "P000001",
-                Description = "dummy",
-                ItemReference = "dummy",
-                TotalOnHand = 1,
-                TotalExpected = 1,
-                TotalOrdered = 1,
-                TotalAllocated = 1,
-                TotalAvailable = 1,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                IsDeleted = false
-            });
-
-            context.SaveChanges();
-        }
-
-        [TestMethod]
-        public void TestGetAll()
-        {
-            var itemLines = _itemLineService.GetItemLinesAsync().Result.ToList();
-            Assert.IsTrue(itemLines.Count >= 1);
-        }
-
-        [TestMethod]
-        [DataRow(1, true)]
-        [DataRow(999, false)]
-        public void TestGetById(int id, bool expectedResult)
-        {
-            var itemLine = _itemLineService.GetItemLineByIdAsync(id).Result;
-            Assert.AreEqual(expectedResult, itemLine != null);
-        }
-
-        [TestMethod]
-        [DataRow(15, "dummy", true)]
-        [DataRow(4, null, false)]
-        public void TestPost(int id, string description, bool expectedResult)
-        {
-            var newItemLine = new Item_Line
-            {
-                Id = id,
-                Name = "dummy",
-                Description = description,
-                ItemGroupId = 1,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                IsDeleted = false
+                Name = "TestItemLine",
+                Description = "Test description"
             };
 
-            var result = _itemLineService.AddItemLineAsync(newItemLine).Result.returnedItemLine;
-            Assert.AreEqual(result != null, expectedResult);
+            var result = await _itemLineService.AddItemLineAsync(itemLine);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("TestItemLine", result.Name);
+            Assert.IsTrue(result.Id != 0);
+
+            _mockLogging.Verify(m => m.LogAsync("system", "Item_Line", "Create", "/api/v1/itemlines", It.IsAny<string>()), Times.Once);
+
+            var dbItemLine = await _dbContext.ItemLines.FindAsync(result.Id);
+            Assert.IsNotNull(dbItemLine);
         }
 
         [TestMethod]
-        [DataRow(1, "updatedName", true)]
-        [DataRow(1, null, false)]
-        public void TestPut(int id, string name, bool expectedResult)
+        public async Task GetByIdAsync_ShouldReturnItemLine_WhenExists()
         {
-            var updateItemLine = new Item_Line
-            {
-                Id = id,
-                Name = name,
-                Description = "dummyUpdated",
-                ItemGroupId = 1,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                IsDeleted = false
-            };
+            var itemLine = new Item_Line { Name = "existing" };
+            _dbContext.ItemLines.Add(itemLine);
+            await _dbContext.SaveChangesAsync();
 
-            var result = _itemLineService.UpdateItemLineAsync(id, updateItemLine).Result.returnedItemLine;
-            Assert.AreEqual(result != null, expectedResult);
+            var result = await _itemLineService.GetByIdAsync(itemLine.Id);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("existing", result.Name);
         }
 
         [TestMethod]
-        [DataRow(100, true)]
-        [DataRow(999999, false)]
-        public void TestDelete(int id, bool expectedResult)
+        public async Task GetByIdAsync_ShouldReturnNull_WhenNotExists()
         {
-            var result = _itemLineService.DeleteItemLineAsync(id).Result;
-            Assert.AreEqual(result, expectedResult);
+            var result = await _itemLineService.GetByIdAsync(-1);
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public async Task UpdateItemLineAsync_ShouldUpdateAndLog_WhenExists()
+        {
+            var itemLine = new Item_Line { Name = "oldName", Description = "oldDesc" };
+            _dbContext.ItemLines.Add(itemLine);
+            await _dbContext.SaveChangesAsync();
+
+            var updated = new Item_Line { Name = "newName", Description = "newDesc" };
+
+            var result = await _itemLineService.UpdateItemLineAsync(itemLine.Id, updated);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("newName", result.Name);
+            Assert.AreEqual("newDesc", result.Description);
+
+            _mockLogging.Verify(m => m.LogAsync("system", "Item_Line", "Update", $"/api/v1/itemlines/{itemLine.Id}", It.IsAny<string>()), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task UpdateItemLineAsync_ShouldReturnNull_WhenNotExists()
+        {
+            var updated = new Item_Line { Name = "newName" };
+            var result = await _itemLineService.UpdateItemLineAsync(-1, updated);
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public async Task SoftDeleteByIdAsync_ShouldSoftDeleteAndLog_WhenExists()
+        {
+            var itemLine = new Item_Line { Name = "toDelete" };
+            _dbContext.ItemLines.Add(itemLine);
+            await _dbContext.SaveChangesAsync();
+
+            var result = await _itemLineService.SoftDeleteByIdAsync(itemLine.Id);
+
+            Assert.IsTrue(result);
+
+            var deletedItemLine = await _dbContext.ItemLines.FindAsync(itemLine.Id);
+            Assert.IsTrue(deletedItemLine.IsDeleted);
+
+            _mockLogging.Verify(m => m.LogAsync("system", "Item_Line", "Delete", $"/api/v1/itemlines/{itemLine.Id}", It.IsAny<string>()), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task SoftDeleteByIdAsync_ShouldReturnFalse_WhenNotExists()
+        {
+            var result = await _itemLineService.SoftDeleteByIdAsync(-1);
+            Assert.IsFalse(result);
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            _dbContext.Dispose();
         }
     }
 }
