@@ -106,7 +106,7 @@ jobs:
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Line Coverage | ${COVERAGE}% |" >> $GITHUB_STEP_SUMMARY
           if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-            echo "❌ Code coverage is below 80%!" >> $GITHUB_STEP_SUMMARY
+            echo "Code coverage is below 80%!" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
