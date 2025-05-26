@@ -89,9 +89,12 @@ jobs:
       - name: Restore UnitTest dependencies
         run: dotnet restore UnitTests/UnitTests.csproj
 
+      - name: Build UnitTest project
+        run: dotnet build UnitTests/UnitTests.csproj --configuration Release --no-restore
+
       - name: Run unit tests with coverage
         run: |
-          dotnet test UnitTests/UnitTests.csproj --no-build --configuration Release \
+          dotnet test UnitTests/UnitTests.csproj --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
             /p:CoverletOutput=coverage/cobertura.xml
@@ -114,7 +117,7 @@ jobs:
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Line Coverage | ${COVERAGE}% |" >> $GITHUB_STEP_SUMMARY
           if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-            echo "❌ Code coverage is below 80%!" >> $GITHUB_STEP_SUMMARY
+            echo "Code coverage is below 80%!" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
@@ -192,7 +195,7 @@ jobs:
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: "✅ CI/CD pipeline succeeded for ${{ github.repository }}! Coverage: ${{ needs.unit-tests.outputs.coverage }}%"
+          message: "CI/CD pipeline succeeded for ${{ github.repository }}! Coverage: ${{ needs.unit-tests.outputs.coverage }}%"
 
       - name: Notify Discord on failure
         if: ${{ failure() }}
@@ -200,4 +203,4 @@ jobs:
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: "❌ CI/CD pipeline failed for ${{ github.repository }}! Check logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          message: "CI/CD pipeline failed for ${{ github.repository }}! Check logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
