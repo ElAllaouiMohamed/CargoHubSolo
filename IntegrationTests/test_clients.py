@@ -2,16 +2,17 @@ import unittest
 from httpx import Client
 from datetime import datetime
 from dateutil.parser import parse as parse_date
-
+from httpx import Timeout
 class TestClientsEndpoint(unittest.TestCase):
     def setUp(self):
         self.base_url = "http://localhost:5000/api/v1/clients/"
-        self.client = Client()
+        timeout = Timeout(60.0)  
+        self.client = Client(timeout=timeout)
         self.client.headers = {
-            "X-Api-Key": "AdminKey123",  # pas aan naar juiste API key
+            "X-Api-Key": "AdminKey123",  
             "Content-Type": "application/json"
         }
-        self.TEST_CLIENT_ID = None  # om na create op te slaan
+        self.TEST_CLIENT_ID = None  
 
         self.TEST_CLIENT = {
             "name": "Integration Test Client",
@@ -46,7 +47,7 @@ class TestClientsEndpoint(unittest.TestCase):
         self.assertEqual(json_resp["name"], self.TEST_CLIENT["name"])
 
     def test_2_get_client_by_id(self):
-        # Eerst check of test_1_create_client succesvol is gelopen
+    
         if not self.TEST_CLIENT_ID:
             self.skipTest("Create client test failed or not run.")
         

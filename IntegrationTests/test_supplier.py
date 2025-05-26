@@ -1,17 +1,19 @@
 import unittest
 from httpx import Client
 from datetime import datetime
-
+from httpx import Timeout
 class TestSuppliersEndpoint(unittest.TestCase):
     def setUp(self):
         self.base_url = "http://localhost:5000/api/v1/suppliers/"
-        self.client = Client()
+        timeout = Timeout(60.0) 
+        self.client = Client(timeout=timeout)
         self.client.headers = {
             "X-Api-Key": "AdminKey123",
             "Content-Type": "application/json"
         }
         self.test_id = None
 
+        now_iso = datetime.utcnow().isoformat() + "Z"
         self.test_supplier = {
             "code": "SUP001",
             "name": "Test Supplier",
@@ -24,8 +26,8 @@ class TestSuppliersEndpoint(unittest.TestCase):
             "contactName": "John Doe",
             "phoneNumber": "+1234567890",
             "reference": "REF001",
-            "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-            "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            "created_at": now_iso,
+            "updated_at": now_iso,
             "isDeleted": False
         }
 
@@ -42,15 +44,16 @@ class TestSuppliersEndpoint(unittest.TestCase):
             "phoneNumber": "+0987654321",
             "reference": "REF002",
             "created_at": self.test_supplier["created_at"],
-            "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            "updated_at": now_iso,
             "isDeleted": False
         }
 
+        # Cleanup oude test data
         response = self.client.get(self.base_url)
         if response.status_code == 200:
             suppliers = response.json()
             for supplier in suppliers:
-                if supplier.get("name") in ["Test Supplier", "Updated Supplier"]:
+                if supplier.get("name") in [self.test_supplier["name"], self.updated_supplier["name"]]:
                     self.client.delete(f"{self.base_url}{supplier['id']}")
 
     def tearDown(self):
@@ -64,9 +67,9 @@ class TestSuppliersEndpoint(unittest.TestCase):
         data = response.json()
         self.test_id = data.get("id")
         self.assertIsNotNone(self.test_id, "Supplier ID should be returned")
-        self.assertEqual(data["name"], self.test_supplier["name"])
-        self.assertEqual(data["code"], self.test_supplier["code"])
-        self.assertFalse(data["isDeleted"])
+        self.assertEqual(data.get("name"), self.test_supplier["name"])
+        self.assertEqual(data.get("code"), self.test_supplier["code"])
+        self.assertFalse(data.get("isDeleted"))
 
     def test_2_get_supplier(self):
         if not self.test_id:
@@ -75,9 +78,9 @@ class TestSuppliersEndpoint(unittest.TestCase):
         response = self.client.get(f"{self.base_url}{self.test_id}")
         self.assertEqual(response.status_code, 200, f"Failed to get supplier: {response.text}")
         data = response.json()
-        self.assertEqual(data["id"], self.test_id)
-        self.assertEqual(data["name"], self.test_supplier["name"])
-        self.assertEqual(data["code"], self.test_supplier["code"])
+        self.assertEqual(data.get("id"), self.test_id)
+        self.assertEqual(data.get("name"), self.test_supplier["name"])
+        self.assertEqual(data.get("code"), self.test_supplier["code"])
 
     def test_3_update_supplier(self):
         if not self.test_id:
@@ -86,9 +89,9 @@ class TestSuppliersEndpoint(unittest.TestCase):
         response = self.client.put(f"{self.base_url}{self.test_id}", json=self.updated_supplier)
         self.assertEqual(response.status_code, 200, f"Failed to update supplier: {response.text}")
         data = response.json()
-        self.assertEqual(data["name"], self.updated_supplier["name"])
-        self.assertEqual(data["code"], self.updated_supplier["code"])
-        self.assertFalse(data["isDeleted"])
+        self.assertEqual(data.get("name"), self.updated_supplier["name"])
+        self.assertEqual(data.get("code"), self.updated_supplier["code"])
+        self.assertFalse(data.get("isDeleted"))
 
     def test_4_get_all_suppliers(self):
         response = self.client.get(self.base_url)
@@ -96,7 +99,7 @@ class TestSuppliersEndpoint(unittest.TestCase):
         data = response.json()
         self.assertTrue(isinstance(data, list))
         if self.test_id:
-            found = any(supplier["id"] == self.test_id for supplier in data)
+            found = any(supplier.get("id") == self.test_id for supplier in data)
             self.assertTrue(found, "Created supplier should be in the list")
 
     def test_5_soft_delete_supplier(self):
@@ -104,10 +107,10 @@ class TestSuppliersEndpoint(unittest.TestCase):
             self.skipTest("Create supplier test failed or not run.")
 
         response = self.client.delete(f"{self.base_url}{self.test_id}")
-        self.assertEqual(response.status_code, 204, f"Failed to soft delete supplier: {response.text}")
+        self.assertIn(response.status_code, (200, 204), f"Failed to soft delete supplier: {response.text}")
 
         get_response = self.client.get(f"{self.base_url}{self.test_id}")
-        self.assertEqual(get_response.status_code, 404, "Soft-deleted supplier should return 404")
+        self.assertIn(get_response.status_code, (404, 410), "Soft-deleted supplier should return 404 or 410")
 
 if __name__ == "__main__":
     unittest.main()

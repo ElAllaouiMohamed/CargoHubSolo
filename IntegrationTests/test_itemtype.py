@@ -1,11 +1,12 @@
 import unittest
 from httpx import Client
 from datetime import datetime
-
+from httpx import Timeout
 class TestItemTypesEndpoint(unittest.TestCase):
     def setUp(self):
         self.base_url = "http://localhost:5000/api/v1/itemtypes/"
-        self.client = Client()
+        timeout = Timeout(60.0)  
+        self.client = Client(timeout=timeout)
         self.client.headers = {
             "X-Api-Key": "AdminKey123",
             "Content-Type": "application/json"

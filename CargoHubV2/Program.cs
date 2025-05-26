@@ -2,7 +2,7 @@ using CargohubV2.Contexts;
 using CargohubV2.DataConverters;
 using CargohubV2.Services;
 using Microsoft.EntityFrameworkCore;
-
+using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<CargoHubDbContext>(options =>
@@ -33,10 +33,9 @@ builder.Services.AddControllers(options =>
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
-        options.JsonSerializerOptions.MaxDepth = 64; // eventueel verhogen
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.MaxDepth = 64; // optioneel, verhoog max diepte
     });
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
