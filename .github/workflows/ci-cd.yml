@@ -13,6 +13,7 @@ on:
 env:
   DOTNET_VERSION: '8.0.x'
   PYTHON_VERSION: '3.12'
+  SOLUTION_PATH: 'CargoHubSolo.sln'
 
 jobs:
   build:
@@ -34,51 +35,51 @@ jobs:
           cache: 'pip'
 
       - name: Cache .NET dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
           restore-keys: ${{ runner.os }}-nuget-
 
       - name: Cache Python dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
           restore-keys: ${{ runner.os }}-pip-
 
       - name: Restore .NET dependencies
-        run: dotnet restore CargoHubV2/CargoHubV2.csproj
+        run: dotnet restore ${{ env.SOLUTION_PATH }}
 
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install flake8
-          pip install pytest httpx
-      - name: Run C# linting and fix line endings
+          pip install flake8 autopep8 pytest httpx
+
+      - name: Run C# linting
         run: |
           dotnet tool install -g dotnet-format
-          dotnet format ${{ env.SOLUTION_PATH }}
-          
-      - name: Install autopep8
-        run: pip install autopep8
+          dotnet format ${{ env.SOLUTION_PATH }} --verify-no-changes
 
       - name: Format Python code
         run: autopep8 --in-place --aggressive --aggressive IntegrationTests/*.py
 
       - name: Run Python linting
-        run: flake8 IntegrationTests --max-line-length=120
+        run: flake8 IntegrationTests --max-line-length=120 --extend-ignore=E203,W503 --extend-exclude=venv
 
       - name: Build .NET project
-        run: dotnet build CargoHubV2/CargoHubV2.csproj --configuration Release --no-restore
+        run: dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore
 
   unit-tests:
     runs-on: ubuntu-latest
     needs: build
+    outputs:
+      coverage: ${{ steps.coverage.outputs.coverage }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
@@ -93,27 +94,27 @@ jobs:
           dotnet test UnitTests/UnitTests.csproj --no-build --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
-            /p:CoverletOutput=coverage/
+            /p:CoverletOutput=coverage/cobertura.xml
 
       - name: Install ReportGenerator
         run: dotnet tool install -g dotnet-reportgenerator-globaltool
 
       - name: Generate coverage report
         run: |
-          reportgenerator -reports:UnitTests/coverage/coverage.cobertura.xml -targetdir:UnitTests/coverage-report -reporttypes:Html;TextSummary
-          cat UnitTests/coverage-report/Summary.txt
+          reportgenerator -reports:coverage/cobertura.xml -targetdir:coverage-report -reporttypes:Html;TextSummary
+          cat coverage-report/Summary.txt
 
       - name: Display coverage in summary
         id: coverage
         run: |
-          COVERAGE=$(grep "Line coverage" UnitTests/coverage-report/Summary.txt | awk '{print $3}' | sed 's/%//')
+          COVERAGE=$(grep "Line coverage" coverage-report/Summary.txt | awk '{print $3}' | sed 's/%//')
           echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
           echo "## Code Coverage" >> $GITHUB_STEP_SUMMARY
           echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Line Coverage | ${COVERAGE}% |" >> $GITHUB_STEP_SUMMARY
           if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-            echo "Code coverage is below 80%!" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Code coverage is below 80%!" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
@@ -122,7 +123,8 @@ jobs:
     needs: unit-tests
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
@@ -133,7 +135,7 @@ jobs:
         run: |
           dotnet publish CargoHubV2/CargoHubV2.csproj --configuration Release --no-restore --output ./publish
           nohup dotnet ./publish/CargoHubV2.dll &
-          sleep 15  # wacht tot API draait
+          sleep 15  # Wacht tot API draait
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -144,7 +146,7 @@ jobs:
       - name: Install Python test dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r CargoHubSolo/requirements.txt
+          pip install -r requirements.txt
           pip install pytest httpx
 
       - name: Run Python integration tests
@@ -157,7 +159,8 @@ jobs:
     needs: integration-tests
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
@@ -180,20 +183,21 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     needs: [build, unit-tests, integration-tests, deploy]
+    if: always()
 
     steps:
       - name: Notify Discord on success
-        if: success()
+        if: ${{ success() }}
         uses: appleboy/discord-action@master
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: "CI/CD pipeline succeeded for ${{ github.repository }}! Coverage: ${{ needs.unit-tests.outputs.coverage }}%"
+          message: "✅ CI/CD pipeline succeeded for ${{ github.repository }}! Coverage: ${{ needs.unit-tests.outputs.coverage }}%"
 
       - name: Notify Discord on failure
-        if: failure()
+        if: ${{ failure() }}
         uses: appleboy/discord-action@master
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: "CI/CD pipeline failed for ${{ github.repository }}! Check logs for details."
+          message: "❌ CI/CD pipeline failed for ${{ github.repository }}! Check logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

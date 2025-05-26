@@ -1,7 +1,5 @@
 import unittest
 from httpx import Client
-from datetime import datetime
-from dateutil.parser import parse as parse_date
 from httpx import Timeout
 
 
