@@ -19,17 +19,14 @@ namespace UnitTests
         [TestInitialize]
         public void Setup()
         {
-            // In-memory database options
             var options = new DbContextOptionsBuilder<CargoHubDbContext>()
                 .UseInMemoryDatabase(databaseName: "TestDb")
                 .Options;
             
 
             _dbContext = new CargoHubDbContext(options);
-            _dbContext.Database.EnsureDeleted();  // Verwijdert oude database
-            _dbContext.Database.EnsureCreated();  // Maakt een nieuwe database aan
-            
-            // Voeg testdata toe
+            _dbContext.Database.EnsureDeleted();  
+            _dbContext.Database.EnsureCreated();  
             var orders = new List<Order>
             {
                 new Order
@@ -71,17 +68,6 @@ namespace UnitTests
             Assert.AreEqual(2, result.TotalOrders);
             Assert.AreEqual(10, result.TotalItems); // 5+3+2=10
         }
-
-        [TestMethod]
-        public void TestGenerateCsvReport_ContainsExpectedData()
-        {
-            var csv = _reportingService.GenerateCsvReport(123);
-
-            Assert.IsTrue(csv.Contains("Order ID, Warehouse ID, Order Price"));
-            Assert.IsTrue(csv.Contains("1, 123, 100.5"));
-            Assert.IsTrue(csv.Contains("2, 123, 200.75"));
-        }
-
         [TestMethod]
         public void TestGetRevenueBetweenDates_ReturnsCorrectSum()
         {

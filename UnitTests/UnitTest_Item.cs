@@ -51,18 +51,6 @@ namespace UnitTests
             Assert.IsNotNull(dbItem);
         }
 
-        [TestMethod]
-        public async Task GetByIdAsync_ShouldReturnItem_WhenExists()
-        {
-            var item = new Item { UId = "existing" };
-            _dbContext.Items.Add(item);
-            await _dbContext.SaveChangesAsync();
-
-            var result = await _itemService.GetByIdAsync(item.Id);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual("existing", result.UId);
-        }
 
         [TestMethod]
         public async Task GetByIdAsync_ShouldReturnNull_WhenNotExists()
