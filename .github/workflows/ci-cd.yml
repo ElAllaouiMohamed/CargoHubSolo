@@ -97,15 +97,16 @@ jobs:
           dotnet test UnitTests/UnitTests.csproj --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
-            /p:CoverletOutput=coverage/cobertura.xml
+            /p:CoverletOutput=UnitTests/coverage/cobertura.xml
 
       - name: Install ReportGenerator
         run: dotnet tool install -g dotnet-reportgenerator-globaltool
 
       - name: Generate coverage report
         run: |
-          reportgenerator -reports:coverage/cobertura.xml -targetdir:coverage-report -reporttypes:Html;TextSummary
-          cat coverage-report/Summary.txt
+          reportgenerator -reports:UnitTests/coverage/cobertura.xml -targetdir:UnitTests/coverage-report -reporttypes "Html;TextSummary"
+          cat UnitTests/coverage-report/Summary.txt
+
 
       - name: Display coverage in summary
         id: coverage
