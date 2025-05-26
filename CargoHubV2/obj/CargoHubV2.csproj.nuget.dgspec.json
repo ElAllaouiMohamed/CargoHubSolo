@@ -1,15 +1,15 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\CargohubV2.csproj": {}
+    "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\CargoHubV2.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\CargohubV2.csproj": {
+    "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\CargoHubV2.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\CargohubV2.csproj",
-        "projectName": "CargohubV2",
-        "projectPath": "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\CargohubV2.csproj",
+        "projectUniqueName": "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\CargoHubV2.csproj",
+        "projectName": "CargoHubV2",
+        "projectPath": "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\CargoHubV2.csproj",
         "packagesPath": "C:\\Users\\mootj\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\obj\\",
         "projectStyle": "PackageReference",
@@ -76,10 +76,6 @@
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.6.2, )"
-            },
-            "xunit": {
-              "target": "Package",
-              "version": "[2.9.3, )"
             }
           },
           "imports": [
