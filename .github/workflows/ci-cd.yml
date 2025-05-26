@@ -10,13 +10,12 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     env:
-      DOTNET_VERSION: '8.0.x' 
+      DOTNET_VERSION: '8.0.x'
       SOLUTION_PATH: 'CargoHubSolo.sln'
-      UNIT_TEST_PROJECT: 'UnitTests/UnitTests.csproj' 
+      UNIT_TEST_PROJECT: 'UnitTests/UnitTests.csproj'
       API_PROJECT: 'CargoHubV2/CargoHubV2.csproj'
 
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -46,6 +45,7 @@ jobs:
 
       - name: Restore .NET dependencies
         run: dotnet restore ${{ env.SOLUTION_PATH }}
+
       - name: Run C# linting
         run: |
           dotnet tool install -g dotnet-format
@@ -87,7 +87,7 @@ jobs:
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Line Coverage | ${COVERAGE}% |" >> $GITHUB_STEP_SUMMARY
           if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-            echo "❌ Code coverage is below 80%!" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Code coverage is lager 80%!" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
@@ -95,13 +95,14 @@ jobs:
         run: |
           dotnet publish ${{ env.API_PROJECT }} --configuration Release --no-restore
           nohup dotnet run --project ${{ env.API_PROJECT }} --configuration Release &
-          sleep 5 # Wacht tot de API is gestart
+          sleep 10
 
       - name: Run integration tests
         run: |
           pip install pytest httpx
           pytest IntegrationTests -v
 
+      - name: Build Linux x64 executable
         run: |
           dotnet publish ${{ env.API_PROJECT }} \
             --configuration Release \
