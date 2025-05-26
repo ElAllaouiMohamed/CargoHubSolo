@@ -106,10 +106,8 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          reportgenerator -reports:UnitTests/coverage/coverage.cobertura.xml \
-            -targetdir:UnitTests/coverage-report \
-            -reporttypes:Html;TextSummary \
-            -sourcepath:CargoHubV2
+          reportgenerator -reports:UnitTests/coverage/coverage.cobertura.xml -targetdir:UnitTests/coverage-report -reporttypes:"Html;TextSummary" -sourcepath:CargoHubV2
+
 
 
 
