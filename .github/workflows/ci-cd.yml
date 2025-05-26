@@ -138,6 +138,12 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Clear NuGet cache
+        run: dotnet nuget locals all --clear
+
+      - name: Restore dependencies
+        run: dotnet restore CargoHubV2/CargoHubV2.csproj
+
       - name: Build and start API
         run: |
           dotnet publish CargoHubV2/CargoHubV2.csproj --configuration Release --no-restore --output ./publish
@@ -160,6 +166,7 @@ jobs:
         env:
           API_URL: http://localhost:5000
         run: pytest IntegrationTests -v
+
 
   deploy:
     runs-on: ubuntu-latest
