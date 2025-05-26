@@ -2,24 +2,27 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - Development
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+      - Development
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  PYTHON_VERSION: '3.12'
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
-    env:
-      DOTNET_VERSION: '8.0.x'
-      SOLUTION_PATH: 'CargoHubSolo.sln'
-      UNIT_TEST_PROJECT: 'UnitTests/UnitTests.csproj'
-      API_PROJECT: 'CargoHubV2/CargoHubV2.csproj'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup .NET
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
@@ -27,103 +30,157 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
 
       - name: Cache .NET dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
           restore-keys: ${{ runner.os }}-nuget-
 
       - name: Cache Python dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: ${{ runner.os }}-pip-
 
       - name: Restore .NET dependencies
-        run: dotnet restore ${{ env.SOLUTION_PATH }}
+        run: dotnet restore CargoHubV2/CargoHubV2.csproj
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run C# linting
         run: |
-          dotnet tool install -g dotnet-format
-          dotnet format ${{ env.SOLUTION_PATH }} --verify-no-changes
+          dotnet tool install --global dotnet-format
+          dotnet format CargoHubV2/CargoHubV2.csproj --verify-no-changes
 
       - name: Run Python linting
-        run: |
-          pip install flake8
-          flake8 IntegrationTests --max-line-length=120
+        run: flake8 IntegrationTests --max-line-length=120
 
-      - name: Build
-        run: dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore
+      - name: Build .NET project
+        run: dotnet build CargoHubV2/CargoHubV2.csproj --configuration Release --no-restore
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore UnitTest dependencies
+        run: dotnet restore UnitTests/UnitTests.csproj
 
       - name: Run unit tests with coverage
         run: |
-          dotnet test ${{ env.UNIT_TEST_PROJECT }} \
-            --no-restore \
-            --configuration Release \
+          dotnet test UnitTests/UnitTests.csproj --no-build --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
-            /p:CoverletOutput=../coverage/cobertura.xml
+            /p:CoverletOutput=coverage/
+
+      - name: Install ReportGenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
 
       - name: Generate coverage report
         run: |
-          dotnet tool install -g dotnet-reportgenerator-globaltool
-          reportgenerator \
-            "-reports:coverage/cobertura.xml" \
-            "-targetdir:coverage/report" \
-            "-reporttypes:Html;TextSummary"
-          cat coverage/report/Summary.txt
+          reportgenerator -reports:UnitTests/coverage/coverage.cobertura.xml -targetdir:UnitTests/coverage-report -reporttypes:Html;TextSummary
+          cat UnitTests/coverage-report/Summary.txt
 
       - name: Display coverage in summary
         id: coverage
         run: |
-          COVERAGE=$(grep "Line coverage" coverage/report/Summary.txt | awk '{print $3}' | sed 's/%//')
+          COVERAGE=$(grep "Line coverage" UnitTests/coverage-report/Summary.txt | awk '{print $3}' | sed 's/%//')
           echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
           echo "## Code Coverage" >> $GITHUB_STEP_SUMMARY
           echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Line Coverage | ${COVERAGE}% |" >> $GITHUB_STEP_SUMMARY
           if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-            echo "❌ Code coverage is lager 80%!" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Code coverage is below 80%!" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
-      - name: Start API
-        run: |
-          dotnet publish ${{ env.API_PROJECT }} --configuration Release --no-restore
-          nohup dotnet run --project ${{ env.API_PROJECT }} --configuration Release &
-          sleep 10
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: unit-tests
 
-      - name: Run integration tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Build and start API
         run: |
+          dotnet publish CargoHubV2/CargoHubV2.csproj --configuration Release --no-restore --output ./publish
+          nohup dotnet ./publish/CargoHubV2.dll &
+          sleep 15  # wacht tot API draait
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install Python test dependencies
+        run: |
+          python -m pip install --upgrade pip
           pip install pytest httpx
-          pytest IntegrationTests -v
 
-      - name: Build Linux x64 executable
+      - name: Run Python integration tests
+        env:
+          API_URL: http://localhost:5000
+        run: pytest IntegrationTests -v
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: integration-tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish Linux x64 executable
         run: |
-          dotnet publish ${{ env.API_PROJECT }} \
-            --configuration Release \
-            --runtime linux-x64 \
-            --self-contained true \
-            -o publish
-          tar -czf linux-x64-executable.tar.gz -C publish .
+          dotnet publish CargoHubV2/CargoHubV2.csproj --configuration Release --runtime linux-x64 --self-contained true --output publish
 
-      - name: Upload executable
+      - name: Create archive artifact
+        run: tar -czf linux-x64-executable.tar.gz -C publish .
+
+      - name: Upload executable artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-x64-executable
           path: linux-x64-executable.tar.gz
 
+  notify:
+    runs-on: ubuntu-latest
+    needs: [build, unit-tests, integration-tests, deploy]
+
+    steps:
       - name: Notify Discord on success
         if: success()
         uses: appleboy/discord-action@master
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: CI/CD pipeline succeeded for ${{ github.repository }}! Coverage: ${{ steps.coverage.outputs.coverage }}%
+          message: "CI/CD pipeline succeeded for ${{ github.repository }}! Coverage: ${{ needs.unit-tests.outputs.coverage }}%"
 
       - name: Notify Discord on failure
         if: failure()
@@ -131,4 +188,4 @@ jobs:
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: CI/CD pipeline failed for ${{ github.repository }}! Check the logs
+          message: "CI/CD pipeline failed for ${{ github.repository }}! Check logs for details."
