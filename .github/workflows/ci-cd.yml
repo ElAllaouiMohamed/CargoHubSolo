@@ -1,0 +1,150 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_VERSION: '8.0' # Pas aan naar jouw .NET-versie
+      SOLUTION_PATH: 'CargoHubSolo.sln'
+      TEST_PROJECT: 'UnitTests/UnitTests.csproj' # Pas aan naar je testproject
+      API_PROJECT: 'CargoHubV2/CargoHubV2.csproj'
+
+    steps:
+      # Checkout de repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Installeer .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # Installeer Python
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Cache .NET dependencies
+      - name: Cache .NET dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: ${{ runner.os }}-nuget-
+
+      # Cache Python dependencies
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      # Installeer .NET dependencies
+      - name: Restore .NET dependencies
+        run: dotnet restore ${{ env.SOLUTION_PATH }}
+
+      # Linting voor C# met dotnet-format
+      - name: Run C# linting
+        run: |
+          dotnet tool install -g dotnet-format
+          dotnet format ${{ env.SOLUTION_PATH }} --verify-no-changes
+
+      # Linting voor Python met flake8
+      - name: Run Python linting
+        run: |
+          pip install flake8
+          flake8 IntegrationTests --max-line-length=120
+
+      # Bouw het project
+      - name: Build
+        run: dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore
+
+      # Voer unit tests uit en verzamel coverage
+      - name: Run unit tests with coverage
+        run: |
+          dotnet test ${{ env.TEST_PROJECT }} \
+            --no-restore \
+            --configuration Release \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=cobertura \
+            /p:CoverletOutput=../coverage/cobertura.xml
+
+      # Genereer coverage rapport
+      - name: Generate coverage report
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          reportgenerator \
+            "-reports:coverage/cobertura.xml" \
+            "-targetdir:coverage/report" \
+            "-reporttypes:Html;TextSummary"
+          cat coverage/report/Summary.txt
+
+      # Toon coverage tabel in GitHub Summary
+      - name: Display coverage in summary
+        run: |
+          COVERAGE=$(grep "Line coverage" coverage/report/Summary.txt | awk '{print $3}' | sed 's/%//')
+          echo "## Code Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Line Coverage | ${COVERAGE}% |" >> $GITHUB_STEP_SUMMARY
+          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+            echo "❌ Code coverage is below 80%!" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      # Start de .NET API voor integratietests
+      - name: Start API
+        run: |
+          dotnet publish ${{ env.API_PROJECT }} --configuration Release --no-restore
+          nohup dotnet run --project ${{ env.API_PROJECT }} --configuration Release &
+          sleep 5 # Wacht tot de API is gestart
+
+      # Voer integratietests uit
+      - name: Run integration tests
+        run: |
+          pip install httpx
+          python -m unittest discover -s IntegrationTests -p "test_*.py"
+
+      # Publiceer Linux x64 executable
+      - name: Publish Linux x64 executable
+        run: |
+          dotnet publish ${{ env.API_PROJECT }} \
+            --configuration Release \
+            --runtime linux-x64 \
+            --self-contained true \
+            -o publish
+          tar -czf linux-x64-executable.tar.gz -C publish .
+
+      # Upload executable als artifact
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-x64-executable
+          path: linux-x64-executable.tar.gz
+
+      # Stuur Discord melding bij succes
+      - name: Notify Discord on success
+        if: success()
+        uses: appleboy/discord-action@master
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          message: ✅ CI/CD pipeline succeeded for ${{ github.repository }}! Coverage: ${{ steps.coverage.outputs.coverage }}%
+
+      # Stuur Discord melding bij falen
+      - name: Notify Discord on failure
+        if: failure()
+        uses: appleboy/discord-action@master
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          message: ❌ CI/CD pipeline failed for ${{ github.repository }}! Check the logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
