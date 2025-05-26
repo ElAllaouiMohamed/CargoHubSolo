@@ -58,7 +58,7 @@ jobs:
       - name: Run C# linting and fix line endings
         run: |
           dotnet tool install -g dotnet-format
-          dotnet format ${{ env.SOLUTION_PATH }} --fix-whitespace
+          dotnet format ${{ env.SOLUTION_PATH }}
 
       - name: Run Python linting
         run: flake8 IntegrationTests --max-line-length=120
