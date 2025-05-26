@@ -130,8 +130,15 @@ jobs:
     needs: unit-tests
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Restore dependencies
+        run: dotnet restore CargoHubV2/CargoHubV2.csproj
+
+      - name: Apply EF migrations
+        run: |
+          cd CargoHubV2
+          dotnet ef database update
+        - name: Checkout code
+          uses: actions/checkout@v4
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
