@@ -51,7 +51,6 @@ namespace UnitTests
             Assert.IsNotNull(dbItem);
         }
 
-
         [TestMethod]
         public async Task GetByIdAsync_ShouldReturnNull_WhenNotExists()
         {
