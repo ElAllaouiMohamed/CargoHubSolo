@@ -5,19 +5,9 @@ namespace CargohubV2.Contexts
 {
     public class CargoHubDbContext : DbContext
     {
-        protected readonly IConfiguration Configuration;
-        public CargoHubDbContext(IConfiguration configuration)
+        public CargoHubDbContext(DbContextOptions<CargoHubDbContext> options)
+            : base(options)
         {
-            Configuration = configuration;
-        }
-
-        public CargoHubDbContext(DbContextOptions options) : base(options)
-        {
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseNpgsql(Configuration.GetConnectionString("CargoHubDatabase"));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -60,6 +50,5 @@ namespace CargohubV2.Contexts
         public DbSet<Shipment> Shipments { get; set; }
         public DbSet<LogEntry> LogEntries { get; set; }
         public DbSet<ApiKey> ApiKeys { get; set; }
-
     }
 }

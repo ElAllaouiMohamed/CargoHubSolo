@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<CargoHubDbContext>(options =>
-    options.UseNpgsql("Your_Postgres_Connection_String_Here"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("CargoHubDatabase")));
 
 builder.Services.AddScoped<LoggingService>();
 builder.Services.AddScoped<ClientService>();
