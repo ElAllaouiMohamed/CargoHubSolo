@@ -2,16 +2,17 @@ import unittest
 from httpx import Client, Timeout
 from datetime import datetime
 
+
 class TestInventoriesEndpoint(unittest.TestCase):
     def setUp(self):
-        timeout = Timeout(55.0)  
+        timeout = Timeout(55.0)
         self.client = Client(timeout=timeout)
         self.base_url = "http://localhost:5000/api/v1/inventories/"
         self.client.headers = {
             "X-Api-Key": "AdminKey123",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
-        self.created_inventory_id = None  
+        self.created_inventory_id = None
 
         self.test_inventory = {
             "item_id": "test-item-001",
@@ -25,7 +26,7 @@ class TestInventoriesEndpoint(unittest.TestCase):
             "total_available": 65,
             "created_at": datetime.utcnow().isoformat() + "Z",
             "updated_at": datetime.utcnow().isoformat() + "Z",
-            "is_deleted": False
+            "is_deleted": False,
         }
 
         self.updated_inventory = {
@@ -40,9 +41,8 @@ class TestInventoriesEndpoint(unittest.TestCase):
             "total_available": 130,
             "created_at": self.test_inventory["created_at"],
             "updated_at": datetime.utcnow().isoformat() + "Z",
-            "is_deleted": False
+            "is_deleted": False,
         }
-
 
     def test_2_get_inventory(self):
         if not self.created_inventory_id:
@@ -55,7 +55,9 @@ class TestInventoriesEndpoint(unittest.TestCase):
     def test_3_update_inventory(self):
         if not self.created_inventory_id:
             self.skipTest("Inventory not created in test_1_post_inventory")
-        response = self.client.put(f"{self.base_url}{self.created_inventory_id}", json=self.updated_inventory)
+        response = self.client.put(
+            f"{self.base_url}{self.created_inventory_id}", json=self.updated_inventory
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["description"], self.updated_inventory["description"])
@@ -78,6 +80,7 @@ class TestInventoriesEndpoint(unittest.TestCase):
 
     def tearDown(self):
         self.client.close()
+
 
 if __name__ == "__main__":
     unittest.main()

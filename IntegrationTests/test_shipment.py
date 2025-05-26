@@ -2,6 +2,7 @@ import unittest
 from httpx import Client, Timeout
 from datetime import datetime
 
+
 class TestOrdersEndpoint(unittest.TestCase):
     def setUp(self):
         self.base_url = "http://localhost:5000/api/v1/orders/"
@@ -9,7 +10,7 @@ class TestOrdersEndpoint(unittest.TestCase):
         self.client = Client(timeout=timeout)
         self.client.headers = {
             "X-Api-Key": "AdminKey123",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
         self.test_id = None
 
@@ -35,13 +36,7 @@ class TestOrdersEndpoint(unittest.TestCase):
             "created_at": now_iso,
             "updated_at": now_iso,
             "isDeleted": False,
-            "items": [
-                {
-                    "itemId": 1,
-                    "quantity": 5,
-                    "unitPrice": 10.0
-                }
-            ]
+            "items": [{"itemId": 1, "quantity": 5, "unitPrice": 10.0}],
         }
 
         self.updated_order = {
@@ -65,13 +60,7 @@ class TestOrdersEndpoint(unittest.TestCase):
             "created_at": self.test_order["created_at"],
             "updated_at": now_iso,
             "isDeleted": False,
-            "items": [
-                {
-                    "itemId": 2,
-                    "quantity": 10,
-                    "unitPrice": 15.0
-                }
-            ]
+            "items": [{"itemId": 2, "quantity": 10, "unitPrice": 15.0}],
         }
 
         # Cleanup vooraf: verwijder oude testorders met dezelfde references
@@ -79,7 +68,10 @@ class TestOrdersEndpoint(unittest.TestCase):
         if response.status_code == 200:
             orders = response.json()
             for order in orders:
-                if order.get("reference") in [self.test_order["reference"], self.updated_order["reference"]]:
+                if order.get("reference") in [
+                    self.test_order["reference"],
+                    self.updated_order["reference"],
+                ]:
                     self.client.delete(f"{self.base_url}{order.get('id')}")
 
     def tearDown(self):
@@ -87,13 +79,14 @@ class TestOrdersEndpoint(unittest.TestCase):
             self.client.delete(f"{self.base_url}{self.test_id}")
         self.client.close()
 
-
     def test_2_get_order(self):
         if not self.test_id:
             self.skipTest("Create order test failed or not run.")
 
         response = self.client.get(f"{self.base_url}{self.test_id}")
-        self.assertEqual(response.status_code, 200, f"Failed to get order: {response.text}")
+        self.assertEqual(
+            response.status_code, 200, f"Failed to get order: {response.text}"
+        )
         data = response.json()
         self.assertEqual(data.get("id"), self.test_id)
         self.assertEqual(data.get("reference"), self.test_order["reference"])
@@ -103,8 +96,12 @@ class TestOrdersEndpoint(unittest.TestCase):
         if not self.test_id:
             self.skipTest("Create order test failed or not run.")
 
-        response = self.client.put(f"{self.base_url}{self.test_id}", json=self.updated_order)
-        self.assertEqual(response.status_code, 200, f"Failed to update order: {response.text}")
+        response = self.client.put(
+            f"{self.base_url}{self.test_id}", json=self.updated_order
+        )
+        self.assertEqual(
+            response.status_code, 200, f"Failed to update order: {response.text}"
+        )
         data = response.json()
         self.assertEqual(data.get("reference"), self.updated_order["reference"])
         self.assertEqual(data.get("totalAmount"), self.updated_order["totalAmount"])
@@ -114,7 +111,9 @@ class TestOrdersEndpoint(unittest.TestCase):
 
     def test_4_get_all_orders(self):
         response = self.client.get(self.base_url)
-        self.assertEqual(response.status_code, 200, f"Failed to get all orders: {response.text}")
+        self.assertEqual(
+            response.status_code, 200, f"Failed to get all orders: {response.text}"
+        )
         data = response.json()
         self.assertIsInstance(data, list)
         if self.test_id:
@@ -126,10 +125,19 @@ class TestOrdersEndpoint(unittest.TestCase):
             self.skipTest("Create order test failed or not run.")
 
         response = self.client.delete(f"{self.base_url}{self.test_id}")
-        self.assertIn(response.status_code, (200, 204), f"Failed to soft delete order: {response.text}")
+        self.assertIn(
+            response.status_code,
+            (200, 204),
+            f"Failed to soft delete order: {response.text}",
+        )
 
         get_response = self.client.get(f"{self.base_url}{self.test_id}")
-        self.assertIn(get_response.status_code, (404, 410), "Soft-deleted order should return 404 or 410")
+        self.assertIn(
+            get_response.status_code,
+            (404, 410),
+            "Soft-deleted order should return 404 or 410",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

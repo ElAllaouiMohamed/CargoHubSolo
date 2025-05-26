@@ -3,16 +3,18 @@ from httpx import Client
 from datetime import datetime
 from dateutil.parser import parse as parse_date
 from httpx import Timeout
+
+
 class TestClientsEndpoint(unittest.TestCase):
     def setUp(self):
         self.base_url = "http://localhost:5000/api/v1/clients/"
-        timeout = Timeout(60.0)  
+        timeout = Timeout(60.0)
         self.client = Client(timeout=timeout)
         self.client.headers = {
-            "X-Api-Key": "AdminKey123",  
-            "Content-Type": "application/json"
+            "X-Api-Key": "AdminKey123",
+            "Content-Type": "application/json",
         }
-        self.TEST_CLIENT_ID = None  
+        self.TEST_CLIENT_ID = None
 
         self.TEST_CLIENT = {
             "name": "Integration Test Client",
@@ -23,7 +25,7 @@ class TestClientsEndpoint(unittest.TestCase):
             "country": "Test Country",
             "contact_name": "Tester",
             "contact_phone": "+1234567890",
-            "contact_email": "tester@example.com"
+            "contact_email": "tester@example.com",
         }
 
         self.UPDATE_CLIENT = {
@@ -35,7 +37,7 @@ class TestClientsEndpoint(unittest.TestCase):
             "country": "Updated Country",
             "contact_name": "Updated Tester",
             "contact_phone": "+0987654321",
-            "contact_email": "updated@example.com"
+            "contact_email": "updated@example.com",
         }
 
     def test_1_create_client(self):
@@ -47,10 +49,10 @@ class TestClientsEndpoint(unittest.TestCase):
         self.assertEqual(json_resp["name"], self.TEST_CLIENT["name"])
 
     def test_2_get_client_by_id(self):
-    
+
         if not self.TEST_CLIENT_ID:
             self.skipTest("Create client test failed or not run.")
-        
+
         response = self.client.get(f"{self.base_url}{self.TEST_CLIENT_ID}")
         self.assertEqual(response.status_code, 200)
         json_resp = response.json()
@@ -61,7 +63,9 @@ class TestClientsEndpoint(unittest.TestCase):
         if not self.TEST_CLIENT_ID:
             self.skipTest("Create client test failed or not run.")
 
-        response = self.client.put(f"{self.base_url}{self.TEST_CLIENT_ID}", json=self.UPDATE_CLIENT)
+        response = self.client.put(
+            f"{self.base_url}{self.TEST_CLIENT_ID}", json=self.UPDATE_CLIENT
+        )
         self.assertEqual(response.status_code, 200)
         json_resp = response.json()
         self.assertEqual(json_resp["name"], self.UPDATE_CLIENT["name"])
@@ -80,5 +84,6 @@ class TestClientsEndpoint(unittest.TestCase):
     def tearDown(self):
         self.client.close()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

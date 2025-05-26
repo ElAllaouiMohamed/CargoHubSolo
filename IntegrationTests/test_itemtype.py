@@ -2,14 +2,16 @@ import unittest
 from httpx import Client
 from datetime import datetime
 from httpx import Timeout
+
+
 class TestItemTypesEndpoint(unittest.TestCase):
     def setUp(self):
         self.base_url = "http://localhost:5000/api/v1/itemtypes/"
-        timeout = Timeout(60.0)  
+        timeout = Timeout(60.0)
         self.client = Client(timeout=timeout)
         self.client.headers = {
             "X-Api-Key": "AdminKey123",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
         self.test_id = None
 
@@ -18,7 +20,7 @@ class TestItemTypesEndpoint(unittest.TestCase):
             "description": "Test item type description",
             "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
             "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-            "isDeleted": False
+            "isDeleted": False,
         }
 
         self.updated_item_type = {
@@ -26,7 +28,7 @@ class TestItemTypesEndpoint(unittest.TestCase):
             "description": "Updated description",
             "created_at": self.test_item_type["created_at"],
             "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-            "isDeleted": False
+            "isDeleted": False,
         }
 
         response = self.client.get(self.base_url)
@@ -43,7 +45,11 @@ class TestItemTypesEndpoint(unittest.TestCase):
 
     def test_1_post_item_type(self):
         response = self.client.post(self.base_url, json=self.test_item_type)
-        self.assertIn(response.status_code, (200, 201), f"Failed to create item type: {response.text}")
+        self.assertIn(
+            response.status_code,
+            (200, 201),
+            f"Failed to create item type: {response.text}",
+        )
         data = response.json()
         self.test_id = data.get("id")
         self.assertIsNotNone(self.test_id, "Item type ID should be returned")
@@ -56,7 +62,9 @@ class TestItemTypesEndpoint(unittest.TestCase):
             self.skipTest("Create item type test failed or not run.")
 
         response = self.client.get(f"{self.base_url}{self.test_id}")
-        self.assertEqual(response.status_code, 200, f"Failed to get item type: {response.text}")
+        self.assertEqual(
+            response.status_code, 200, f"Failed to get item type: {response.text}"
+        )
         data = response.json()
         self.assertEqual(data["id"], self.test_id)
         self.assertEqual(data["name"], self.test_item_type["name"])
@@ -66,8 +74,12 @@ class TestItemTypesEndpoint(unittest.TestCase):
         if not self.test_id:
             self.skipTest("Create item type test failed or not run.")
 
-        response = self.client.put(f"{self.base_url}{self.test_id}", json=self.updated_item_type)
-        self.assertEqual(response.status_code, 200, f"Failed to update item type: {response.text}")
+        response = self.client.put(
+            f"{self.base_url}{self.test_id}", json=self.updated_item_type
+        )
+        self.assertEqual(
+            response.status_code, 200, f"Failed to update item type: {response.text}"
+        )
         data = response.json()
         self.assertEqual(data["name"], self.updated_item_type["name"])
         self.assertEqual(data["description"], self.updated_item_type["description"])
@@ -75,7 +87,9 @@ class TestItemTypesEndpoint(unittest.TestCase):
 
     def test_4_get_all_item_types(self):
         response = self.client.get(self.base_url)
-        self.assertEqual(response.status_code, 200, f"Failed to get all item types: {response.text}")
+        self.assertEqual(
+            response.status_code, 200, f"Failed to get all item types: {response.text}"
+        )
         data = response.json()
         self.assertTrue(isinstance(data, list))
         if self.test_id:
@@ -87,10 +101,17 @@ class TestItemTypesEndpoint(unittest.TestCase):
             self.skipTest("Create item type test failed or not run.")
 
         response = self.client.delete(f"{self.base_url}{self.test_id}")
-        self.assertEqual(response.status_code, 204, f"Failed to soft delete item type: {response.text}")
+        self.assertEqual(
+            response.status_code,
+            204,
+            f"Failed to soft delete item type: {response.text}",
+        )
 
         get_response = self.client.get(f"{self.base_url}{self.test_id}")
-        self.assertEqual(get_response.status_code, 404, "Soft-deleted item type should return 404")
+        self.assertEqual(
+            get_response.status_code, 404, "Soft-deleted item type should return 404"
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,6 +2,8 @@ import unittest
 from httpx import Client
 from datetime import datetime
 from httpx import Timeout
+
+
 class TestItemGroupsEndpoint(unittest.TestCase):
     def setUp(self):
         self.base_url = "http://localhost:5000/api/v1/itemgroups/"
@@ -9,7 +11,7 @@ class TestItemGroupsEndpoint(unittest.TestCase):
         self.client = Client(timeout=timeout)
         self.client.headers = {
             "X-Api-Key": "AdminKey123",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
         self.test_id = None  # Will store ID after creation
 
@@ -18,7 +20,7 @@ class TestItemGroupsEndpoint(unittest.TestCase):
             "description": "Test item group description",
             "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
             "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-            "isDeleted": False
+            "isDeleted": False,
         }
 
         self.updated_item_group = {
@@ -26,7 +28,7 @@ class TestItemGroupsEndpoint(unittest.TestCase):
             "description": "Updated description",
             "created_at": self.test_item_group["created_at"],
             "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-            "isDeleted": False
+            "isDeleted": False,
         }
 
         # Clean up any existing test data
@@ -45,7 +47,11 @@ class TestItemGroupsEndpoint(unittest.TestCase):
 
     def test_1_post_item_group(self):
         response = self.client.post(self.base_url, json=self.test_item_group)
-        self.assertIn(response.status_code, (200, 201), f"Failed to create item group: {response.text}")
+        self.assertIn(
+            response.status_code,
+            (200, 201),
+            f"Failed to create item group: {response.text}",
+        )
         data = response.json()
         self.test_id = data.get("id")
         self.assertIsNotNone(self.test_id, "Item group ID should be returned")
@@ -58,7 +64,9 @@ class TestItemGroupsEndpoint(unittest.TestCase):
             self.skipTest("Create item group test failed or not run.")
 
         response = self.client.get(f"{self.base_url}{self.test_id}")
-        self.assertEqual(response.status_code, 200, f"Failed to get item group: {response.text}")
+        self.assertEqual(
+            response.status_code, 200, f"Failed to get item group: {response.text}"
+        )
         data = response.json()
         self.assertEqual(data["id"], self.test_id)
         self.assertEqual(data["name"], self.test_item_group["name"])
@@ -68,8 +76,12 @@ class TestItemGroupsEndpoint(unittest.TestCase):
         if not self.test_id:
             self.skipTest("Create item group test failed or not run.")
 
-        response = self.client.put(f"{self.base_url}{self.test_id}", json=self.updated_item_group)
-        self.assertEqual(response.status_code, 200, f"Failed to update item group: {response.text}")
+        response = self.client.put(
+            f"{self.base_url}{self.test_id}", json=self.updated_item_group
+        )
+        self.assertEqual(
+            response.status_code, 200, f"Failed to update item group: {response.text}"
+        )
         data = response.json()
         self.assertEqual(data["name"], self.updated_item_group["name"])
         self.assertEqual(data["description"], self.updated_item_group["description"])
@@ -77,7 +89,9 @@ class TestItemGroupsEndpoint(unittest.TestCase):
 
     def test_4_get_all_item_groups(self):
         response = self.client.get(self.base_url)
-        self.assertEqual(response.status_code, 200, f"Failed to get all item groups: {response.text}")
+        self.assertEqual(
+            response.status_code, 200, f"Failed to get all item groups: {response.text}"
+        )
         data = response.json()
         self.assertTrue(isinstance(data, list))
         if self.test_id:
@@ -89,11 +103,17 @@ class TestItemGroupsEndpoint(unittest.TestCase):
             self.skipTest("Create item group test failed or not run.")
 
         response = self.client.delete(f"{self.base_url}{self.test_id}")
-        self.assertEqual(response.status_code, 204, f"Failed to soft delete item group: {response.text}")
+        self.assertEqual(
+            response.status_code,
+            204,
+            f"Failed to soft delete item group: {response.text}",
+        )
 
         # Check that deleted item group no longer returns 200
         get_response = self.client.get(f"{self.base_url}{self.test_id}")
-        self.assertEqual(get_response.status_code, 404, "Soft-deleted item group should return 404")
+        self.assertEqual(
+            get_response.status_code, 404, "Soft-deleted item group should return 404"
+        )
 
     def test_6_post_invalid_name(self):
         invalid_item_group = {
@@ -101,11 +121,14 @@ class TestItemGroupsEndpoint(unittest.TestCase):
             "description": "Invalid name test",
             "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
             "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-            "isDeleted": False
+            "isDeleted": False,
         }
         response = self.client.post(self.base_url, json=invalid_item_group)
-        self.assertEqual(response.status_code, 400, f"Expected 400 for invalid name: {response.text}")
+        self.assertEqual(
+            response.status_code, 400, f"Expected 400 for invalid name: {response.text}"
+        )
         self.assertIn("Numbers and special characters are not allowed", response.text)
+
 
 if __name__ == "__main__":
     unittest.main()

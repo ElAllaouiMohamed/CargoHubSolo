@@ -2,14 +2,16 @@ import unittest
 from httpx import Client
 from datetime import datetime
 from httpx import Timeout
+
+
 class TestItemsEndpoint(unittest.TestCase):
     def setUp(self):
         self.base_url = "http://localhost:5000/api/v1/items/"
-        timeout = Timeout(60.0)  
+        timeout = Timeout(60.0)
         self.client = Client(timeout=timeout)
         self.client.headers = {
             "X-Api-Key": "AdminKey123",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
         self.created_item_id = None
 
@@ -33,7 +35,7 @@ class TestItemsEndpoint(unittest.TestCase):
             "weight_in_kg": 100,
             "created_at": datetime.utcnow().isoformat() + "Z",
             "updated_at": datetime.utcnow().isoformat() + "Z",
-            "is_deleted": False
+            "is_deleted": False,
         }
 
         self.updated_item = {
@@ -56,9 +58,8 @@ class TestItemsEndpoint(unittest.TestCase):
             "weight_in_kg": 200,
             "created_at": self.test_item["created_at"],
             "updated_at": datetime.utcnow().isoformat() + "Z",
-            "is_deleted": False
+            "is_deleted": False,
         }
-
 
     def test_2_get_item(self):
         if not self.created_item_id:
@@ -73,10 +74,15 @@ class TestItemsEndpoint(unittest.TestCase):
         if not self.created_item_id:
             self.skipTest("Create item failed or did not run")
 
-        response = self.client.put(f"{self.base_url}{self.created_item_id}", json=self.updated_item)
+        response = self.client.put(
+            f"{self.base_url}{self.created_item_id}", json=self.updated_item
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data.get("description") or data.get("Description"), self.updated_item["description"])
+        self.assertEqual(
+            data.get("description") or data.get("Description"),
+            self.updated_item["description"],
+        )
 
     def test_4_get_all_items(self):
         response = self.client.get(self.base_url)
@@ -97,6 +103,7 @@ class TestItemsEndpoint(unittest.TestCase):
 
     def tearDown(self):
         self.client.close()
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,6 +2,8 @@ import unittest
 from httpx import Client
 from datetime import datetime
 from httpx import Timeout
+
+
 class TestTransfersEndpoint(unittest.TestCase):
     def setUp(self):
         self.base_url = "http://localhost:5000/api/v1/transfers/"
@@ -9,7 +11,7 @@ class TestTransfersEndpoint(unittest.TestCase):
         self.client = Client(timeout=timeout)
         self.client.headers = {
             "X-Api-Key": "AdminKey123",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
         self.created_transfer_id = None
 
@@ -21,7 +23,7 @@ class TestTransfersEndpoint(unittest.TestCase):
             "created_at": datetime.utcnow().isoformat() + "Z",
             "updated_at": datetime.utcnow().isoformat() + "Z",
             "items": [],
-            "is_deleted": False
+            "is_deleted": False,
         }
 
         self.updated_transfer = {
@@ -30,7 +32,7 @@ class TestTransfersEndpoint(unittest.TestCase):
             "transfer_to": 4,
             "transfer_status": "Completed",
             "items": [],
-            "is_deleted": False
+            "is_deleted": False,
         }
 
     def test_1_create_transfer(self):
@@ -55,10 +57,14 @@ class TestTransfersEndpoint(unittest.TestCase):
         if not self.created_transfer_id:
             self.skipTest("Create transfer test failed or not run.")
 
-        response = self.client.put(f"{self.base_url}{self.created_transfer_id}", json=self.updated_transfer)
+        response = self.client.put(
+            f"{self.base_url}{self.created_transfer_id}", json=self.updated_transfer
+        )
         self.assertEqual(response.status_code, 200)
         json_resp = response.json()
-        self.assertEqual(json_resp["transfer_status"], self.updated_transfer["transfer_status"])
+        self.assertEqual(
+            json_resp["transfer_status"], self.updated_transfer["transfer_status"]
+        )
         self.assertEqual(json_resp["reference"], self.updated_transfer["reference"])
 
     def test_4_get_all_transfers(self):
@@ -80,6 +86,7 @@ class TestTransfersEndpoint(unittest.TestCase):
 
     def tearDown(self):
         self.client.close()
+
 
 if __name__ == "__main__":
     unittest.main()
