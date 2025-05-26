@@ -14,6 +14,11 @@ env:
   DOTNET_VERSION: '8.0.x'
   PYTHON_VERSION: '3.12'
   SOLUTION_PATH: 'CargoHubSolo.sln'
+  POSTGRES_DB: 'cargohub'
+  POSTGRES_USER: 'postgres'
+  POSTGRES_PASSWORD: 'postgres'
+  POSTGRES_PORT: 5432
+  CONNECTION_STRING: 'Host=localhost;Port=5432;Database=cargohub;Username=postgres;Password=postgres'
 
 jobs:
   build:
@@ -97,9 +102,7 @@ jobs:
           dotnet test UnitTests/UnitTests.csproj --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
-            /p:CoverletOutput=UnitTests/coverage/cobertura.xml \
-      - name: List coverage files
-        run: ls -la UnitTests/coverage
+            /p:CoverletOutput=UnitTests/coverage/cobertura.xml
 
       - name: Install ReportGenerator
         run: dotnet tool install -g dotnet-reportgenerator-globaltool
@@ -108,13 +111,10 @@ jobs:
         run: |
           reportgenerator -reports:UnitTests/coverage/coverage.cobertura.xml -targetdir:UnitTests/coverage-report -reporttypes:"Html;TextSummary" -sourcepath:CargoHubV2
 
-
-
-
       - name: Display coverage in summary
         id: coverage
         run: |
-          COVERAGE=$(grep "Line coverage" coverage-report/Summary.txt | awk '{print $3}' | sed 's/%//')
+          COVERAGE=$(grep "Line coverage" UnitTests/coverage-report/Summary.txt | awk '{print $3}' | sed 's/%//')
           echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
           echo "## Code Coverage" >> $GITHUB_STEP_SUMMARY
           echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
@@ -129,6 +129,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: unit-tests
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -138,6 +153,14 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Wait for Postgres to be ready
+        run: |
+          for i in {1..20}; do
+            pg_isready -h localhost -p ${{ env.POSTGRES_PORT }} && break
+            echo "Waiting for Postgres to be ready... ($i/20)"
+            sleep 5
+          done
+
       - name: Restore dependencies
         run: dotnet restore CargoHubV2/CargoHubV2.csproj
 
@@ -145,7 +168,7 @@ jobs:
         run: |
           cd CargoHubV2
           dotnet tool install --global dotnet-ef
-          dotnet ef database update
+          dotnet ef database update --connection "${{ env.CONNECTION_STRING }}"
 
       - name: Build and start API
         run: |
@@ -168,8 +191,8 @@ jobs:
       - name: Run Python integration tests
         env:
           API_URL: http://localhost:5000
+          CONNECTION_STRING: ${{ env.CONNECTION_STRING }}
         run: pytest IntegrationTests -v
-
 
   deploy:
     runs-on: ubuntu-latest
