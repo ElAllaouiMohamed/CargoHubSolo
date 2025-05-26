@@ -11,9 +11,9 @@ namespace CargohubV2.Services
     public class OrderService
     {
         private readonly CargoHubDbContext _context;
-        private readonly LoggingService _loggingService;
+        private readonly ILoggingService _loggingService;
 
-        public OrderService(CargoHubDbContext context, LoggingService loggingService)
+        public OrderService(CargoHubDbContext context, ILoggingService loggingService)
         {
             _context = context;
             _loggingService = loggingService;

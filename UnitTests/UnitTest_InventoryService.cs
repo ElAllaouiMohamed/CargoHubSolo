@@ -14,7 +14,7 @@ namespace UnitTests
     public class UnitTest_InventoryService
     {
         private CargoHubDbContext _dbContext;
-        private Mock<LoggingService> _mockLogging;
+        private Mock<ILoggingService> _mockLogging;
         private InventoryService _inventoryService;
 
         [TestInitialize]
@@ -27,7 +27,7 @@ namespace UnitTests
 
             _dbContext = new CargoHubDbContext(options);
 
-            _mockLogging = new Mock<LoggingService>();
+            _mockLogging = new Mock<ILoggingService>();
 
             _inventoryService = new InventoryService(_dbContext, _mockLogging.Object);
         }

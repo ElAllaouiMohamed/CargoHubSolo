@@ -11,9 +11,9 @@ namespace CargohubV2.Services
     public class InventoryService
     {
         private readonly CargoHubDbContext _context;
-        private readonly LoggingService _loggingService;
+        private readonly ILoggingService _loggingService;
 
-        public InventoryService(CargoHubDbContext context, LoggingService loggingService)
+        public InventoryService(CargoHubDbContext context, ILoggingService loggingService)
         {
             _context = context;
             _loggingService = loggingService;

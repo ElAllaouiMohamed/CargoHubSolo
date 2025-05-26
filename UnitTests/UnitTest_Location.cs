@@ -14,7 +14,7 @@ namespace UnitTests
     public class UnitTest_LocationService
     {
         private CargoHubDbContext _dbContext;
-        private Mock<LoggingService> _mockLogging;
+        private Mock<ILoggingService> _mockLogging;
         private LocationService _locationService;
 
         [TestInitialize]
@@ -25,7 +25,7 @@ namespace UnitTests
                 .Options;
 
             _dbContext = new CargoHubDbContext(options);
-            _mockLogging = new Mock<LoggingService>();
+            _mockLogging = new Mock<ILoggingService>();
             _locationService = new LocationService(_dbContext, _mockLogging.Object);
         }
 

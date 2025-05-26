@@ -15,7 +15,7 @@ namespace UnitTests
     {
         private CargoHubDbContext? _dbContext;
         private SupplierService? _supplierService;
-        private Mock<LoggingService>? _mockLoggingService;
+        private Mock<ILoggingService>? _mockLoggingService;
 
         [TestInitialize]
         public void Setup()
@@ -25,7 +25,7 @@ namespace UnitTests
                 .Options;
 
             _dbContext = new CargoHubDbContext(options);
-            _mockLoggingService = new Mock<LoggingService>();
+            _mockLoggingService = new Mock<ILoggingService>();
             _supplierService = new SupplierService(_dbContext, _mockLoggingService.Object);
             SeedDatabase(_dbContext);
         }

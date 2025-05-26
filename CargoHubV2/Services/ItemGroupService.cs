@@ -11,9 +11,9 @@ namespace CargohubV2.Services
     public class ItemGroupService
     {
         private readonly CargoHubDbContext _context;
-        private readonly LoggingService _loggingService;
+        private readonly ILoggingService _loggingService;
 
-        public ItemGroupService(CargoHubDbContext context, LoggingService loggingService)
+        public ItemGroupService(CargoHubDbContext context, ILoggingService loggingService)
         {
             _context = context;
             _loggingService = loggingService;

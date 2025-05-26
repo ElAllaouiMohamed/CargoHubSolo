@@ -11,9 +11,9 @@ namespace CargohubV2.Services
     public class TransferService
     {
         private readonly CargoHubDbContext _context;
-        private readonly LoggingService _loggingService;
+        private readonly ILoggingService _loggingService;
 
-        public TransferService(CargoHubDbContext context, LoggingService loggingService)
+        public TransferService(CargoHubDbContext context, ILoggingService loggingService)
         {
             _context = context;
             _loggingService = loggingService;

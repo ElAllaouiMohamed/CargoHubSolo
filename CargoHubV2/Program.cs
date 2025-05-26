@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<CargoHubDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("CargoHubDatabase")));
 
-builder.Services.AddScoped<LoggingService>();
+builder.Services.AddScoped<ILoggingService, LoggingService>();
 builder.Services.AddScoped<ClientService>();
 builder.Services.AddScoped<InventoryService>();
 builder.Services.AddScoped<ItemService>();

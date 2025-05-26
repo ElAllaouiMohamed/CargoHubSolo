@@ -5,7 +5,7 @@ using CargohubV2.Contexts;
 
 namespace CargohubV2.Services
 {
-    public class LoggingService
+    public class LoggingService : ILoggingService
     {
         private readonly CargoHubDbContext _context;
 

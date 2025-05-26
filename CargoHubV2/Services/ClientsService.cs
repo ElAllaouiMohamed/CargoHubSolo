@@ -11,9 +11,9 @@ namespace CargohubV2.Services
     public class ClientService
     {
         private readonly CargoHubDbContext _context;
-        private readonly LoggingService _loggingService;
+        private readonly ILoggingService _loggingService;
 
-        public ClientService(CargoHubDbContext context, LoggingService loggingService)
+        public ClientService(CargoHubDbContext context, ILoggingService loggingService)
         {
             _context = context;
             _loggingService = loggingService;
