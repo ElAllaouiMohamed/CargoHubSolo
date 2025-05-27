@@ -1,4 +1,4 @@
-﻿using CargohubV2.Models;
+using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet]
-        [SwaggerOperation(Summary = "Get all locations", Description = "Returns a list of locations with optional limit.")] 
+        [SwaggerOperation(Summary = "Get all locations", Description = "Returns a list of locations with optional limit.")]
         [SwaggerResponse(200, "List of locations", typeof(IEnumerable<Location>))]
         public async Task<ActionResult<IEnumerable<Location>>> GetAll([FromQuery] int? limit)
         {
@@ -42,7 +42,7 @@ namespace CargohubV2.Controllers
             return Ok(entity);
         }
 
-        [HttpPost] 
+        [HttpPost]
         [SwaggerOperation(Summary = "Create a new location", Description = "Adds a new location to the system.")]
         [SwaggerResponse(201, "Location created", typeof(Location))]
         public async Task<ActionResult<Location>> Create([FromBody] Location location)

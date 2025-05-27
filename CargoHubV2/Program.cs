@@ -1,4 +1,4 @@
-﻿using CargohubV2.Contexts;
+using CargohubV2.Contexts;
 using CargohubV2.DataConverters;
 using CargohubV2.Services;
 using Microsoft.EntityFrameworkCore;
@@ -76,10 +76,10 @@ builder.Services.AddSwaggerGen(c =>
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference 
-                { 
-                    Type = ReferenceType.SecurityScheme, 
-                    Id = "ApiKey" 
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "ApiKey"
                 }
             },
             new List<string>()
@@ -93,7 +93,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v2/swagger.json", "CargoHub API V2");
-    c.RoutePrefix = string.Empty;  
+    c.RoutePrefix = string.Empty;
 });
 
 app.MapControllers();
@@ -102,7 +102,7 @@ if (args.Length > 0 && args[0] == "seed")
 {
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<CargoHubDbContext>();
-    DataToJSON.ImportData(context); 
+    DataToJSON.ImportData(context);
     DataSeeder.SeedApiKeys(context);
 }
 
