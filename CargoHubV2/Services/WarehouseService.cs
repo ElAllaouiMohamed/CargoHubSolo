@@ -8,7 +8,7 @@ using System;
 
 namespace CargohubV2.Services
 {
-    public class WarehouseService
+    public class WarehouseService : IWarehouseService
     {
         private readonly CargoHubDbContext _context;
         private readonly ILoggingService _loggingService;
@@ -23,7 +23,7 @@ namespace CargohubV2.Services
         {
             return await _context.Warehouses
                 .Where(e => !e.IsDeleted)
-                .Include(w => w.ContactPersons)  // Zorg dat contactpersonen ook geladen worden
+                .Include(w => w.ContactPersons)
                 .Take(limit)
                 .ToListAsync();
         }
@@ -68,6 +68,7 @@ namespace CargohubV2.Services
             entity.Province = updated.Province;
             entity.Country = updated.Country;
             entity.Contact = updated.Contact;
+            entity.HazardClassification = updated.HazardClassification;
             entity.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -87,6 +88,21 @@ namespace CargohubV2.Services
             await _loggingService.LogAsync("system", "Warehouse", "Delete", $"/api/v1/warehouses/{id}", $"Soft deleted warehouse {id}");
             return true;
         }
+
+        public async Task<(bool IsCompliant, List<Inventory> ForbiddenItems)> CheckHazardComplianceAsync(int warehouseId)
+        {
+            var warehouse = await _context.Warehouses.FindAsync(warehouseId);
+            if (warehouse == null)
+            {
+                return (false, null);
+            }
+
+            var forbiddenItems = await _context.Inventories
+                .Where(inv => inv.InventoryLocations.Any(il => il.Location.WarehouseId == warehouseId)
+                            && (int)inv.HazardClassification > (int)warehouse.HazardClassification)
+                .ToListAsync();
+
+            return (forbiddenItems.Count == 0, forbiddenItems);
+        }
     }
 }
-

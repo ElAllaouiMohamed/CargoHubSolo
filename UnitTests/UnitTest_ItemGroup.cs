@@ -20,7 +20,7 @@ namespace UnitTests
         [TestInitialize]
         public void Setup()
         {
-            // Configureer in-memory database met unieke naam
+
             var options = new DbContextOptionsBuilder<CargoHubDbContext>()
                 .UseInMemoryDatabase(databaseName: $"TestCargoHubDatabase_{Guid.NewGuid()}")
                 .Options;

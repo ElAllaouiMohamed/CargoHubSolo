@@ -10,10 +10,10 @@ namespace CargohubV2.Controllers
     [Route("api/v1/clients")]
     public class ClientsController : ControllerBase
     {
-        private readonly ClientService _clientService;
+        private readonly IClientService _clientService;
         private readonly ILoggingService _loggingService;
 
-        public ClientsController(ClientService clientService, ILoggingService loggingService)
+        public ClientsController(IClientService clientService, ILoggingService loggingService)
         {
             _clientService = clientService;
             _loggingService = loggingService;
@@ -54,7 +54,7 @@ namespace CargohubV2.Controllers
             return Ok(contactPersons);
         }
 
-        // Contactpersoon toevoegen aan client
+        // contactpersoon toevoegen aan client
         [HttpPost("{clientId:int}/contactpersons")]
         [SwaggerOperation(Summary = "Add contact person to client", Description = "Adds a new contact person to a specific client.")]
         [SwaggerResponse(201, "Contact person added", typeof(ContactPerson))]
@@ -75,7 +75,7 @@ namespace CargohubV2.Controllers
             return CreatedAtAction(nameof(GetContactPersons), new { clientId }, added);
         }
 
-        // Contactpersoon bijwerken
+        // contactpersoon bijwerken
         [HttpPut("contactpersons/{contactPersonId:int}")]
         [SwaggerOperation(Summary = "Update contact person", Description = "Updates an existing contact person by their unique identifier.")]
         [SwaggerResponse(200, "Contact person updated", typeof(ContactPerson))]

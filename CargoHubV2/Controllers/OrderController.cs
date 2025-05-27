@@ -10,10 +10,10 @@ namespace CargohubV2.Controllers
     [Route("api/v1/orders")]
     public class OrdersController : ControllerBase
     {
-        private readonly OrderService _orderService;
+        private readonly IOrderService _orderService;
         private readonly ILoggingService _loggingService;
 
-        public OrdersController(OrderService orderService, ILoggingService loggingService)
+        public OrdersController(IOrderService orderService, ILoggingService loggingService)
         {
             _orderService = orderService;
             _loggingService = loggingService;

@@ -1,25 +1,21 @@
-using CargohubV2.Contexts;
 using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Swashbuckle.AspNetCore.Annotations;
+
 namespace CargohubV2.Controllers
 {
     [ApiController]
     [Route("api/v1/warehouses")]
     public class WarehousesController : ControllerBase
     {
-        private readonly WarehouseService _warehouseService;
-        private readonly CargoHubDbContext _context;
+        private readonly IWarehouseService _warehouseService;
         private readonly ILoggingService _loggingService;
 
-        public WarehousesController(CargoHubDbContext context, WarehouseService warehouseService, ILoggingService loggingService)
+        public WarehousesController(IWarehouseService warehouseService, ILoggingService loggingService)
         {
-            _context = context;
             _warehouseService = warehouseService;
             _loggingService = loggingService;
         }
@@ -38,18 +34,16 @@ namespace CargohubV2.Controllers
         [HttpGet("{warehouseId}/hazard-check")]
         [SwaggerOperation(Summary = "Check hazard compliance", Description = "Checks if the items in the warehouse comply with its hazard classification.")]
         [SwaggerResponse(200, "No forbidden items found")]
+        [SwaggerResponse(400, "Forbidden items detected")]
+        [SwaggerResponse(404, "Warehouse not found")]
         public async Task<IActionResult> CheckHazardCompliance(int warehouseId)
         {
-            var warehouse = await _context.Warehouses.FindAsync(warehouseId);
-            if (warehouse == null)
+            var (isCompliant, forbiddenItems) = await _warehouseService.CheckHazardComplianceAsync(warehouseId);
+
+            if (forbiddenItems == null)
                 return NotFound();
 
-            var forbiddenItems = await _context.Inventories
-                .Where(inv => inv.InventoryLocations.Any(il => il.Location.WarehouseId == warehouseId)
-                            && (int)inv.HazardClassification > (int)warehouse.HazardClassification)
-                .ToListAsync();
-
-            if (forbiddenItems.Any())
+            if (!isCompliant)
             {
                 return BadRequest(new { message = "Forbidden items detected", items = forbiddenItems });
             }
@@ -131,4 +125,3 @@ namespace CargohubV2.Controllers
         }
     }
 }
-

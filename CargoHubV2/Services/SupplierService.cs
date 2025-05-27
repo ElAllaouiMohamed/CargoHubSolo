@@ -8,7 +8,7 @@ using System;
 
 namespace CargohubV2.Services
 {
-    public class SupplierService
+    public class SupplierService : ISupplierService
     {
         private readonly CargoHubDbContext _context;
         private readonly ILoggingService _loggingService;
@@ -23,7 +23,7 @@ namespace CargohubV2.Services
         {
             return await _context.Suppliers
                 .Where(e => !e.IsDeleted)
-                .Include(s => s.ContactPersons) // Zorg dat contactpersonen worden mee geladen
+                .Include(s => s.ContactPersons) // contactpersonen worde mee geladen
                 .Take(limit)
                 .ToListAsync();
         }

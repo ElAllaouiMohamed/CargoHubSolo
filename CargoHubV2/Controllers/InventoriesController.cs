@@ -1,10 +1,7 @@
-using CargohubV2.Contexts;
 using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -14,13 +11,11 @@ namespace CargohubV2.Controllers
     [Route("api/v1/inventories")]
     public class InventoriesController : ControllerBase
     {
-        private readonly InventoryService _inventoryService;
-        private readonly CargoHubDbContext _context;
+        private readonly IInventoryService _inventoryService;
         private readonly ILoggingService _loggingService;
 
-        public InventoriesController(CargoHubDbContext context, InventoryService inventoryService, ILoggingService loggingService)
+        public InventoriesController(IInventoryService inventoryService, ILoggingService loggingService)
         {
-            _context = context;
             _inventoryService = inventoryService;
             _loggingService = loggingService;
         }
@@ -36,17 +31,12 @@ namespace CargohubV2.Controllers
             return Ok(entities);
         }
 
-        // Voorraad per locatie tonen
         [HttpGet("{inventoryId:int}/locations")]
         [SwaggerOperation(Summary = "Get inventory locations", Description = "Returns a list of inventory locations for a specific inventory.")]
         [SwaggerResponse(200, "List of inventory locations", typeof(IEnumerable<InventoryLocation>))]
         public async Task<IActionResult> GetInventoryLocations(int inventoryId)
         {
-            var inventoryLocations = await _context.InventoryLocations
-                .Include(il => il.Location)
-                .Where(il => il.InventoryId == inventoryId)
-                .ToListAsync();
-
+            var inventoryLocations = await _inventoryService.GetInventoryLocationsAsync(inventoryId);
             return Ok(inventoryLocations);
         }
 
@@ -124,4 +114,3 @@ namespace CargohubV2.Controllers
         }
     }
 }
-

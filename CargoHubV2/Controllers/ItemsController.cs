@@ -10,10 +10,10 @@ namespace CargohubV2.Controllers
     [Route("api/v1/items")]
     public class ItemsController : ControllerBase
     {
-        private readonly ItemService _itemService;
+        private readonly IItemService _itemService;
         private readonly ILoggingService _loggingService;
 
-        public ItemsController(ItemService itemService, ILoggingService loggingService)
+        public ItemsController(IItemService itemService, ILoggingService loggingService)
         {
             _itemService = itemService;
             _loggingService = loggingService;

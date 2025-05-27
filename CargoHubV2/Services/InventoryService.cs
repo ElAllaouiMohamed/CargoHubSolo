@@ -8,7 +8,7 @@ using System;
 
 namespace CargohubV2.Services
 {
-    public class InventoryService
+    public class InventoryService : IInventoryService
     {
         private readonly CargoHubDbContext _context;
         private readonly ILoggingService _loggingService;
@@ -26,18 +26,6 @@ namespace CargohubV2.Services
                 .Take(limit)
                 .ToListAsync();
         }
-
-
-
-
-
-
-
-
-
-
-
-
 
         public async Task<List<Inventory>> GetAllInventoriesAsync()
         {

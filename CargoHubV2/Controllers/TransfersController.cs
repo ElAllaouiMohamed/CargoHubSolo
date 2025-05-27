@@ -10,10 +10,10 @@ namespace CargohubV2.Controllers
     [Route("api/v1/transfers")]
     public class TransfersController : ControllerBase
     {
-        private readonly TransferService _transferService;
+        private readonly ITransferService _transferService;
         private readonly ILoggingService _loggingService;
 
-        public TransfersController(TransferService transferService, ILoggingService loggingService)
+        public TransfersController(ITransferService transferService, ILoggingService loggingService)
         {
             _transferService = transferService;
             _loggingService = loggingService;

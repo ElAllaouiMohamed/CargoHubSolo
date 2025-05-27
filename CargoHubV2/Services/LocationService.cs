@@ -8,7 +8,7 @@ using System;
 
 namespace CargohubV2.Services
 {
-    public class LocationService
+    public class LocationService : ILocationService
     {
         private readonly CargoHubDbContext _context;
         private readonly ILoggingService _loggingService;

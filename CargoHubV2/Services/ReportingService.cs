@@ -7,7 +7,7 @@ using CargohubV2.Contexts;
 
 namespace CargohubV2.Services
 {
-    public class ReportingService
+    public class ReportingService : IReportingService
     {
         private readonly CargoHubDbContext _context;
 

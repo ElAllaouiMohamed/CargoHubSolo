@@ -26,7 +26,7 @@ public class LoggingActionFilter : IAsyncActionFilter
             var endpoint = context.HttpContext.Request.Path;
             var entity = context.Controller.ToString();
             var action = context.HttpContext.Request.Method;
-            var details = ""; // eventueel request body of response als string
+            var details = "";
 
             await _loggingService.LogAsync(user, entity, action, endpoint, details);
         }

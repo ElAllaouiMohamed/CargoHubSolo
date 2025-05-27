@@ -8,9 +8,9 @@ namespace CargohubV2.Controllers
     [Route("api/v1/reporting")]
     public class ReportingController : ControllerBase
     {
-        private readonly ReportingService _reportingService;
+        private readonly IReportingService _reportingService;
 
-        public ReportingController(ReportingService reportingService)
+        public ReportingController(IReportingService reportingService)
         {
             _reportingService = reportingService;
         }

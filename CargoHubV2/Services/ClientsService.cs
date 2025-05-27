@@ -8,7 +8,7 @@ using System;
 
 namespace CargohubV2.Services
 {
-    public class ClientService
+    public class ClientService : IClientService
     {
         private readonly CargoHubDbContext _context;
         private readonly ILoggingService _loggingService;
@@ -19,7 +19,7 @@ namespace CargohubV2.Services
             _loggingService = loggingService;
         }
 
-        // Client CRUD
+
 
         public async Task<List<Client>> GetClientsAsync(int limit)
         {

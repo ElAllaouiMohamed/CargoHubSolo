@@ -10,10 +10,10 @@ namespace CargohubV2.Controllers
     [Route("api/v1/locations")]
     public class LocationController : ControllerBase
     {
-        private readonly LocationService _locationService;
+        private readonly ILocationService _locationService;
         private readonly ILoggingService _loggingService;
 
-        public LocationController(LocationService locationService, ILoggingService loggingService)
+        public LocationController(ILocationService locationService, ILoggingService loggingService)
         {
             _locationService = locationService;
             _loggingService = loggingService;

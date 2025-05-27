@@ -10,10 +10,10 @@ namespace CargohubV2.Controllers
     [Route("api/v1/suppliers")]
     public class SupplierController : ControllerBase
     {
-        private readonly SupplierService _supplierService;
+        private readonly ISupplierService _supplierService;
         private readonly ILoggingService _loggingService;
 
-        public SupplierController(SupplierService supplierService, ILoggingService loggingService)
+        public SupplierController(ISupplierService supplierService, ILoggingService loggingService)
         {
             _supplierService = supplierService;
             _loggingService = loggingService;
