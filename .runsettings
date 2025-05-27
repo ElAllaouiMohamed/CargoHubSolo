@@ -4,14 +4,12 @@
     <DataCollectors>
       <DataCollector friendlyName="XPlat Code Coverage">
         <Configuration>
+          <Format>cobertura,html</Format>
           <Exclude>
-            <ModulePath>.*Migrations.*</ModulePath> 
-            <ModulePath>.*Tests.*</ModulePath> 
-            <ModulePath>.*SomeOtherFolderToExclude.*</ModulePath>
+            <Source>**/Migrations/*.cs</Source>
+            <Source>**/Program.cs</Source>
+            <Source>**/Startup.cs</Source>
           </Exclude>
-          <Include>
-            <ModulePath>.*CargoHubV2.*</ModulePath> 
-          </Include>
         </Configuration>
       </DataCollector>
     </DataCollectors>
