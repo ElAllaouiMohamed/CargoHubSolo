@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using CargohubV2.Contexts;
 using Microsoft.EntityFrameworkCore;
 

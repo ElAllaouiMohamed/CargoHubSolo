@@ -1,4 +1,4 @@
-﻿using CargohubV2.DataConverters;
+using CargohubV2.DataConverters;
 using Microsoft.AspNetCore.Http.Features;
 using Newtonsoft.Json;
 

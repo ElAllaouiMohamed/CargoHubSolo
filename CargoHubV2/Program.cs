@@ -1,4 +1,4 @@
-﻿using CargohubV2.Contexts;
+using CargohubV2.Contexts;
 using CargohubV2.DataConverters;
 using CargohubV2.Services;
 using Microsoft.EntityFrameworkCore;

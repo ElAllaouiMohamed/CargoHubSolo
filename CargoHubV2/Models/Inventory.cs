@@ -1,4 +1,4 @@
-﻿using CargohubV2.DataConverters;
+using CargohubV2.DataConverters;
 using Newtonsoft.Json;
 
 namespace CargohubV2.Models
@@ -9,17 +9,17 @@ namespace CargohubV2.Models
         public int Id { get; set; }
         public int InventoryId { get; set; }
         public int LocationId { get; set; }
-        
+
         [JsonProperty("created_at")]
         [JsonConverter(typeof(FlexibleDateTimeConverter))]
         public DateTime CreatedAt { get; set; }
-        
+
         [JsonProperty("updated_at")]
         [JsonConverter(typeof(FlexibleDateTimeConverter))]
         public DateTime UpdatedAt { get; set; }
-        
+
         public bool IsDeleted { get; set; } = false;
-        
+
         public Inventory Inventory { get; set; }
         public Location Location { get; set; }
     }

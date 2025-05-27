@@ -1,4 +1,4 @@
-﻿namespace CargohubV2.DataConverters
+namespace CargohubV2.DataConverters
 {
     using System;
     using System.Collections.Generic;
