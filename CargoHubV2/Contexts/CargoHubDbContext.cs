@@ -1,4 +1,4 @@
-using CargohubV2.Models;
+﻿using CargohubV2.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CargohubV2.Contexts
@@ -30,7 +30,6 @@ namespace CargohubV2.Contexts
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Query filters
             modelBuilder.Entity<Client>().HasQueryFilter(c => !c.IsDeleted);
             modelBuilder.Entity<Location>().HasQueryFilter(l => !l.IsDeleted);
             modelBuilder.Entity<Inventory>().HasQueryFilter(i => !i.IsDeleted);
@@ -44,10 +43,8 @@ namespace CargohubV2.Contexts
             modelBuilder.Entity<Order>().HasQueryFilter(o => !o.IsDeleted);
             modelBuilder.Entity<Shipment>().HasQueryFilter(sh => !sh.IsDeleted);
 
-            // Owned types
             modelBuilder.Entity<Warehouse>().OwnsOne(w => w.Contact);
 
-            // Discriminator for Stock inheritance
             modelBuilder.Entity<Stock>()
                 .ToTable("Stocks")
                 .HasDiscriminator<string>("StockType")

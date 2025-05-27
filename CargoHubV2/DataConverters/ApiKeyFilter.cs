@@ -31,17 +31,16 @@ public class ApiKeyFilter : IAsyncActionFilter
         string providedKeyHash = HashKey(extractedApiKey);
 
         var adminKeyHash = await _apiKeyService.GetKeyHashByNameAsync("Admin");
-        var employeeKeyHash = await _apiKeyService.GetKeyHashByNameAsync("Employee");
 
-        if (providedKeyHash == adminKeyHash || providedKeyHash == employeeKeyHash)
+        if (providedKeyHash == adminKeyHash)
         {
-            _logger.LogInformation("API key authorized.");
+            _logger.LogInformation("API key goedgekeurd.");
             await next();
         }
         else
         {
             httpContext.Response.StatusCode = 403;
-            await httpContext.Response.WriteAsync("Unauthorized client.");
+            await httpContext.Response.WriteAsync("unauthorized client.");
         }
     }
 
