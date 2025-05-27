@@ -1,6 +1,8 @@
-using CargohubV2.Contexts;
+﻿using CargohubV2.Contexts;
 using CargohubV2.DataConverters;
 using CargohubV2.Services;
+using System.Reflection;
+using System.IO;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
@@ -42,15 +44,22 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.MaxDepth = 64; // optioneel, verhoog max diepte
     });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+});
+
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "CargoHub API V1");
+    c.RoutePrefix = string.Empty; 
+});
 
 app.MapControllers();
 
