@@ -65,6 +65,9 @@ jobs:
           dotnet format whitespace CargoHubSolo.sln --verify-no-changes   
           dotnet format style CargoHubSolo.sln --verify-no-changes
           dotnet format CargoHubSolo.sln
+          dotnet format whitespace CargoHubSolo.csproj --verify-no-changes   
+          dotnet format style CargoHubSolo.csproj --verify-no-changes
+          dotnet format CargoHubSolo.csproj
 
 
 
