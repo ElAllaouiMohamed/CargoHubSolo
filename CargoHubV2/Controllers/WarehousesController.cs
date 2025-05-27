@@ -15,11 +15,13 @@ namespace CargohubV2.Controllers
     {
         private readonly WarehouseService _warehouseService;
         private readonly CargoHubDbContext _context;
+        private readonly ILoggingService _loggingService;
 
-        public WarehousesController(CargoHubDbContext context, WarehouseService warehouseService)
+        public WarehousesController(CargoHubDbContext context, WarehouseService warehouseService, ILoggingService loggingService)
         {
             _context = context;
             _warehouseService = warehouseService;
+            _loggingService = loggingService;
         }
 
         [HttpGet]
@@ -68,6 +70,14 @@ namespace CargohubV2.Controllers
                 return BadRequest(ModelState);
 
             var created = await _warehouseService.AddWarehouseAsync(warehouse);
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Warehouse",
+                "Create",
+                HttpContext.Request.Path,
+                $"Warehouse created with Id {created.Id}");
+
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
@@ -81,6 +91,13 @@ namespace CargohubV2.Controllers
             if (result == null)
                 return NotFound();
 
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Warehouse",
+                "Update",
+                HttpContext.Request.Path,
+                $"Warehouse {id} updated");
+
             return Ok(result);
         }
 
@@ -90,6 +107,13 @@ namespace CargohubV2.Controllers
             var result = await _warehouseService.SoftDeleteByIdAsync(id);
             if (!result)
                 return NotFound();
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Warehouse",
+                "Delete",
+                HttpContext.Request.Path,
+                $"Warehouse {id} soft-deleted");
 
             return NoContent();
         }

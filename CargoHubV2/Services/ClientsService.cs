@@ -19,6 +19,8 @@ namespace CargohubV2.Services
             _loggingService = loggingService;
         }
 
+        // Client CRUD
+
         public async Task<List<Client>> GetClientsAsync(int limit)
         {
             return await _context.Clients
@@ -80,6 +82,54 @@ namespace CargohubV2.Services
             entity.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             await _loggingService.LogAsync("system", "Client", "Delete", $"/api/v1/clients/{id}", $"Soft deleted client {id}");
+            return true;
+        }
+
+
+        // ContactPerson CRUD voor Client
+
+        public async Task<List<ContactPerson>> GetContactPersonsByClientIdAsync(int clientId)
+        {
+            return await _context.ContactPersons
+                .Where(cp => cp.ClientId == clientId && !cp.IsDeleted)
+                .ToListAsync();
+        }
+
+        public async Task<ContactPerson> AddContactPersonToClientAsync(int clientId, ContactPerson contactPerson)
+        {
+            contactPerson.ClientId = clientId;
+            contactPerson.IsDeleted = false;
+            _context.ContactPersons.Add(contactPerson);
+            await _context.SaveChangesAsync();
+            await _loggingService.LogAsync("system", "ContactPerson", "Create", $"/api/v1/clients/{clientId}/contactpersons", $"Added contact person {contactPerson.Name} to client {clientId}");
+            return contactPerson;
+        }
+
+        public async Task<ContactPerson?> UpdateContactPersonAsync(int contactPersonId, ContactPerson updated)
+        {
+            var existing = await _context.ContactPersons.FindAsync(contactPersonId);
+            if (existing == null || existing.IsDeleted) return null;
+
+            existing.Name = updated.Name;
+            existing.Function = updated.Function;
+            existing.Email = updated.Email;
+            existing.Phone = updated.Phone;
+            existing.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            await _loggingService.LogAsync("system", "ContactPerson", "Update", $"/api/v1/contactpersons/{contactPersonId}", $"Updated contact person {contactPersonId}");
+            return existing;
+        }
+
+        public async Task<bool> DeleteContactPersonAsync(int contactPersonId)
+        {
+            var existing = await _context.ContactPersons.FindAsync(contactPersonId);
+            if (existing == null || existing.IsDeleted) return false;
+
+            existing.IsDeleted = true;
+            existing.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            await _loggingService.LogAsync("system", "ContactPerson", "Delete", $"/api/v1/contactpersons/{contactPersonId}", $"Deleted contact person {contactPersonId}");
             return true;
         }
     }

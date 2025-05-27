@@ -11,10 +11,12 @@ namespace CargohubV2.Controllers
     public class ItemTypeController : ControllerBase
     {
         private readonly ItemTypeService _itemTypeService;
+        private readonly ILoggingService _loggingService;
 
-        public ItemTypeController(ItemTypeService itemTypeService)
+        public ItemTypeController(ItemTypeService itemTypeService, ILoggingService loggingService)
         {
             _itemTypeService = itemTypeService;
+            _loggingService = loggingService;
         }
 
         [HttpGet]
@@ -43,6 +45,14 @@ namespace CargohubV2.Controllers
                 return BadRequest(ModelState);
 
             var created = await _itemTypeService.AddItemTypeAsync(itemType);
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "ItemType",
+                "Create",
+                HttpContext.Request.Path,
+                $"ItemType created with Id {created.Id}");
+
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
@@ -56,6 +66,13 @@ namespace CargohubV2.Controllers
             if (result == null)
                 return NotFound();
 
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "ItemType",
+                "Update",
+                HttpContext.Request.Path,
+                $"ItemType {id} updated");
+
             return Ok(result);
         }
 
@@ -65,6 +82,13 @@ namespace CargohubV2.Controllers
             var result = await _itemTypeService.SoftDeleteByIdAsync(id);
             if (!result)
                 return NotFound();
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "ItemType",
+                "Delete",
+                HttpContext.Request.Path,
+                $"ItemType {id} soft-deleted");
 
             return NoContent();
         }

@@ -11,10 +11,12 @@ namespace CargohubV2.Controllers
     public class LocationController : ControllerBase
     {
         private readonly LocationService _locationService;
+        private readonly ILoggingService _loggingService;
 
-        public LocationController(LocationService locationService)
+        public LocationController(LocationService locationService, ILoggingService loggingService)
         {
             _locationService = locationService;
+            _loggingService = loggingService;
         }
 
         [HttpGet]
@@ -43,6 +45,14 @@ namespace CargohubV2.Controllers
                 return BadRequest(ModelState);
 
             var created = await _locationService.AddLocationAsync(location);
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Location",
+                "Create",
+                HttpContext.Request.Path,
+                $"Location created with Id {created.Id}");
+
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
@@ -56,6 +66,13 @@ namespace CargohubV2.Controllers
             if (result == null)
                 return NotFound();
 
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Location",
+                "Update",
+                HttpContext.Request.Path,
+                $"Location {id} updated");
+
             return Ok(result);
         }
 
@@ -65,6 +82,13 @@ namespace CargohubV2.Controllers
             var result = await _locationService.SoftDeleteByIdAsync(id);
             if (!result)
                 return NotFound();
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Location",
+                "Delete",
+                HttpContext.Request.Path,
+                $"Location {id} soft-deleted");
 
             return NoContent();
         }

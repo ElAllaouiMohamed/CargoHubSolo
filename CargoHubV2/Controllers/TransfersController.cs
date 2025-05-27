@@ -11,10 +11,12 @@ namespace CargohubV2.Controllers
     public class TransfersController : ControllerBase
     {
         private readonly TransferService _transferService;
+        private readonly ILoggingService _loggingService;
 
-        public TransfersController(TransferService transferService)
+        public TransfersController(TransferService transferService, ILoggingService loggingService)
         {
             _transferService = transferService;
+            _loggingService = loggingService;
         }
 
         [HttpGet]
@@ -43,6 +45,14 @@ namespace CargohubV2.Controllers
                 return BadRequest(ModelState);
 
             var created = await _transferService.AddTransferAsync(transfer);
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Transfer",
+                "Create",
+                HttpContext.Request.Path,
+                $"Transfer created with Id {created.Id}");
+
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
@@ -56,6 +66,13 @@ namespace CargohubV2.Controllers
             if (result == null)
                 return NotFound();
 
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Transfer",
+                "Update",
+                HttpContext.Request.Path,
+                $"Transfer {id} updated");
+
             return Ok(result);
         }
 
@@ -65,6 +82,13 @@ namespace CargohubV2.Controllers
             var result = await _transferService.SoftDeleteByIdAsync(id);
             if (!result)
                 return NotFound();
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Transfer",
+                "Delete",
+                HttpContext.Request.Path,
+                $"Transfer {id} soft-deleted");
 
             return NoContent();
         }

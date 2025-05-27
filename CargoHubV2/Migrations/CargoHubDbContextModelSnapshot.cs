@@ -107,6 +107,9 @@ namespace CargohubV2.Migrations
                     b.Property<int?>("ClientId")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
@@ -114,6 +117,9 @@ namespace CargohubV2.Migrations
                     b.Property<string>("Function")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -125,6 +131,9 @@ namespace CargohubV2.Migrations
 
                     b.Property<int?>("SupplierId")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("WarehouseId")
                         .HasColumnType("integer");

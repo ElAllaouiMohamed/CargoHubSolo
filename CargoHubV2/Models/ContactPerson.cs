@@ -1,20 +1,32 @@
-using CargohubV2.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CargohubV2.Models;
-public class ContactPerson
+namespace CargohubV2.Models
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public string Function { get; set; }
-    public string Phone { get; set; }
-    public string Email { get; set; }
+    public class ContactPerson
+    {
+        public int Id { get; set; }
 
-    public int? WarehouseId { get; set; }
-    public Warehouse Warehouse { get; set; }
+        public int? WarehouseId { get; set; }
+        public int? ClientId { get; set; }
+        public int? SupplierId { get; set; }
 
-    public int? ClientId { get; set; }
-    public Client Client { get; set; }
+        [ForeignKey("WarehouseId")]
+        public Warehouse? Warehouse { get; set; }
 
-    public int? SupplierId { get; set; }
-    public Supplier Supplier { get; set; }
+        [ForeignKey("ClientId")]
+        public Client? Client { get; set; }
+
+        [ForeignKey("SupplierId")]
+        public Supplier? Supplier { get; set; }
+
+        public string Name { get; set; }
+        public string Function { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+
+        public bool IsDeleted { get; set; } = false;
+
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+    }
 }

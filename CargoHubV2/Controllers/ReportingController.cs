@@ -15,14 +15,12 @@ namespace CargohubV2.Controllers
             _reportingService = reportingService;
         }
 
-
         [HttpGet("warehouse/{warehouseId}")]
         public IActionResult GetWarehouseReport(int warehouseId)
         {
             var report = _reportingService.GetWarehouseReport(warehouseId);
             return Ok(report);
         }
-
 
         [HttpGet("orders-csv/{warehouseId}")]
         public IActionResult GetOrdersCsv(int warehouseId)

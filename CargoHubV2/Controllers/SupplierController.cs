@@ -11,10 +11,12 @@ namespace CargohubV2.Controllers
     public class SupplierController : ControllerBase
     {
         private readonly SupplierService _supplierService;
+        private readonly ILoggingService _loggingService;
 
-        public SupplierController(SupplierService supplierService)
+        public SupplierController(SupplierService supplierService, ILoggingService loggingService)
         {
             _supplierService = supplierService;
+            _loggingService = loggingService;
         }
 
         [HttpGet]
@@ -43,6 +45,14 @@ namespace CargohubV2.Controllers
                 return BadRequest(ModelState);
 
             var created = await _supplierService.AddSupplierAsync(supplier);
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Supplier",
+                "Create",
+                HttpContext.Request.Path,
+                $"Supplier created with Id {created.Id}");
+
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
@@ -56,6 +66,13 @@ namespace CargohubV2.Controllers
             if (result == null)
                 return NotFound();
 
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Supplier",
+                "Update",
+                HttpContext.Request.Path,
+                $"Supplier {id} updated");
+
             return Ok(result);
         }
 
@@ -65,6 +82,13 @@ namespace CargohubV2.Controllers
             var result = await _supplierService.SoftDeleteByIdAsync(id);
             if (!result)
                 return NotFound();
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Supplier",
+                "Delete",
+                HttpContext.Request.Path,
+                $"Supplier {id} soft-deleted");
 
             return NoContent();
         }

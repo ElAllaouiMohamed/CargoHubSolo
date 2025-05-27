@@ -11,10 +11,12 @@ namespace CargohubV2.Controllers
     public class ShipmentsController : ControllerBase
     {
         private readonly ShipmentService _shipmentService;
+        private readonly ILoggingService _loggingService;
 
-        public ShipmentsController(ShipmentService shipmentService)
+        public ShipmentsController(ShipmentService shipmentService, ILoggingService loggingService)
         {
             _shipmentService = shipmentService;
+            _loggingService = loggingService;
         }
 
         [HttpGet]
@@ -43,6 +45,14 @@ namespace CargohubV2.Controllers
                 return BadRequest(ModelState);
 
             var created = await _shipmentService.AddShipmentAsync(shipment);
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Shipment",
+                "Create",
+                HttpContext.Request.Path,
+                $"Shipment created with Id {created.Id}");
+
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
@@ -56,6 +66,13 @@ namespace CargohubV2.Controllers
             if (result == null)
                 return NotFound();
 
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Shipment",
+                "Update",
+                HttpContext.Request.Path,
+                $"Shipment {id} updated");
+
             return Ok(result);
         }
 
@@ -65,6 +82,13 @@ namespace CargohubV2.Controllers
             var result = await _shipmentService.SoftDeleteByIdAsync(id);
             if (!result)
                 return NotFound();
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Shipment",
+                "Delete",
+                HttpContext.Request.Path,
+                $"Shipment {id} soft-deleted");
 
             return NoContent();
         }
