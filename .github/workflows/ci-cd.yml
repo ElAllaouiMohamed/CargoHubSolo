@@ -116,7 +116,8 @@ jobs:
           echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Line Coverage | ${COVERAGE}% |" >> $GITHUB_STEP_SUMMARY
-          if (( $(echo "$COVERAGE < 50" | bc -l) )); then 
+          if (( $(echo "$COVERAGE < 50" | bc -l) )); then
+          # hoort 80% tezijn eig  
             echo "Code coverage is lager dan 50%!" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
