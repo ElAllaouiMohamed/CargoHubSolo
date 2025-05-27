@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Exclude>
+            <ModulePath>.*Migrations.*</ModulePath> 
+            <ModulePath>.*Tests.*</ModulePath> 
+            <ModulePath>.*SomeOtherFolderToExclude.*</ModulePath>
+          </Exclude>
+          <Include>
+            <ModulePath>.*CargoHubV2.*</ModulePath> 
+          </Include>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
