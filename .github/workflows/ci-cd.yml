@@ -71,7 +71,7 @@ jobs:
       - name: Build .NET project
         run: dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore
 
-  unit-tests:
+  tests:
     runs-on: ubuntu-latest
     needs: build
     outputs:
