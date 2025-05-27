@@ -1,10 +1,14 @@
-using CargohubV2.DataConverters;
+﻿using CargohubV2.DataConverters;
 using Newtonsoft.Json;
+using CargohubV2.Models;
 
 namespace CargohubV2.Models
 {
     public class Warehouse
     {
+        public ICollection<ContactPerson> ContactPersons { get; set; } = new List<ContactPerson>();
+
+        public HazardClassification HazardClassification { get; set; }
         [JsonProperty("id")]
         public int Id { get; set; }
 
@@ -43,15 +47,5 @@ namespace CargohubV2.Models
 
     }
 
-    public class Contact
-    {
-        [JsonProperty("name")]
-        public string Name { get; set; }
 
-        [JsonProperty("phone")]
-        public string Phone { get; set; }
-
-        [JsonProperty("email")]
-        public string Email { get; set; }
-    }
 }

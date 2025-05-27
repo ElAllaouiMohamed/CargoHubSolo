@@ -1,10 +1,13 @@
-using CargohubV2.DataConverters;
+﻿using CargohubV2.DataConverters;
 using Newtonsoft.Json;
 
 namespace CargohubV2.Models
 {
     public class Supplier
     {
+        public ICollection<ContactPerson> ContactPersons { get; set; } = new List<ContactPerson>();
+
+
         [JsonProperty("id")]
         public int Id { get; set; }
 

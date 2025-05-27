@@ -1,10 +1,23 @@
-using CargohubV2.DataConverters;
+﻿using CargohubV2.DataConverters;
 using Newtonsoft.Json;
 
 namespace CargohubV2.Models
 {
+
+    public class InventoryLocation
+    {
+        public int Id { get; set; }
+        public int InventoryId { get; set; }
+        public int LocationId { get; set; }
+        public int Quantity { get; set; }
+        public Inventory Inventory { get; set; }
+        public Location Location { get; set; }
+    }
+
     public class Inventory
     {
+        public HazardClassification HazardClassification { get; set; }
+
         [JsonProperty("id")]
         public int Id { get; set; }
 
@@ -43,6 +56,7 @@ namespace CargohubV2.Models
         [JsonConverter(typeof(FlexibleDateTimeConverter))]
         public DateTime UpdatedAt { get; set; }
         public bool IsDeleted { get; set; } = false;
+        public ICollection<InventoryLocation> InventoryLocations { get; set; }
 
     }
 }

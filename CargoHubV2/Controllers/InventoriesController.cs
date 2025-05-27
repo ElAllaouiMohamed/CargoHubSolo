@@ -1,7 +1,10 @@
+using CargohubV2.Contexts;
 using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CargohubV2.Controllers
@@ -11,9 +14,11 @@ namespace CargohubV2.Controllers
     public class InventoriesController : ControllerBase
     {
         private readonly InventoryService _inventoryService;
+        private readonly CargoHubDbContext _context;
 
-        public InventoriesController(InventoryService inventoryService)
+        public InventoriesController(CargoHubDbContext context, InventoryService inventoryService)
         {
+            _context = context;
             _inventoryService = inventoryService;
         }
 
@@ -24,6 +29,17 @@ namespace CargohubV2.Controllers
                 ? await _inventoryService.GetInventoriesAsync(limit.Value)
                 : await _inventoryService.GetAllInventoriesAsync();
             return Ok(entities);
+        }
+
+        [HttpGet("inventory/{inventoryId}/locations")]
+        public async Task<IActionResult> GetInventoryLocations(int inventoryId)
+        {
+            var inventoryLocations = await _context.InventoryLocations
+                .Include(il => il.Location)
+                .Where(il => il.InventoryId == inventoryId)
+                .ToListAsync();
+
+            return Ok(inventoryLocations);
         }
 
         [HttpGet("{id:int}")]

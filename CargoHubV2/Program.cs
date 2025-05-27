@@ -22,7 +22,12 @@ builder.Services.AddScoped<SupplierService>();
 builder.Services.AddScoped<TransferService>();
 builder.Services.AddScoped<WarehouseService>();
 builder.Services.AddScoped<ReportingService>();
-
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ILoggingService, LoggingService>();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<LoggingActionFilter>();
+});
 builder.Services.AddScoped<IApiKeyService, ApiKeyService>();
 builder.Services.AddScoped<ApiKeyFilter>();
 

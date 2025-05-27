@@ -1,7 +1,10 @@
+using CargohubV2.Contexts;
 using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CargohubV2.Controllers
@@ -11,9 +14,11 @@ namespace CargohubV2.Controllers
     public class WarehousesController : ControllerBase
     {
         private readonly WarehouseService _warehouseService;
+        private readonly CargoHubDbContext _context;
 
-        public WarehousesController(WarehouseService warehouseService)
+        public WarehousesController(CargoHubDbContext context, WarehouseService warehouseService)
         {
+            _context = context;
             _warehouseService = warehouseService;
         }
 
@@ -24,6 +29,26 @@ namespace CargohubV2.Controllers
                 ? await _warehouseService.GetWarehousesAsync(limit.Value)
                 : await _warehouseService.GetAllWarehousesAsync();
             return Ok(entities);
+        }
+
+        [HttpGet("{warehouseId}/hazard-check")]
+        public async Task<IActionResult> CheckHazardCompliance(int warehouseId)
+        {
+            var warehouse = await _context.Warehouses.FindAsync(warehouseId);
+            if (warehouse == null)
+                return NotFound();
+
+            var forbiddenItems = await _context.Inventories
+                .Where(inv => inv.InventoryLocations.Any(il => il.Location.WarehouseId == warehouseId)
+                            && (int)inv.HazardClassification > (int)warehouse.HazardClassification)
+                .ToListAsync();
+
+            if (forbiddenItems.Any())
+            {
+                return BadRequest(new { message = "Forbidden items detected", items = forbiddenItems });
+            }
+
+            return Ok(new { message = "No forbidden items found" });
         }
 
         [HttpGet("{id:int}")]

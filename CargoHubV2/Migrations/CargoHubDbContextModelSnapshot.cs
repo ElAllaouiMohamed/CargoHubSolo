@@ -73,6 +73,9 @@ namespace CargohubV2.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("HazardClassification")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -93,6 +96,50 @@ namespace CargohubV2.Migrations
                     b.ToTable("Clients");
                 });
 
+            modelBuilder.Entity("CargohubV2.Models.ContactPerson", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ClientId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Function")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("SupplierId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("WarehouseId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("ContactPersons");
+                });
+
             modelBuilder.Entity("CargohubV2.Models.Inventory", b =>
                 {
                     b.Property<int>("Id")
@@ -106,6 +153,9 @@ namespace CargohubV2.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
+
+                    b.Property<int>("HazardClassification")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -140,6 +190,32 @@ namespace CargohubV2.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Inventories");
+                });
+
+            modelBuilder.Entity("CargohubV2.Models.InventoryLocation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("InventoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryId");
+
+                    b.HasIndex("LocationId");
+
+                    b.ToTable("InventoryLocations");
                 });
 
             modelBuilder.Entity("CargohubV2.Models.Item", b =>
@@ -660,6 +736,9 @@ namespace CargohubV2.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("HazardClassification")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -714,6 +793,46 @@ namespace CargohubV2.Migrations
                     b.HasIndex("TransferId");
 
                     b.HasDiscriminator().HasValue("Transfer");
+                });
+
+            modelBuilder.Entity("CargohubV2.Models.ContactPerson", b =>
+                {
+                    b.HasOne("CargohubV2.Models.Client", "Client")
+                        .WithMany("ContactPersons")
+                        .HasForeignKey("ClientId");
+
+                    b.HasOne("CargohubV2.Models.Supplier", "Supplier")
+                        .WithMany("ContactPersons")
+                        .HasForeignKey("SupplierId");
+
+                    b.HasOne("CargohubV2.Models.Warehouse", "Warehouse")
+                        .WithMany("ContactPersons")
+                        .HasForeignKey("WarehouseId");
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Supplier");
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("CargohubV2.Models.InventoryLocation", b =>
+                {
+                    b.HasOne("CargohubV2.Models.Inventory", "Inventory")
+                        .WithMany("InventoryLocations")
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CargohubV2.Models.Location", "Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Inventory");
+
+                    b.Navigation("Location");
                 });
 
             modelBuilder.Entity("CargohubV2.Models.Item", b =>
@@ -809,6 +928,16 @@ namespace CargohubV2.Migrations
                     b.Navigation("Transfer");
                 });
 
+            modelBuilder.Entity("CargohubV2.Models.Client", b =>
+                {
+                    b.Navigation("ContactPersons");
+                });
+
+            modelBuilder.Entity("CargohubV2.Models.Inventory", b =>
+                {
+                    b.Navigation("InventoryLocations");
+                });
+
             modelBuilder.Entity("CargohubV2.Models.Order", b =>
                 {
                     b.Navigation("Stocks");
@@ -819,9 +948,19 @@ namespace CargohubV2.Migrations
                     b.Navigation("Stocks");
                 });
 
+            modelBuilder.Entity("CargohubV2.Models.Supplier", b =>
+                {
+                    b.Navigation("ContactPersons");
+                });
+
             modelBuilder.Entity("CargohubV2.Models.Transfer", b =>
                 {
                     b.Navigation("Stocks");
+                });
+
+            modelBuilder.Entity("CargohubV2.Models.Warehouse", b =>
+                {
+                    b.Navigation("ContactPersons");
                 });
 #pragma warning restore 612, 618
         }

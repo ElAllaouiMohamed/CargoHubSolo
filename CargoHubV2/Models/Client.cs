@@ -1,4 +1,4 @@
-using CargohubV2.DataConverters;
+﻿using CargohubV2.DataConverters;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
@@ -6,6 +6,9 @@ namespace CargohubV2.Models
 {
     public class Client
     {
+        public ICollection<ContactPerson> ContactPersons { get; set; } = new List<ContactPerson>();
+
+        public HazardClassification HazardClassification { get; set; }
         [JsonProperty("id")]
         public int Id { get; set; }
 
