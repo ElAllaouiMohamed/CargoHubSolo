@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CargohubV2.Contexts;
@@ -94,6 +94,8 @@ namespace CargohubV2.Services
                 .Where(cp => cp.ClientId == clientId && !cp.IsDeleted)
                 .ToListAsync();
         }
+
+
 
         public async Task<ContactPerson> AddContactPersonToClientAsync(int clientId, ContactPerson contactPerson)
         {

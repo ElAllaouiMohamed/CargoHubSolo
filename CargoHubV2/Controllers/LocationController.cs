@@ -68,6 +68,8 @@ namespace CargohubV2.Controllers
 
         [HttpPut("{id:int}")]
         [SwaggerOperation(Summary = "Update a location", Description = "Updates an existing location by its unique identifier.")]
+
+
         [SwaggerResponse(200, "Location updated", typeof(Location))]
         public async Task<ActionResult<Location>> Update(int id, [FromBody] Location updated)
         {
