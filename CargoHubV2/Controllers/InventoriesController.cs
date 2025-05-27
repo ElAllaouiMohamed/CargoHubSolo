@@ -15,11 +15,13 @@ namespace CargohubV2.Controllers
     {
         private readonly InventoryService _inventoryService;
         private readonly CargoHubDbContext _context;
+        private readonly ILoggingService _loggingService;
 
-        public InventoriesController(CargoHubDbContext context, InventoryService inventoryService)
+        public InventoriesController(CargoHubDbContext context, InventoryService inventoryService, ILoggingService loggingService)
         {
             _context = context;
             _inventoryService = inventoryService;
+            _loggingService = loggingService;
         }
 
         [HttpGet]
@@ -31,7 +33,8 @@ namespace CargohubV2.Controllers
             return Ok(entities);
         }
 
-        [HttpGet("inventory/{inventoryId}/locations")]
+        // Voorraad per locatie tonen
+        [HttpGet("{inventoryId:int}/locations")]
         public async Task<IActionResult> GetInventoryLocations(int inventoryId)
         {
             var inventoryLocations = await _context.InventoryLocations
@@ -59,6 +62,14 @@ namespace CargohubV2.Controllers
                 return BadRequest(ModelState);
 
             var created = await _inventoryService.AddInventoryAsync(inventory);
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Inventory",
+                "Create",
+                HttpContext.Request.Path,
+                $"Inventory created with Id {created.Id}");
+
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
@@ -72,6 +83,13 @@ namespace CargohubV2.Controllers
             if (result == null)
                 return NotFound();
 
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Inventory",
+                "Update",
+                HttpContext.Request.Path,
+                $"Inventory {id} updated");
+
             return Ok(result);
         }
 
@@ -81,6 +99,13 @@ namespace CargohubV2.Controllers
             var result = await _inventoryService.SoftDeleteByIdAsync(id);
             if (!result)
                 return NotFound();
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Inventory",
+                "Delete",
+                HttpContext.Request.Path,
+                $"Inventory {id} soft-deleted");
 
             return NoContent();
         }

@@ -11,10 +11,12 @@ namespace CargohubV2.Controllers
     public class ClientsController : ControllerBase
     {
         private readonly ClientService _clientService;
+        private readonly ILoggingService _loggingService;
 
-        public ClientsController(ClientService clientService)
+        public ClientsController(ClientService clientService, ILoggingService loggingService)
         {
             _clientService = clientService;
+            _loggingService = loggingService;
         }
 
         [HttpGet]
@@ -36,6 +38,73 @@ namespace CargohubV2.Controllers
             return Ok(entity);
         }
 
+        // Contactpersonen ophalen voor client
+        [HttpGet("{clientId:int}/contactpersons")]
+        public async Task<ActionResult<IEnumerable<ContactPerson>>> GetContactPersons(int clientId)
+        {
+            var contactPersons = await _clientService.GetContactPersonsByClientIdAsync(clientId);
+            return Ok(contactPersons);
+        }
+
+        // Contactpersoon toevoegen aan client
+        [HttpPost("{clientId:int}/contactpersons")]
+        public async Task<ActionResult<ContactPerson>> AddContactPerson(int clientId, [FromBody] ContactPerson contactPerson)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var added = await _clientService.AddContactPersonToClientAsync(clientId, contactPerson);
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "ContactPerson",
+                "Create",
+                HttpContext.Request.Path,
+                $"ContactPerson added to Client {clientId}, ContactPersonId: {added.Id}");
+
+            return CreatedAtAction(nameof(GetContactPersons), new { clientId }, added);
+        }
+
+        // Contactpersoon bijwerken
+        [HttpPut("contactpersons/{contactPersonId:int}")]
+        public async Task<ActionResult<ContactPerson>> UpdateContactPerson(int contactPersonId, [FromBody] ContactPerson updated)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _clientService.UpdateContactPersonAsync(contactPersonId, updated);
+
+            if (result == null)
+                return NotFound();
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "ContactPerson",
+                "Update",
+                HttpContext.Request.Path,
+                $"ContactPerson {contactPersonId} updated");
+
+            return Ok(result);
+        }
+
+        // Contactpersoon verwijderen
+        [HttpDelete("contactpersons/{contactPersonId:int}")]
+        public async Task<IActionResult> DeleteContactPerson(int contactPersonId)
+        {
+            var success = await _clientService.DeleteContactPersonAsync(contactPersonId);
+            if (!success)
+                return NotFound();
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "ContactPerson",
+                "Delete",
+                HttpContext.Request.Path,
+                $"ContactPerson {contactPersonId} deleted");
+
+            return NoContent();
+        }
+
         [HttpPost]
         public async Task<ActionResult<Client>> Create([FromBody] Client client)
         {
@@ -43,6 +112,14 @@ namespace CargohubV2.Controllers
                 return BadRequest(ModelState);
 
             var created = await _clientService.AddClientAsync(client);
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Client",
+                "Create",
+                HttpContext.Request.Path,
+                $"Client created with Id {created.Id}");
+
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
@@ -56,6 +133,13 @@ namespace CargohubV2.Controllers
             if (result == null)
                 return NotFound();
 
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Client",
+                "Update",
+                HttpContext.Request.Path,
+                $"Client {id} updated");
+
             return Ok(result);
         }
 
@@ -65,6 +149,13 @@ namespace CargohubV2.Controllers
             var result = await _clientService.SoftDeleteByIdAsync(id);
             if (!result)
                 return NotFound();
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "Client",
+                "Delete",
+                HttpContext.Request.Path,
+                $"Client {id} soft-deleted");
 
             return NoContent();
         }

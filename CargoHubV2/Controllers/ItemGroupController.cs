@@ -11,10 +11,12 @@ namespace CargohubV2.Controllers
     public class ItemGroupController : ControllerBase
     {
         private readonly ItemGroupService _itemGroupService;
+        private readonly ILoggingService _loggingService;
 
-        public ItemGroupController(ItemGroupService itemGroupService)
+        public ItemGroupController(ItemGroupService itemGroupService, ILoggingService loggingService)
         {
             _itemGroupService = itemGroupService;
+            _loggingService = loggingService;
         }
 
         [HttpGet]
@@ -43,6 +45,14 @@ namespace CargohubV2.Controllers
                 return BadRequest(ModelState);
 
             var created = await _itemGroupService.AddItemGroupAsync(itemGroup);
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "ItemGroup",
+                "Create",
+                HttpContext.Request.Path,
+                $"ItemGroup created with Id {created.Id}");
+
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
@@ -56,6 +66,13 @@ namespace CargohubV2.Controllers
             if (result == null)
                 return NotFound();
 
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "ItemGroup",
+                "Update",
+                HttpContext.Request.Path,
+                $"ItemGroup {id} updated");
+
             return Ok(result);
         }
 
@@ -65,6 +82,13 @@ namespace CargohubV2.Controllers
             var result = await _itemGroupService.SoftDeleteByIdAsync(id);
             if (!result)
                 return NotFound();
+
+            await _loggingService.LogAsync(
+                User?.Identity?.Name ?? "anonymous",
+                "ItemGroup",
+                "Delete",
+                HttpContext.Request.Path,
+                $"ItemGroup {id} soft-deleted");
 
             return NoContent();
         }
