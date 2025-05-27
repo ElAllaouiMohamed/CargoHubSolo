@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CargohubV2.Contexts;
@@ -50,6 +50,7 @@ namespace CargohubV2.Services
             transfer.UpdatedAt = DateTime.UtcNow;
             _context.Transfers.Add(transfer);
             await _context.SaveChangesAsync();
+
             await _loggingService.LogAsync("system", "Transfer", "Create", "/api/v1/transfers", $"Created transfer {transfer.Id}");
             return transfer;
         }
@@ -75,11 +76,14 @@ namespace CargohubV2.Services
         {
             var entity = await _context.Transfers.FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
             if (entity == null) return false;
+
             entity.IsDeleted = true;
             entity.UpdatedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
             await _loggingService.LogAsync("system", "Transfer", "Delete", $"/api/v1/transfers/{id}", $"Soft deleted transfer {id}");
             return true;
         }
     }
 }
+

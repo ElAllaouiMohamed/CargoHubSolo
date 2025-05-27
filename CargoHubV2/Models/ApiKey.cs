@@ -1,4 +1,4 @@
-namespace CargohubV2.Models
+﻿namespace CargohubV2.Models
 {
     public class ApiKey
     {
@@ -7,3 +7,4 @@ namespace CargohubV2.Models
         public string KeyHash { get; set; } = null!;
     }
 }
+

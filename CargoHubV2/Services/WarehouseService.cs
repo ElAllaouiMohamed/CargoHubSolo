@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CargohubV2.Contexts;
@@ -23,6 +23,7 @@ namespace CargohubV2.Services
         {
             return await _context.Warehouses
                 .Where(e => !e.IsDeleted)
+                .Include(w => w.ContactPersons)  // Zorg dat contactpersonen ook geladen worden
                 .Take(limit)
                 .ToListAsync();
         }
@@ -31,6 +32,7 @@ namespace CargohubV2.Services
         {
             return await _context.Warehouses
                 .Where(e => !e.IsDeleted)
+                .Include(w => w.ContactPersons)
                 .ToListAsync();
         }
 
@@ -38,6 +40,7 @@ namespace CargohubV2.Services
         {
             return await _context.Warehouses
                 .Where(e => !e.IsDeleted && e.Id == id)
+                .Include(w => w.ContactPersons)
                 .FirstOrDefaultAsync();
         }
 
@@ -47,6 +50,7 @@ namespace CargohubV2.Services
             warehouse.UpdatedAt = DateTime.UtcNow;
             _context.Warehouses.Add(warehouse);
             await _context.SaveChangesAsync();
+
             await _loggingService.LogAsync("system", "Warehouse", "Create", "/api/v1/warehouses", $"Created warehouse {warehouse.Id}");
             return warehouse;
         }
@@ -75,11 +79,14 @@ namespace CargohubV2.Services
         {
             var entity = await _context.Warehouses.FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
             if (entity == null) return false;
+
             entity.IsDeleted = true;
             entity.UpdatedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
             await _loggingService.LogAsync("system", "Warehouse", "Delete", $"/api/v1/warehouses/{id}", $"Soft deleted warehouse {id}");
             return true;
         }
     }
 }
+

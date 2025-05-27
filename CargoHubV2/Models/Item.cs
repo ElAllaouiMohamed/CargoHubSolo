@@ -1,4 +1,4 @@
-using CargohubV2.DataConverters;
+﻿using CargohubV2.DataConverters;
 using Newtonsoft.Json;
 
 namespace CargohubV2.Models
@@ -77,3 +77,4 @@ namespace CargohubV2.Models
 
     }
 }
+

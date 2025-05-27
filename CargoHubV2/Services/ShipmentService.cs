@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CargohubV2.Contexts;
@@ -75,6 +75,7 @@ namespace CargohubV2.Services
             entity.TotalPackageCount = updated.TotalPackageCount;
             entity.TotalPackageWeight = updated.TotalPackageWeight;
             entity.UpdatedAt = DateTime.UtcNow;
+
             entity.Stocks = updated.Stocks ?? new List<ShipmentStock>();
 
             await _context.SaveChangesAsync();
@@ -94,3 +95,4 @@ namespace CargohubV2.Services
         }
     }
 }
+

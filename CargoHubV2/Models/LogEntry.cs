@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace CargohubV2.Models
 {
@@ -13,3 +13,4 @@ namespace CargohubV2.Models
         public string Details { get; set; }
     }
 }
+

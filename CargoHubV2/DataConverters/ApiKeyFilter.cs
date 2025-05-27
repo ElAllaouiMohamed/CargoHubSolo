@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Linq;
@@ -52,3 +52,4 @@ public class ApiKeyFilter : IAsyncActionFilter
         return BitConverter.ToString(bytes).Replace("-", "").ToLowerInvariant();
     }
 }
+

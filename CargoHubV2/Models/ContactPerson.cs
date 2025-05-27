@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CargohubV2.Models
 {
@@ -30,3 +30,4 @@ namespace CargohubV2.Models
         public DateTime UpdatedAt { get; set; }
     }
 }
+

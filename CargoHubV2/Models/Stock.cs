@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace CargohubV2.Models
 {
@@ -34,3 +34,4 @@ namespace CargohubV2.Models
 
     }
 }
+

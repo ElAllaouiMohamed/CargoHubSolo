@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CargohubV2.Contexts;
@@ -82,5 +82,37 @@ namespace CargohubV2.Services
             await _loggingService.LogAsync("system", "Inventory", "Delete", $"/api/v1/inventories/{id}", $"Soft deleted inventory {id}");
             return true;
         }
+
+
+        public async Task<List<InventoryLocation>> GetInventoryLocationsAsync(int inventoryId)
+        {
+            return await _context.InventoryLocations
+                .Include(il => il.Location)
+                .Where(il => il.InventoryId == inventoryId)
+                .ToListAsync();
+        }
+
+        public async Task<InventoryLocation> AddInventoryLocationAsync(InventoryLocation inventoryLocation)
+        {
+            inventoryLocation.CreatedAt = DateTime.UtcNow;
+            inventoryLocation.UpdatedAt = DateTime.UtcNow;
+            _context.InventoryLocations.Add(inventoryLocation);
+            await _context.SaveChangesAsync();
+            await _loggingService.LogAsync("system", "InventoryLocation", "Create", $"/api/v1/inventories/{inventoryLocation.InventoryId}/locations", $"Added inventory location {inventoryLocation.Id}");
+            return inventoryLocation;
+        }
+
+        public async Task<bool> SoftDeleteInventoryLocationAsync(int id)
+        {
+            var entity = await _context.InventoryLocations.FirstOrDefaultAsync(il => il.Id == id && !il.IsDeleted);
+            if (entity == null) return false;
+
+            entity.IsDeleted = true;
+            entity.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            await _loggingService.LogAsync("system", "InventoryLocation", "Delete", $"/api/v1/inventorylocations/{id}", $"Soft deleted inventory location {id}");
+            return true;
+        }
     }
 }
+

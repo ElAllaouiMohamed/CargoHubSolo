@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CargohubV2.Contexts;
@@ -77,7 +77,7 @@ namespace CargohubV2.Services
             entity.TotalTax = updated.TotalTax;
             entity.TotalSurcharge = updated.TotalSurcharge;
             entity.UpdatedAt = DateTime.UtcNow;
-            // Optioneel: Stocks vervangen (kies strategie, hieronder een voorbeeld)
+
             entity.Stocks = updated.Stocks ?? new List<OrderStock>();
 
             await _context.SaveChangesAsync();
@@ -97,3 +97,4 @@ namespace CargohubV2.Services
         }
     }
 }
+

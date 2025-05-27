@@ -809,3 +809,4 @@ namespace CargohubV2.Migrations
         }
     }
 }
+

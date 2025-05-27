@@ -1,4 +1,4 @@
-using Newtonsoft.Json.Converters;
+﻿using Newtonsoft.Json.Converters;
 using Newtonsoft.Json;
 using System.Globalization;
 
@@ -36,3 +36,4 @@ namespace CargohubV2.DataConverters
         }
     }
 }
+

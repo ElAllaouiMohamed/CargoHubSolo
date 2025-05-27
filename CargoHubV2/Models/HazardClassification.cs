@@ -1,4 +1,4 @@
-namespace CargohubV2.Models
+﻿namespace CargohubV2.Models
 {
     public enum HazardClassification
     {
@@ -8,3 +8,4 @@ namespace CargohubV2.Models
         High = 3
     }
 }
+

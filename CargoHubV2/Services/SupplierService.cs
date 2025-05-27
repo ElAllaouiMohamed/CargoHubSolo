@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CargohubV2.Contexts;
@@ -23,6 +23,7 @@ namespace CargohubV2.Services
         {
             return await _context.Suppliers
                 .Where(e => !e.IsDeleted)
+                .Include(s => s.ContactPersons) // Zorg dat contactpersonen worden mee geladen
                 .Take(limit)
                 .ToListAsync();
         }
@@ -31,6 +32,7 @@ namespace CargohubV2.Services
         {
             return await _context.Suppliers
                 .Where(e => !e.IsDeleted)
+                .Include(s => s.ContactPersons)
                 .ToListAsync();
         }
 
@@ -38,6 +40,7 @@ namespace CargohubV2.Services
         {
             return await _context.Suppliers
                 .Where(e => !e.IsDeleted && e.Id == id)
+                .Include(s => s.ContactPersons)
                 .FirstOrDefaultAsync();
         }
 
@@ -47,6 +50,7 @@ namespace CargohubV2.Services
             supplier.UpdatedAt = DateTime.UtcNow;
             _context.Suppliers.Add(supplier);
             await _context.SaveChangesAsync();
+
             await _loggingService.LogAsync("system", "Supplier", "Create", "/api/v1/suppliers", $"Created supplier {supplier.Id}");
             return supplier;
         }
@@ -78,11 +82,14 @@ namespace CargohubV2.Services
         {
             var entity = await _context.Suppliers.FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
             if (entity == null) return false;
+
             entity.IsDeleted = true;
             entity.UpdatedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
             await _loggingService.LogAsync("system", "Supplier", "Delete", $"/api/v1/suppliers/{id}", $"Soft deleted supplier {id}");
             return true;
         }
     }
 }
+

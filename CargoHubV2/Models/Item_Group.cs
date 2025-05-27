@@ -1,4 +1,4 @@
-using CargohubV2.DataConverters;
+﻿using CargohubV2.DataConverters;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
@@ -30,3 +30,4 @@ namespace CargohubV2.Models
 
     }
 }
+

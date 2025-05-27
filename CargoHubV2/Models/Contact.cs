@@ -1,4 +1,4 @@
-namespace CargohubV2.Models
+﻿namespace CargohubV2.Models
 {
     public class Contact
     {
@@ -7,3 +7,4 @@ namespace CargohubV2.Models
         public string Email { get; set; }
     }
 }
+
