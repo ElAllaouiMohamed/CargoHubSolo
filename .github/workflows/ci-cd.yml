@@ -60,7 +60,6 @@ jobs:
       - name: Run C# linting
         run: |
           dotnet tool install -g dotnet-format
-          dotnet format --folder ./CargoHubV2
           dotnet format ${{ env.SOLUTION_PATH }} --verify-no-changes
 
       - name: Format Python code
