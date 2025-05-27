@@ -1,9 +1,9 @@
-using CargohubV2.Models;
+﻿using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using Swashbuckle.AspNetCore.Annotations;
 namespace CargohubV2.Controllers
 {
     [ApiController]
@@ -20,6 +20,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(Summary = "Get all transfers", Description = "Returns a list of transfers with optional limit.")]
+        [SwaggerResponse(200, "List of transfers", typeof(IEnumerable<Transfer>))]
         public async Task<ActionResult<IEnumerable<Transfer>>> GetAll([FromQuery] int? limit)
         {
             var entities = limit.HasValue
@@ -29,6 +31,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [SwaggerOperation(Summary = "Get transfer by ID", Description = "Returns a single transfer by its unique identifier.")]
+        [SwaggerResponse(200, "Transfer found", typeof(Transfer))]
         public async Task<ActionResult<Transfer>> GetById(int id)
         {
             var entity = await _transferService.GetByIdAsync(id);
@@ -39,6 +43,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPost]
+        [SwaggerOperation(Summary = "Create a new transfer", Description = "Adds a new transfer to the system.")]
+        [SwaggerResponse(201, "Transfer created successfully", typeof(Transfer))]
         public async Task<ActionResult<Transfer>> Create([FromBody] Transfer transfer)
         {
             if (!ModelState.IsValid)
@@ -57,6 +63,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [SwaggerOperation(Summary = "Update an existing transfer", Description = "Updates the details of a transfer by its unique identifier.")]
+        [SwaggerResponse(200, "Transfer updated successfully", typeof(Transfer))]
         public async Task<ActionResult<Transfer>> Update(int id, [FromBody] Transfer updated)
         {
             if (!ModelState.IsValid)
@@ -77,6 +85,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [SwaggerOperation(Summary = "Soft delete a transfer", Description = "Marks a transfer as deleted without removing it from the database.")]
+        [SwaggerResponse(204, "Transfer soft-deleted")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             var result = await _transferService.SoftDeleteByIdAsync(id);

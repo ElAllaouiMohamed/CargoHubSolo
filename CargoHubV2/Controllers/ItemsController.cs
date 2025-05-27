@@ -1,9 +1,9 @@
-using CargohubV2.Models;
+﻿using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using Swashbuckle.AspNetCore.Annotations;
 namespace CargohubV2.Controllers
 {
     [ApiController]
@@ -20,6 +20,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(Summary = "Get all items", Description = "Returns a list of items with optional limit.")]
+        [SwaggerResponse(200, "List of items", typeof(IEnumerable<Item>))]
         public async Task<ActionResult<IEnumerable<Item>>> GetAll([FromQuery] int? limit)
         {
             var entities = limit.HasValue
@@ -29,6 +31,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [SwaggerOperation(Summary = "Get item by ID", Description = "Returns a single item by its unique identifier.")]
+        [SwaggerResponse(200, "Item found", typeof(Item))]
         public async Task<ActionResult<Item>> GetById(int id)
         {
             var entity = await _itemService.GetByIdAsync(id);
@@ -39,6 +43,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPost]
+        [SwaggerOperation(Summary = "Create a new item", Description = "Adds a new item to the system.")]
+        [SwaggerResponse(201, "Item created", typeof(Item))]
         public async Task<ActionResult<Item>> Create([FromBody] Item item)
         {
             if (!ModelState.IsValid)
@@ -57,6 +63,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [SwaggerOperation(Summary = "Update an existing item", Description = "Updates an existing item in the system.")]
+        [SwaggerResponse(200, "Item updated", typeof(Item))]
         public async Task<ActionResult<Item>> Update(int id, [FromBody] Item updated)
         {
             if (!ModelState.IsValid)
@@ -77,6 +85,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [SwaggerOperation(Summary = "Delete an item", Description = "Deletes an existing item by its unique identifier.")]
+        [SwaggerResponse(204, "Item deleted")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             var result = await _itemService.SoftDeleteByIdAsync(id);

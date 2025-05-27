@@ -1,9 +1,9 @@
-using CargohubV2.Models;
+﻿using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using Swashbuckle.AspNetCore.Annotations;
 namespace CargohubV2.Controllers
 {
     [ApiController]
@@ -20,6 +20,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(Summary = "Get all orders", Description = "Returns a list of orders with optional limit.")]
+        [SwaggerResponse(200, "List of orders", typeof(IEnumerable<Order>))]
         public async Task<ActionResult<IEnumerable<Order>>> GetAll([FromQuery] int? limit)
         {
             var entities = limit.HasValue
@@ -29,6 +31,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [SwaggerOperation(Summary = "Get order by ID", Description = "Returns a single order by its unique identifier.")]
+        [SwaggerResponse(200, "Order found", typeof(Order))]
         public async Task<ActionResult<Order>> GetById(int id)
         {
             var entity = await _orderService.GetByIdAsync(id);
@@ -39,6 +43,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPost]
+        [SwaggerOperation(Summary = "Create a new order", Description = "Adds a new order to the system.")]
+        [SwaggerResponse(201, "Order created", typeof(Order))]
         public async Task<ActionResult<Order>> Create([FromBody] Order order)
         {
             if (!ModelState.IsValid)
@@ -57,6 +63,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [SwaggerOperation(Summary = "Update an existing order", Description = "Updates an existing order in the system.")]
+        [SwaggerResponse(200, "Order updated", typeof(Order))]
         public async Task<ActionResult<Order>> Update(int id, [FromBody] Order updated)
         {
             if (!ModelState.IsValid)
@@ -77,6 +85,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [SwaggerOperation(Summary = "Delete an order", Description = "Deletes an existing order by its unique identifier.")]
+        [SwaggerResponse(204, "Order deleted")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             var result = await _orderService.SoftDeleteByIdAsync(id);

@@ -1,9 +1,9 @@
-using CargohubV2.Models;
+﻿using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using Swashbuckle.AspNetCore.Annotations;
 namespace CargohubV2.Controllers
 {
     [ApiController]
@@ -20,6 +20,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(Summary = "Get all clients", Description = "Returns a list of clients with optional limit.")]
+        [SwaggerResponse(200, "List of clients", typeof(IEnumerable<Client>))]
         public async Task<ActionResult<IEnumerable<Client>>> GetAll([FromQuery] int? limit)
         {
             var entities = limit.HasValue
@@ -29,6 +31,9 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [SwaggerOperation(Summary = "Get client by ID", Description = "Returns a single client by their unique identifier.")]
+        [SwaggerResponse(200, "Client found", typeof(Client))]
+        [SwaggerResponse(404, "Client not found")]
         public async Task<ActionResult<Client>> GetById(int id)
         {
             var entity = await _clientService.GetByIdAsync(id);
@@ -38,8 +43,11 @@ namespace CargohubV2.Controllers
             return Ok(entity);
         }
 
-        // Contactpersonen ophalen voor client
+        // Contactpersonen ophalen voor clie
         [HttpGet("{clientId:int}/contactpersons")]
+        [SwaggerOperation(Summary = "Get contact persons by client ID", Description = "Returns a list of contact persons for a specific client.")]
+        [SwaggerResponse(200, "List of contact persons", typeof(IEnumerable<ContactPerson>))]
+        [SwaggerResponse(404, "Client not found")]
         public async Task<ActionResult<IEnumerable<ContactPerson>>> GetContactPersons(int clientId)
         {
             var contactPersons = await _clientService.GetContactPersonsByClientIdAsync(clientId);
@@ -48,6 +56,8 @@ namespace CargohubV2.Controllers
 
         // Contactpersoon toevoegen aan client
         [HttpPost("{clientId:int}/contactpersons")]
+        [SwaggerOperation(Summary = "Add contact person to client", Description = "Adds a new contact person to a specific client.")]
+        [SwaggerResponse(201, "Contact person added", typeof(ContactPerson))]
         public async Task<ActionResult<ContactPerson>> AddContactPerson(int clientId, [FromBody] ContactPerson contactPerson)
         {
             if (!ModelState.IsValid)
@@ -67,6 +77,8 @@ namespace CargohubV2.Controllers
 
         // Contactpersoon bijwerken
         [HttpPut("contactpersons/{contactPersonId:int}")]
+        [SwaggerOperation(Summary = "Update contact person", Description = "Updates an existing contact person by their unique identifier.")]
+        [SwaggerResponse(200, "Contact person updated", typeof(ContactPerson))]
         public async Task<ActionResult<ContactPerson>> UpdateContactPerson(int contactPersonId, [FromBody] ContactPerson updated)
         {
             if (!ModelState.IsValid)
@@ -89,6 +101,8 @@ namespace CargohubV2.Controllers
 
         // Contactpersoon verwijderen
         [HttpDelete("contactpersons/{contactPersonId:int}")]
+        [SwaggerOperation(Summary = "Delete contact person", Description = "Deletes a contact person by their unique identifier.")]
+        [SwaggerResponse(204, "Contact person deleted")]
         public async Task<IActionResult> DeleteContactPerson(int contactPersonId)
         {
             var success = await _clientService.DeleteContactPersonAsync(contactPersonId);
@@ -106,6 +120,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPost]
+        [SwaggerOperation(Summary = "Create a new client", Description = "Creates a new client and returns the created client object.")]
+        [SwaggerResponse(201, "Client created", typeof(Client))]
         public async Task<ActionResult<Client>> Create([FromBody] Client client)
         {
             if (!ModelState.IsValid)
@@ -124,6 +140,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [SwaggerOperation(Summary = "Update an existing client", Description = "Updates an existing client by their unique identifier.")]
+        [SwaggerResponse(200, "Client updated", typeof(Client))]
         public async Task<ActionResult<Client>> Update(int id, [FromBody] Client updated)
         {
             if (!ModelState.IsValid)
@@ -144,6 +162,9 @@ namespace CargohubV2.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [SwaggerOperation(Summary = "Soft delete a client", Description = "Soft deletes a client by their unique identifier. The client is not permanently removed but marked as deleted.")]
+        [SwaggerResponse(204, "Client soft-deleted")]
+        [SwaggerResponse(404, "Client not found")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             var result = await _clientService.SoftDeleteByIdAsync(id);

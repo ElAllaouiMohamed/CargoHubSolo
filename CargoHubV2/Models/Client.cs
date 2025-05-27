@@ -1,4 +1,4 @@
-using CargohubV2.DataConverters;
+﻿using CargohubV2.DataConverters;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
@@ -10,6 +10,8 @@ namespace CargohubV2.Models
 
         public HazardClassification HazardClassification { get; set; }
         [JsonProperty("id")]
+
+        
         public int Id { get; set; }
 
         [JsonProperty("name")]

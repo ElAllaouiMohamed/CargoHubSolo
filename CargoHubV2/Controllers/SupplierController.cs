@@ -1,9 +1,9 @@
-using CargohubV2.Models;
+﻿using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using Swashbuckle.AspNetCore.Annotations;
 namespace CargohubV2.Controllers
 {
     [ApiController]
@@ -20,6 +20,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(Summary = "Get all suppliers", Description = "Returns a list of suppliers with optional limit.")]
+        [SwaggerResponse(200, "List of suppliers", typeof(IEnumerable<Supplier>))]
         public async Task<ActionResult<IEnumerable<Supplier>>> GetAll([FromQuery] int? limit)
         {
             var entities = limit.HasValue
@@ -29,6 +31,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [SwaggerOperation(Summary = "Get supplier by ID", Description = "Returns a single supplier by its unique identifier.")]
+        [SwaggerResponse(200, "Supplier found", typeof(Supplier))]
         public async Task<ActionResult<Supplier>> GetById(int id)
         {
             var entity = await _supplierService.GetByIdAsync(id);
@@ -39,6 +43,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPost]
+        [SwaggerOperation(Summary = "Create a new supplier", Description = "Adds a new supplier to the system.")]
+        [SwaggerResponse(201, "Supplier created successfully", typeof(Supplier))]
         public async Task<ActionResult<Supplier>> Create([FromBody] Supplier supplier)
         {
             if (!ModelState.IsValid)
@@ -57,6 +63,9 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPut("{id:int}")]
+
+        [SwaggerOperation(Summary = "Update a supplier", Description = "Updates an existing supplier by its unique identifier.")]
+        [SwaggerResponse(200, "Supplier updated successfully", typeof(Supplier))]
         public async Task<ActionResult<Supplier>> Update(int id, [FromBody] Supplier updated)
         {
             if (!ModelState.IsValid)
@@ -77,6 +86,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [SwaggerOperation(Summary = "Delete a supplier", Description = "Deletes an existing supplier by its unique identifier.")]
+        [SwaggerResponse(204, "Supplier deleted successfully")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             var result = await _supplierService.SoftDeleteByIdAsync(id);

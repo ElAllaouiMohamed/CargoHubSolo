@@ -1,4 +1,4 @@
-using CargohubV2.Contexts;
+﻿using CargohubV2.Contexts;
 using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using Swashbuckle.AspNetCore.Annotations;
 namespace CargohubV2.Controllers
 {
     [ApiController]
@@ -25,6 +25,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(Summary = "Get all warehouses", Description = "Returns a list of warehouses with optional limit.")]
+        [SwaggerResponse(200, "List of warehouses", typeof(IEnumerable<Warehouse>))]
         public async Task<ActionResult<IEnumerable<Warehouse>>> GetAll([FromQuery] int? limit)
         {
             var entities = limit.HasValue
@@ -34,6 +36,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet("{warehouseId}/hazard-check")]
+        [SwaggerOperation(Summary = "Check hazard compliance", Description = "Checks if the items in the warehouse comply with its hazard classification.")]
+        [SwaggerResponse(200, "No forbidden items found")]
         public async Task<IActionResult> CheckHazardCompliance(int warehouseId)
         {
             var warehouse = await _context.Warehouses.FindAsync(warehouseId);
@@ -54,6 +58,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [SwaggerOperation(Summary = "Get warehouse by ID", Description = "Returns a single warehouse by its unique identifier.")]
+        [SwaggerResponse(200, "Warehouse found", typeof(Warehouse))]
         public async Task<ActionResult<Warehouse>> GetById(int id)
         {
             var entity = await _warehouseService.GetByIdAsync(id);
@@ -64,6 +70,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPost]
+        [SwaggerOperation(Summary = "Create a new warehouse", Description = "Adds a new warehouse to the system.")]
+        [SwaggerResponse(201, "Warehouse created successfully", typeof(Warehouse))]
         public async Task<ActionResult<Warehouse>> Create([FromBody] Warehouse warehouse)
         {
             if (!ModelState.IsValid)
@@ -82,6 +90,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [SwaggerOperation(Summary = "Update an existing warehouse", Description = "Updates the details of an existing warehouse.")]
+        [SwaggerResponse(200, "Warehouse updated successfully", typeof(Warehouse))]
         public async Task<ActionResult<Warehouse>> Update(int id, [FromBody] Warehouse updated)
         {
             if (!ModelState.IsValid)
@@ -102,6 +112,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [SwaggerOperation(Summary = "Soft delete a warehouse", Description = "Marks a warehouse as deleted without removing it from the database.")]
+        [SwaggerResponse(204, "Warehouse soft-deleted")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             var result = await _warehouseService.SoftDeleteByIdAsync(id);

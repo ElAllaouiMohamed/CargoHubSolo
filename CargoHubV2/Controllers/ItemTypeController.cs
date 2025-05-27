@@ -1,9 +1,9 @@
-using CargohubV2.Models;
+﻿using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using Swashbuckle.AspNetCore.Annotations;
 namespace CargohubV2.Controllers
 {
     [ApiController]
@@ -20,6 +20,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(Summary = "Get all item types", Description = "Returns a list of item types with optional limit.")]
+        [SwaggerResponse(200, "List of item types", typeof(IEnumerable<Item_Type>))]
         public async Task<ActionResult<IEnumerable<Item_Type>>> GetAll([FromQuery] int? limit)
         {
             var entities = limit.HasValue
@@ -29,6 +31,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [SwaggerOperation(Summary = "Get item type by ID", Description = "Returns a single item type by its unique identifier.")]
+        [SwaggerResponse(200, "Item type found", typeof(Item_Type))]
         public async Task<ActionResult<Item_Type>> GetById(int id)
         {
             var entity = await _itemTypeService.GetByIdAsync(id);
@@ -39,6 +43,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPost]
+        [SwaggerOperation(Summary = "Create a new item type", Description = "Adds a new item type to the system.")]
+        [SwaggerResponse(201, "Item type created", typeof(Item_Type))]
         public async Task<ActionResult<Item_Type>> Create([FromBody] Item_Type itemType)
         {
             if (!ModelState.IsValid)
@@ -57,6 +63,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [SwaggerOperation(Summary = "Update an existing item type", Description = "Updates an existing item type in the system.")]
+        [SwaggerResponse(200, "Item type updated", typeof(Item_Type))]
         public async Task<ActionResult<Item_Type>> Update(int id, [FromBody] Item_Type updated)
         {
             if (!ModelState.IsValid)
@@ -77,6 +85,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [SwaggerOperation(Summary = "Delete an item type", Description = "Deletes an existing item type by its unique identifier.")]
+        [SwaggerResponse(204, "Item type deleted")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             var result = await _itemTypeService.SoftDeleteByIdAsync(id);

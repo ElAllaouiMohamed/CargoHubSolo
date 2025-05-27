@@ -1,9 +1,9 @@
-using CargohubV2.Models;
+﻿using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using Swashbuckle.AspNetCore.Annotations;
 namespace CargohubV2.Controllers
 {
     [ApiController]
@@ -20,6 +20,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(Summary = "Get all locations", Description = "Returns a list of locations with optional limit.")] 
+        [SwaggerResponse(200, "List of locations", typeof(IEnumerable<Location>))]
         public async Task<ActionResult<IEnumerable<Location>>> GetAll([FromQuery] int? limit)
         {
             var entities = limit.HasValue
@@ -29,6 +31,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [SwaggerOperation(Summary = "Get location by ID", Description = "Returns a single location by its unique identifier.")]
+        [SwaggerResponse(200, "Location found", typeof(Location))]
         public async Task<ActionResult<Location>> GetById(int id)
         {
             var entity = await _locationService.GetByIdAsync(id);
@@ -38,7 +42,9 @@ namespace CargohubV2.Controllers
             return Ok(entity);
         }
 
-        [HttpPost]
+        [HttpPost] 
+        [SwaggerOperation(Summary = "Create a new location", Description = "Adds a new location to the system.")]
+        [SwaggerResponse(201, "Location created", typeof(Location))]
         public async Task<ActionResult<Location>> Create([FromBody] Location location)
         {
             if (!ModelState.IsValid)
@@ -57,6 +63,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [SwaggerOperation(Summary = "Update a location", Description = "Updates an existing location by its unique identifier.")]
+        [SwaggerResponse(200, "Location updated", typeof(Location))]
         public async Task<ActionResult<Location>> Update(int id, [FromBody] Location updated)
         {
             if (!ModelState.IsValid)
@@ -77,6 +85,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [SwaggerOperation(Summary = "Soft delete a location", Description = "Marks a location as deleted without removing it from the database.")]
+        [SwaggerResponse(204, "Location soft-deleted")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             var result = await _locationService.SoftDeleteByIdAsync(id);

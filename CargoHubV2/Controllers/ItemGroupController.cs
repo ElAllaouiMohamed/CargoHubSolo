@@ -1,8 +1,9 @@
-using CargohubV2.Models;
+﻿using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace CargohubV2.Controllers
 {
@@ -20,6 +21,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(Summary = "Get all item groups", Description = "Returns a list of item groups with optional limit.")]
+        [SwaggerResponse(200, "List of item groups", typeof(IEnumerable<Item_Group>))]
         public async Task<ActionResult<IEnumerable<Item_Group>>> GetAll([FromQuery] int? limit)
         {
             var entities = limit.HasValue
@@ -29,6 +32,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [SwaggerOperation(Summary = "Get item group by ID", Description = "Returns a single item group by its unique identifier.")]
+        [SwaggerResponse(200, "Item group found", typeof(Item_Group))]
         public async Task<ActionResult<Item_Group>> GetById(int id)
         {
             var entity = await _itemGroupService.GetByIdAsync(id);
@@ -39,6 +44,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPost]
+        [SwaggerOperation(Summary = "Create a new item group", Description = "Adds a new item group to the system.")]
+        [SwaggerResponse(201, "Item group created", typeof(Item_Group))]
         public async Task<ActionResult<Item_Group>> Create([FromBody] Item_Group itemGroup)
         {
             if (!ModelState.IsValid)
@@ -57,6 +64,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [SwaggerOperation(Summary = "Update an existing item group", Description = "Updates the details of an existing item group.")]
+        [SwaggerResponse(200, "Item group updated", typeof(Item_Group))]
         public async Task<ActionResult<Item_Group>> Update(int id, [FromBody] Item_Group updated)
         {
             if (!ModelState.IsValid)
@@ -77,6 +86,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [SwaggerOperation(Summary = "Soft delete an item group", Description = "Marks an item group as deleted without removing it from the database.")]
+        [SwaggerResponse(204, "Item group soft-deleted")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             var result = await _itemGroupService.SoftDeleteByIdAsync(id);

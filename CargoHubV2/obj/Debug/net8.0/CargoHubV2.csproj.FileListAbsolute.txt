@@ -50,6 +50,7 @@ C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debu
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\Npgsql.dll
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\Sprache.dll
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\Swashbuckle.AspNetCore.Annotations.dll
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\CargoHubV2\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll

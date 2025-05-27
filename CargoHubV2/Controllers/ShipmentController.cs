@@ -1,9 +1,9 @@
-using CargohubV2.Models;
+﻿using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using Swashbuckle.AspNetCore.Annotations;
 namespace CargohubV2.Controllers
 {
     [ApiController]
@@ -20,6 +20,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(Summary = "Get all shipments", Description = "Returns a list of shipments with optional limit.")]
+        [SwaggerResponse(200, "List of shipments", typeof(IEnumerable<Shipment>))]
         public async Task<ActionResult<IEnumerable<Shipment>>> GetAll([FromQuery] int? limit)
         {
             var entities = limit.HasValue
@@ -29,6 +31,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [SwaggerOperation(Summary = "Get shipment by ID", Description = "Returns a single shipment by its unique identifier.")]
+        [SwaggerResponse(200, "Shipment found", typeof(Shipment))]
         public async Task<ActionResult<Shipment>> GetById(int id)
         {
             var entity = await _shipmentService.GetByIdAsync(id);
@@ -39,6 +43,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPost]
+        [SwaggerOperation(Summary = "Create a new shipment", Description = "Adds a new shipment to the system.")]
+        [SwaggerResponse(201, "Shipment created successfully", typeof(Shipment))]
         public async Task<ActionResult<Shipment>> Create([FromBody] Shipment shipment)
         {
             if (!ModelState.IsValid)
@@ -57,6 +63,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [SwaggerOperation(Summary = "Update an existing shipment", Description = "Updates the details of an existing shipment by its unique identifier.")]
+        [SwaggerResponse(200, "Shipment updated successfully", typeof(Shipment))]
         public async Task<ActionResult<Shipment>> Update(int id, [FromBody] Shipment updated)
         {
             if (!ModelState.IsValid)
@@ -77,6 +85,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [SwaggerOperation(Summary = "Delete a shipment", Description = "Deletes an existing shipment by its unique identifier.")]
+        [SwaggerResponse(204, "Shipment deleted successfully")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             var result = await _shipmentService.SoftDeleteByIdAsync(id);

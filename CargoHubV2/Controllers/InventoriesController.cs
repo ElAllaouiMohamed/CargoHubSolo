@@ -1,4 +1,4 @@
-using CargohubV2.Contexts;
+﻿using CargohubV2.Contexts;
 using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace CargohubV2.Controllers
 {
@@ -25,6 +26,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(Summary = "Get all inventories", Description = "Returns a list of inventories with optional limit.")]
+        [SwaggerResponse(200, "List of inventories", typeof(IEnumerable<Inventory>))]
         public async Task<ActionResult<IEnumerable<Inventory>>> GetAll([FromQuery] int? limit)
         {
             var entities = limit.HasValue
@@ -35,6 +38,8 @@ namespace CargohubV2.Controllers
 
         // Voorraad per locatie tonen
         [HttpGet("{inventoryId:int}/locations")]
+        [SwaggerOperation(Summary = "Get inventory locations", Description = "Returns a list of inventory locations for a specific inventory.")]
+        [SwaggerResponse(200, "List of inventory locations", typeof(IEnumerable<InventoryLocation>))]
         public async Task<IActionResult> GetInventoryLocations(int inventoryId)
         {
             var inventoryLocations = await _context.InventoryLocations
@@ -46,6 +51,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [SwaggerOperation(Summary = "Get inventory by ID", Description = "Returns a single inventory by its unique identifier.")]
+        [SwaggerResponse(200, "Inventory found", typeof(Inventory))]
         public async Task<ActionResult<Inventory>> GetById(int id)
         {
             var entity = await _inventoryService.GetByIdAsync(id);
@@ -56,6 +63,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPost]
+        [SwaggerOperation(Summary = "Create a new inventory", Description = "Adds a new inventory to the system.")]
+        [SwaggerResponse(201, "Inventory created", typeof(Inventory))]
         public async Task<ActionResult<Inventory>> Create([FromBody] Inventory inventory)
         {
             if (!ModelState.IsValid)
@@ -74,6 +83,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [SwaggerOperation(Summary = "Update an existing inventory", Description = "Updates the details of an existing inventory.")]
+        [SwaggerResponse(200, "Inventory updated", typeof(Inventory))]
         public async Task<ActionResult<Inventory>> Update(int id, [FromBody] Inventory updated)
         {
             if (!ModelState.IsValid)
@@ -94,6 +105,8 @@ namespace CargohubV2.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [SwaggerOperation(Summary = "Delete an inventory", Description = "Deletes an existing inventory by its unique identifier.")]
+        [SwaggerResponse(204, "Inventory deleted")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             var result = await _inventoryService.SoftDeleteByIdAsync(id);
