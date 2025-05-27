@@ -1,4 +1,4 @@
-﻿using CargohubV2.Contexts;
+using CargohubV2.Contexts;
 using CargohubV2.DataConverters;
 using CargohubV2.Services;
 using Microsoft.EntityFrameworkCore;
@@ -38,7 +38,7 @@ builder.Services.AddControllers(options =>
 .AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    options.JsonSerializerOptions.MaxDepth = 64; 
+    options.JsonSerializerOptions.MaxDepth = 64;
 });
 
 builder.Services.AddEndpointsApiExplorer();

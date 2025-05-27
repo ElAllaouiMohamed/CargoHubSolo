@@ -62,15 +62,6 @@ jobs:
           dotnet tool install -g dotnet-format
           dotnet format whitespace ${{ env.SOLUTION_PATH }} --verify-no-changes
           dotnet format ${{ env.SOLUTION_PATH }} --verify-no-changes
-          dotnet format whitespace CargoHubSolo.sln --verify-no-changes   
-          dotnet format style CargoHubSolo.sln --verify-no-changes
-          dotnet format CargoHubSolo.sln
-          dotnet format whitespace CargoHubSolo.csproj --verify-no-changes   
-          dotnet format style CargoHubSolo.csproj --verify-no-changes
-          dotnet format CargoHubSolo.csproj
-
-
-
 
       - name: Format Python code
         run: autopep8 --in-place --aggressive --aggressive IntegrationTests/*.py

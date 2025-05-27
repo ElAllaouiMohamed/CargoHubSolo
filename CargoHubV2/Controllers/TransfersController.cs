@@ -1,4 +1,4 @@
-﻿using CargohubV2.Models;
+using CargohubV2.Models;
 using CargohubV2.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace CargohubV2.Controllers
         }
 
 
-        
+
 
         [HttpGet]
         [SwaggerOperation(Summary = "Get all transfers", Description = "Returns a list of transfers with optional limit.")]

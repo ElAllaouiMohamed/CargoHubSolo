@@ -1,4 +1,4 @@
-﻿using CargohubV2.Models;
+using CargohubV2.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CargohubV2.Contexts
