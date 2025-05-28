@@ -224,7 +224,7 @@ namespace UnitTests
                 Description = "Updated electronic devices"
             };
 
-            // Act
+            // Ac
             var result = await _itemGroupService.UpdateItemGroupAsync(999, updatedItemGroup);
 
             // Assert
