@@ -1,8 +1,9 @@
 import unittest
 from httpx import Client, Timeout
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 import json
+
 
 class TestInventoriesEndpoint(unittest.TestCase):
     def setUp(self):
@@ -18,13 +19,27 @@ class TestInventoriesEndpoint(unittest.TestCase):
         )
         self.TEST_INVENTORY_ID = None
 
+        location_response = self.client.post(
+            "http://localhost:5000/api/v1/locations/",
+            json={
+                "Name": "TestLoc",
+                "Address": "Teststraat 1",
+                "City": "Teststad",
+                "ZipCode": "1234AB",
+                "Province": "Zuid-Holland",
+                "Country": "Nederland",
+            },
+        )
+        assert location_response.status_code in [200, 201]
+        self.LOCATION_ID = location_response.json().get("id")
+
         now_utc = datetime.utcnow().isoformat() + "Z"
 
         self.TEST_INVENTORY = {
             "ItemId": "test-123",
             "Description": "Integration Test Inventory",
             "ItemReference": "ref-001",
-            "Locations": [1],
+            "Locations": [self.LOCATION_ID],
             "TotalOnHand": 100,
             "TotalExpected": 50,
             "TotalOrdered": 20,
@@ -35,27 +50,46 @@ class TestInventoriesEndpoint(unittest.TestCase):
             "InventoryLocations": [
                 {
                     "InventoryId": 0,
-                    "LocationId": 1,
+                    "LocationId": self.LOCATION_ID,
                     "CreatedAt": now_utc,
                     "UpdatedAt": now_utc,
                 }
             ],
         }
 
-        self.UPDATE_INVENTORY = self.TEST_INVENTORY.copy()
-        self.UPDATE_INVENTORY["Description"] = "Updated Inventory"
+        self.UPDATE_INVENTORY = {
+            "ItemId": "test-123",
+            "Description": "Integration Test Inventory",
+            "ItemReference": "ref-001",
+            "Locations": [self.LOCATION_ID],
+            "TotalOnHand": 200,
+            "TotalExpected": 100,
+            "TotalOrdered": 50,
+            "TotalAllocated": 25,
+            "TotalAvailable": 225,
+            "CreatedAt": now_utc,
+            "UpdatedAt": now_utc,
+            "InventoryLocations": [
+                {
+                    "InventoryId": 0,
+                    "LocationId": self.LOCATION_ID,
+                    "CreatedAt": now_utc,
+                    "UpdatedAt": now_utc,
+                }
+            ],
+        }
 
     def test_1_create_inventory(self):
         response = self.client.post(self.base_url, json=self.TEST_INVENTORY)
         print("RESPONSE TEXT:", response.text)
+        print("REQUEST JSON:", json.dumps(self.TEST_INVENTORY, indent=2))
         self.assertIn(response.status_code, [200, 201])
         json_resp = response.json()
-        print("REQUEST JSON:", json.dumps(self.TEST_INVENTORY, indent=2))
         self.TEST_INVENTORY_ID = json_resp.get("id") or json_resp.get("Id")
         self.assertIsNotNone(self.TEST_INVENTORY_ID)
         self.assertEqual(
-            json_resp.get("itemId"),
-            self.TEST_INVENTORY["ItemId"],
+            json_resp.get("itemId") or json_resp.get("ItemId"),
+            self.TEST_INVENTORY["ItemId"]
         )
 
 
