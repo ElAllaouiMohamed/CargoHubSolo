@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-
 using CargohubV2.Contexts;
 using CargohubV2.DataConverters;
 using CargohubV2.Services;
@@ -8,9 +6,6 @@ using System.Reflection;
 using System.IO;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,10 +35,10 @@ builder.Services.AddControllers(options =>
     options.Filters.Add<LoggingActionFilter>();
     options.Filters.AddService<ApiKeyFilter>();
 })
-.AddNewtonsoftJson(options =>
+.AddJsonOptions(options =>
 {
-    options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.MaxDepth = 64;
 });
 
 builder.Services.AddEndpointsApiExplorer();

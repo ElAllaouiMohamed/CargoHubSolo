@@ -21,32 +21,30 @@ class TestInventoriesEndpoint(unittest.TestCase):
         now_utc = datetime.utcnow().isoformat() + "Z"
 
         self.TEST_INVENTORY = {
-            "item_id": "test-123",
-            "description": "Integration Test Inventory",
-            "item_reference": "ref-001",
-            "locations": [1],
-            "total_on_hand": 100,
-            "total_expected": 50,
-            "total_ordered": 20,
-            "total_allocated": 10,
-            "total_available": 120,
-            "created_at": now_utc,
-            "updated_at": now_utc,
+            "ItemId": "test-123",
+            "Description": "Integration Test Inventory",
+            "ItemReference": "ref-001",
+            "Locations": [1],
+            "TotalOnHand": 100,
+            "TotalExpected": 50,
+            "TotalOrdered": 20,
+            "TotalAllocated": 10,
+            "TotalAvailable": 120,
+            "CreatedAt": now_utc,
+            "UpdatedAt": now_utc,
+            "InventoryLocations": [
+                {
+                    "InventoryId": 0,
+                    "LocationId": 1,
+                    "CreatedAt": now_utc,
+                    "UpdatedAt": now_utc,
+                }
+            ],
         }
 
-        self.UPDATE_INVENTORY = {
-            "item_id": "test-123",
-            "description": "Integration Test Inventory",
-            "item_reference": "ref-001",
-            "locations": [1],
-            "total_on_hand": 100,
-            "total_expected": 50,
-            "total_ordered": 20,
-            "total_allocated": 10,
-            "total_available": 120,
-            "created_at": now_utc,
-            "updated_at": now_utc,
-        }
+        self.UPDATE_INVENTORY = self.TEST_INVENTORY.copy()
+        self.UPDATE_INVENTORY["Description"] = "Updated Inventory"
+
     def test_1_create_inventory(self):
         response = self.client.post(self.base_url, json=self.TEST_INVENTORY)
         print("RESPONSE TEXT:", response.text)
@@ -56,9 +54,10 @@ class TestInventoriesEndpoint(unittest.TestCase):
         self.TEST_INVENTORY_ID = json_resp.get("id") or json_resp.get("Id")
         self.assertIsNotNone(self.TEST_INVENTORY_ID)
         self.assertEqual(
-            json_resp.get("item_id") or json_resp.get("ItemId"),
-            self.TEST_INVENTORY["item_id"],
+            json_resp.get("itemId"),
+            self.TEST_INVENTORY["ItemId"],
         )
+
 
     def test_2_get_inventory_by_id(self):
         if not self.TEST_INVENTORY_ID:
