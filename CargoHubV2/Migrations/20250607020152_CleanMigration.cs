@@ -1,24 +1,39 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace CargohubV2.Migrations
+namespace CargoHubV2.Migrations
 {
     /// <inheritdoc />
-    public partial class database6 : Migration
+    public partial class CleanMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "ApiKeys",
+                columns: table => new
+                {
+                    ApiKeyId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    KeyHash = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ApiKeys", x => x.ApiKeyId);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Clients",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    HazardClassification = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Address = table.Column<string>(type: "text", nullable: true),
                     City = table.Column<string>(type: "text", nullable: true),
@@ -43,6 +58,7 @@ namespace CargohubV2.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    HazardClassification = table.Column<int>(type: "integer", nullable: false),
                     ItemId = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     ItemReference = table.Column<string>(type: "text", nullable: true),
@@ -62,7 +78,7 @@ namespace CargohubV2.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Items_Groups",
+                name: "ItemGroups",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -75,11 +91,11 @@ namespace CargohubV2.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Items_Groups", x => x.Id);
+                    table.PrimaryKey("PK_ItemGroups", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Items_Lines",
+                name: "ItemLines",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -92,11 +108,11 @@ namespace CargohubV2.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Items_Lines", x => x.Id);
+                    table.PrimaryKey("PK_ItemLines", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Items_Types",
+                name: "ItemTypes",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -109,7 +125,7 @@ namespace CargohubV2.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Items_Types", x => x.Id);
+                    table.PrimaryKey("PK_ItemTypes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -128,6 +144,24 @@ namespace CargohubV2.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Locations", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LogEntries",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    User = table.Column<string>(type: "text", nullable: false),
+                    Entity = table.Column<string>(type: "text", nullable: false),
+                    Action = table.Column<string>(type: "text", nullable: false),
+                    Endpoint = table.Column<string>(type: "text", nullable: false),
+                    Details = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LogEntries", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -243,6 +277,7 @@ namespace CargohubV2.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    HazardClassification = table.Column<int>(type: "integer", nullable: false),
                     Code = table.Column<string>(type: "text", nullable: true),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Address = table.Column<string>(type: "text", nullable: true),
@@ -260,6 +295,35 @@ namespace CargohubV2.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Warehouses", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InventoryLocations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    InventoryId = table.Column<int>(type: "integer", nullable: false),
+                    LocationId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InventoryLocations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InventoryLocations_Inventories_InventoryId",
+                        column: x => x.InventoryId,
+                        principalTable: "Inventories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InventoryLocations_Locations_LocationId",
+                        column: x => x.LocationId,
+                        principalTable: "Locations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -293,19 +357,19 @@ namespace CargohubV2.Migrations
                 {
                     table.PrimaryKey("PK_Items", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Items_Items_Groups_ItemGroupId",
+                        name: "FK_Items_ItemGroups_ItemGroupId",
                         column: x => x.ItemGroupId,
-                        principalTable: "Items_Groups",
+                        principalTable: "ItemGroups",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Items_Items_Lines_ItemLineId",
+                        name: "FK_Items_ItemLines_ItemLineId",
                         column: x => x.ItemLineId,
-                        principalTable: "Items_Lines",
+                        principalTable: "ItemLines",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Items_Items_Types_ItemTypeId",
+                        name: "FK_Items_ItemTypes_ItemTypeId",
                         column: x => x.ItemTypeId,
-                        principalTable: "Items_Types",
+                        principalTable: "ItemTypes",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Items_Suppliers_SupplierId",
@@ -351,6 +415,68 @@ namespace CargohubV2.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ContactPersons",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    WarehouseId = table.Column<int>(type: "integer", nullable: true),
+                    ClientId = table.Column<int>(type: "integer", nullable: true),
+                    SupplierId = table.Column<int>(type: "integer", nullable: true),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Function = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Phone = table.Column<string>(type: "text", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ContactPersons", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ContactPersons_Clients_ClientId",
+                        column: x => x.ClientId,
+                        principalTable: "Clients",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ContactPersons_Suppliers_SupplierId",
+                        column: x => x.SupplierId,
+                        principalTable: "Suppliers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ContactPersons_Warehouses_WarehouseId",
+                        column: x => x.WarehouseId,
+                        principalTable: "Warehouses",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContactPersons_ClientId",
+                table: "ContactPersons",
+                column: "ClientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContactPersons_SupplierId",
+                table: "ContactPersons",
+                column: "SupplierId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContactPersons_WarehouseId",
+                table: "ContactPersons",
+                column: "WarehouseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InventoryLocations_InventoryId",
+                table: "InventoryLocations",
+                column: "InventoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InventoryLocations_LocationId",
+                table: "InventoryLocations",
+                column: "LocationId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Items_ItemGroupId",
                 table: "Items",
@@ -391,31 +517,43 @@ namespace CargohubV2.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Clients");
+                name: "ApiKeys");
 
             migrationBuilder.DropTable(
-                name: "Inventories");
+                name: "ContactPersons");
+
+            migrationBuilder.DropTable(
+                name: "InventoryLocations");
 
             migrationBuilder.DropTable(
                 name: "Items");
 
             migrationBuilder.DropTable(
-                name: "Locations");
+                name: "LogEntries");
 
             migrationBuilder.DropTable(
                 name: "Stocks");
 
             migrationBuilder.DropTable(
+                name: "Clients");
+
+            migrationBuilder.DropTable(
                 name: "Warehouses");
 
             migrationBuilder.DropTable(
-                name: "Items_Groups");
+                name: "Inventories");
 
             migrationBuilder.DropTable(
-                name: "Items_Lines");
+                name: "Locations");
 
             migrationBuilder.DropTable(
-                name: "Items_Types");
+                name: "ItemGroups");
+
+            migrationBuilder.DropTable(
+                name: "ItemLines");
+
+            migrationBuilder.DropTable(
+                name: "ItemTypes");
 
             migrationBuilder.DropTable(
                 name: "Suppliers");
@@ -431,4 +569,3 @@ namespace CargohubV2.Migrations
         }
     }
 }
-
