@@ -1,15 +1,18 @@
 import unittest
 from httpx import Client
 from httpx import Timeout
+import os
+
 
 
 class TestClientsEndpoint(unittest.TestCase):
     def setUp(self):
+        api_key = os.getenv("TEST_API_KEY", "fallback")
         self.base_url = "http://localhost:5000/api/v1/clients/"
         timeout = Timeout(60.0)
         self.client = Client(timeout=timeout)
         self.client.headers = {
-            "X-Api-Key": "AdminKey123",
+            "X-Api-Key": api_key,
             "Content-Type": "application/json",
         }
         self.TEST_CLIENT_ID = None

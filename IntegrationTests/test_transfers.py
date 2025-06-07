@@ -2,6 +2,7 @@ import unittest
 from httpx import Client
 from datetime import datetime
 from httpx import Timeout
+import os
 
 
 class TestTransfersEndpoint(unittest.TestCase):
@@ -9,8 +10,9 @@ class TestTransfersEndpoint(unittest.TestCase):
         self.base_url = "http://localhost:5000/api/v1/transfers/"
         timeout = Timeout(60.0)  # 15 seconden timeout
         self.client = Client(timeout=timeout)
+        api_key = os.getenv("TEST_API_KEY", "fallback")
         self.client.headers = {
-            "X-Api-Key": "AdminKey123",
+            "X-Api-Key": api_key,
             "Content-Type": "application/json",
         }
         self.created_transfer_id = None

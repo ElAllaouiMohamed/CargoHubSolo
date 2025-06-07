@@ -2,13 +2,15 @@ import unittest
 from httpx import Client
 from datetime import datetime
 
+import os
 
 class TestWarehousesEndpoint(unittest.TestCase):
     def setUp(self):
         self.base_url = "http://localhost:5000/api/v1/warehouses/"
         self.client = Client()
+        api_key = os.getenv("TEST_API_KEY", "fallback")
         self.client.headers = {
-            "X-Api-Key": "AdminKey123",
+            "X-Api-Key": api_key,
             "Content-Type": "application/json",
         }
         self.test_id = None

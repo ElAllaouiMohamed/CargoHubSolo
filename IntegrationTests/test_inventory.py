@@ -1,15 +1,17 @@
 import unittest
 from httpx import Client, Timeout
 from datetime import datetime
+import os
 
 
 class TestInventoriesEndpoint(unittest.TestCase):
     def setUp(self):
         timeout = Timeout(55.0)
+        api_key = os.getenv("TEST_API_KEY", "fallback")
         self.client = Client(timeout=timeout)
         self.base_url = "http://localhost:5000/api/v1/inventories/"
         self.client.headers = {
-            "X-Api-Key": "AdminKey123",
+            "X-Api-Key": api_key,
             "Content-Type": "application/json",
         }
         self.created_inventory_id = None
