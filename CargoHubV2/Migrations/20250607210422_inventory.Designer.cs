@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using CargohubV2.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CargoHubV2.Migrations
 {
     [DbContext(typeof(CargoHubDbContext))]
-    partial class CargoHubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250607210422_inventory")]
+    partial class inventory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -163,50 +166,64 @@ namespace CargoHubV2.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("Id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("CreatedAt");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("Description");
 
                     b.Property<int>("HazardClassification")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("HazardClassification");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("IsDeleted");
 
                     b.Property<string>("ItemId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("ItemId");
 
                     b.Property<string>("ItemReference")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("ItemReference");
 
                     b.PrimitiveCollection<List<int>>("Locations")
-                        .HasColumnType("integer[]");
+                        .HasColumnType("integer[]")
+                        .HasColumnName("Locations");
 
                     b.Property<int>("TotalAllocated")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("TotalAllocated");
 
                     b.Property<int>("TotalAvailable")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("TotalAvailable");
 
                     b.Property<int>("TotalExpected")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("TotalExpected");
 
                     b.Property<int>("TotalOnHand")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("TotalOnHand");
 
                     b.Property<int>("TotalOrdered")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("TotalOrdered");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UpdatedAt");
 
                     b.HasKey("Id");
 
@@ -217,24 +234,30 @@ namespace CargoHubV2.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("Id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("CreatedAt");
 
                     b.Property<int>("InventoryId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("InventoryId");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("IsDeleted");
 
                     b.Property<int>("LocationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("LocationId");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UpdatedAt");
 
                     b.HasKey("Id");
 

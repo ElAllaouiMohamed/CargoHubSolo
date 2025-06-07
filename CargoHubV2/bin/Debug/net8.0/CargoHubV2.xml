@@ -52,5 +52,41 @@
         <member name="M:CargoHubV2.Migrations.testt.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:CargoHubV2.Migrations.inventory">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.inventory.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.inventory.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.inventory.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:CargoHubV2.Migrations.inventoryy">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.inventoryy.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.inventoryy.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.inventoryy.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:CargoHubV2.Migrations.inventoryyy">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.inventoryyy.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.inventoryyy.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.inventoryyy.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>
