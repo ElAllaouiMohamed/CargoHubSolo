@@ -5,14 +5,18 @@ from datetime import datetime
 import os
 
 class TestWarehousesEndpoint(unittest.TestCase):
+
     def setUp(self):
-        self.base_url = "http://localhost:5000/api/v1/warehouses/"
-        self.client = Client()
         api_key = os.getenv("TEST_API_KEY", "fallback")
-        self.client.headers = {
-            "X-Api-Key": api_key,
-            "Content-Type": "application/json",
-        }
+        self.base_url = "http://localhost:5000/api/v1/warehouses/"
+        timeout = Timeout(60.0)
+        self.client = Client(
+            timeout=timeout,
+            headers={
+                "X-Api-Key": api_key,
+                "Content-Type": "application/json",
+            },
+        )
         self.test_id = None
 
         self.test_warehouse = {

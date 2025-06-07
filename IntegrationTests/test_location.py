@@ -6,15 +6,18 @@ import os
 
 
 class TestLocationEndpoint(unittest.TestCase):
+
     def setUp(self):
-        self.base_url = "http://localhost:5000/api/v1/locations/"
-        timeout = Timeout(60.0)  # 15 seconden timeout
-        self.client = Client(timeout=timeout)
         api_key = os.getenv("TEST_API_KEY", "fallback")
-        self.client.headers = {
-            "X-Api-Key": api_key,
-            "Content-Type": "application/json",
-        }
+        self.base_url = "http://localhost:5000/api/v1/locations/"
+        timeout = Timeout(60.0)
+        self.client = Client(
+            timeout=timeout,
+            headers={
+                "X-Api-Key": api_key,
+                "Content-Type": "application/json",
+            },
+        )
         self.created_location_id = None
 
         self.test_location = {

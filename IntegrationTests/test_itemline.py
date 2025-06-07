@@ -6,15 +6,18 @@ from httpx import Timeout
 import os
 
 class TestItemLineEndpoint(unittest.TestCase):
+
     def setUp(self):
-        self.base_url = "http://localhost:5000/api/v1/itemlines/"
-        timeout = Timeout(60.0)  #
         api_key = os.getenv("TEST_API_KEY", "fallback")
-        self.client = Client(timeout=timeout)
-        self.client.headers = {
-            "X-Api-Key": api_key,
-            "Content-Type": "application/json",
-        }
+        self.base_url = "http://localhost:5000/api/v1/itemlines/"
+        timeout = Timeout(60.0)
+        self.client = Client(
+            timeout=timeout,
+            headers={
+                "X-Api-Key": api_key,
+                "Content-Type": "application/json",
+            },
+        )
         self.created_itemline_id = None
 
         self.test_itemline = {

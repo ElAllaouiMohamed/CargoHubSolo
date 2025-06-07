@@ -6,15 +6,18 @@ import os
 
 
 class TestItemGroupsEndpoint(unittest.TestCase):
+
     def setUp(self):
-        self.base_url = "http://localhost:5000/api/v1/itemgroups/"
-        timeout = Timeout(60.0)  # 60timout
         api_key = os.getenv("TEST_API_KEY", "fallback")
-        self.client = Client(timeout=timeout)
-        self.client.headers = {
-            "X-Api-Key": api_key,
-            "Content-Type": "application/json",
-        }
+        self.base_url = "http://localhost:5000/api/v1/itemgroups/"
+        timeout = Timeout(60.0)
+        self.client = Client(
+            timeout=timeout,
+            headers={
+                "X-Api-Key": api_key,
+                "Content-Type": "application/json",
+            },
+        )
         self.test_id = None  # Will store ID after creation
 
         self.test_item_group = {
