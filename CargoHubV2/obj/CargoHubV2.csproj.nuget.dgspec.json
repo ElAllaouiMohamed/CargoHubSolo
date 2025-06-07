@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\Cargohubv2\\CargoHubV2.csproj": {}
+    "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\CargoHubV2.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\Cargohubv2\\CargoHubV2.csproj": {
+    "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\CargoHubV2.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\Cargohubv2\\CargoHubV2.csproj",
+        "projectUniqueName": "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\CargoHubV2.csproj",
         "projectName": "CargoHubV2",
-        "projectPath": "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\Cargohubv2\\CargoHubV2.csproj",
+        "projectPath": "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\CargoHubV2.csproj",
         "packagesPath": "C:\\Users\\mootj\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\Cargohubv2\\obj\\",
+        "outputPath": "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\CargoHubV2\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\mootj\\AppData\\Roaming\\NuGet\\NuGet.Config"

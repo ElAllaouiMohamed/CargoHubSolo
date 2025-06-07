@@ -40,5 +40,17 @@
         <member name="M:CargoHubV2.Migrations.test.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:CargoHubV2.Migrations.testt">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.testt.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.testt.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.testt.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>
