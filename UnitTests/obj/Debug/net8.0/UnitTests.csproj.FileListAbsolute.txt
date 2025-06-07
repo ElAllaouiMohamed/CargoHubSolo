@@ -231,3 +231,6 @@ C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\UnitTests\obj\Debug
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\UnitTests\obj\Debug\net8.0\UnitTests.pdb
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\UnitTests\obj\Debug\net8.0\UnitTests.genruntimeconfig.cache
 C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\UnitTests\obj\Debug\net8.0\ref\UnitTests.dll
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\UnitTests\bin\Debug\net8.0\Microsoft.AspNetCore.JsonPatch.dll
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\UnitTests\bin\Debug\net8.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
+C:\Users\mootj\Documents\School\jaar2\Project D\CargoHubSolo\UnitTests\bin\Debug\net8.0\Newtonsoft.Json.Bson.dll

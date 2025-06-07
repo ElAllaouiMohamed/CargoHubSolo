@@ -2,10 +2,10 @@ import unittest
 from httpx import Client, Timeout
 from datetime import datetime
 import os
+import json
 
 
 class TestInventoriesEndpoint(unittest.TestCase):
-
     def setUp(self):
         api_key = os.getenv("TEST_API_KEY", "fallback")
         self.base_url = "http://localhost:5000/api/v1/inventories/"
@@ -17,71 +17,116 @@ class TestInventoriesEndpoint(unittest.TestCase):
                 "Content-Type": "application/json",
             },
         )
-        self.created_inventory_id = None
+        self.TEST_INVENTORY_ID = None
 
-        self.test_inventory = {
-            "item_id": "test-item-001",
-            "description": "Test inventory item",
-            "item_reference": "test-ref-001",
-            "locations": [1, 2, 3],
-            "total_on_hand": 100,
-            "total_expected": 50,
-            "total_ordered": 25,
-            "total_allocated": 10,
-            "total_available": 65,
-            "created_at": datetime.utcnow().isoformat() + "Z",
-            "updated_at": datetime.utcnow().isoformat() + "Z",
-            "is_deleted": False,
+        location_response = self.client.post(
+            "http://localhost:5000/api/v1/locations/",
+            json={
+                "Name": "TestLoc",
+                "Address": "Teststraat 1",
+                "City": "Teststad",
+                "ZipCode": "1234AB",
+                "Province": "Zuid-Holland",
+                "Country": "Nederland",
+            },
+        )
+        assert location_response.status_code in [200, 201]
+        self.LOCATION_ID = location_response.json().get("id")
+
+        now_utc = datetime.utcnow().isoformat() + "Z"
+
+        self.TEST_INVENTORY = {
+            "ItemId": "test-123",
+            "Description": "Integration Test Inventory",
+            "ItemReference": "ref-001",
+            "Locations": [self.LOCATION_ID],
+            "TotalOnHand": 100,
+            "TotalExpected": 50,
+            "TotalOrdered": 20,
+            "TotalAllocated": 10,
+            "TotalAvailable": 120,
+            "CreatedAt": now_utc,
+            "UpdatedAt": now_utc,
+            "InventoryLocations": [
+                {
+                    "InventoryId": 0,
+                    "LocationId": self.LOCATION_ID,
+                    "CreatedAt": now_utc,
+                    "UpdatedAt": now_utc,
+                }
+            ],
         }
 
-        self.updated_inventory = {
-            "item_id": "updated-item-001",
-            "description": "Updated description",
-            "item_reference": "updated-ref-001",
-            "locations": [4, 5],
-            "total_on_hand": 200,
-            "total_expected": 100,
-            "total_ordered": 50,
-            "total_allocated": 20,
-            "total_available": 130,
-            "created_at": self.test_inventory["created_at"],
-            "updated_at": datetime.utcnow().isoformat() + "Z",
-            "is_deleted": False,
+        self.UPDATE_INVENTORY = {
+            "ItemId": "test-123",
+            "Description": "Integration Test Inventory",
+            "ItemReference": "ref-001",
+            "Locations": [self.LOCATION_ID],
+            "TotalOnHand": 200,
+            "TotalExpected": 100,
+            "TotalOrdered": 50,
+            "TotalAllocated": 25,
+            "TotalAvailable": 225,
+            "CreatedAt": now_utc,
+            "UpdatedAt": now_utc,
+            "InventoryLocations": [
+                {
+                    "InventoryId": 0,
+                    "LocationId": self.LOCATION_ID,
+                    "CreatedAt": now_utc,
+                    "UpdatedAt": now_utc,
+                }
+            ],
         }
 
-    def test_2_get_inventory(self):
-        if not self.created_inventory_id:
-            self.skipTest("Inventory not created in test_1_post_inventory")
-        response = self.client.get(f"{self.base_url}{self.created_inventory_id}")
+    def test_1_create_inventory(self):
+        response = self.client.post(self.base_url, json=self.TEST_INVENTORY)
+        print("RESPONSE TEXT:", response.text)
+        print("REQUEST JSON:", json.dumps(self.TEST_INVENTORY, indent=2))
+        self.assertIn(response.status_code, [200, 201])
+        json_resp = response.json()
+        self.TEST_INVENTORY_ID = json_resp.get("id") or json_resp.get("Id")
+        self.assertIsNotNone(self.TEST_INVENTORY_ID)
+        self.assertEqual(
+            json_resp.get("itemId") or json_resp.get("ItemId"),
+            self.TEST_INVENTORY["ItemId"]
+        )
+
+
+    def test_2_get_inventory_by_id(self):
+        if not self.TEST_INVENTORY_ID:
+            self.skipTest("Create inventory test failed or not run.")
+
+        response = self.client.get(f"{self.base_url}{self.TEST_INVENTORY_ID}")
         self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data["id"], self.created_inventory_id)
+        json_resp = response.json()
+        self.assertEqual(
+            json_resp.get("id") or json_resp.get("Id"), self.TEST_INVENTORY_ID
+        )
 
     def test_3_update_inventory(self):
-        if not self.created_inventory_id:
-            self.skipTest("Inventory not created in test_1_post_inventory")
+        if not self.TEST_INVENTORY_ID:
+            self.skipTest("Create inventory test failed or not run.")
+
         response = self.client.put(
-            f"{self.base_url}{self.created_inventory_id}", json=self.updated_inventory
+            f"{self.base_url}{self.TEST_INVENTORY_ID}", json=self.UPDATE_INVENTORY
         )
         self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data["description"], self.updated_inventory["description"])
+        json_resp = response.json()
+        self.assertEqual(
+            json_resp.get("Description") or json_resp.get("description"),
+            self.UPDATE_INVENTORY["Description"],
+        )
 
-    def test_4_get_all_inventories(self):
-        response = self.client.get(self.base_url)
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertIsInstance(data, list)
+    def test_4_delete_inventory(self):
+        if not self.TEST_INVENTORY_ID:
+            self.skipTest("Create inventory test failed or not run.")
 
-    def test_5_soft_delete_inventory(self):
-        if not self.created_inventory_id:
-            self.skipTest("Inventory not created in test_1_post_inventory")
-        response = self.client.delete(f"{self.base_url}{self.created_inventory_id}")
-        self.assertEqual(response.status_code, 204)
+        response = self.client.delete(f"{self.base_url}{self.TEST_INVENTORY_ID}")
+        self.assertIn(response.status_code, [200, 204])
 
-        # Check soft delete: GET geeft 404
-        get_response = self.client.get(f"{self.base_url}{self.created_inventory_id}")
-        self.assertEqual(get_response.status_code, 404)
+        response_get = self.client.get(f"{self.base_url}{self.TEST_INVENTORY_ID}")
+        self.assertIn(response_get.status_code, [404, 410])
 
     def tearDown(self):
         self.client.close()

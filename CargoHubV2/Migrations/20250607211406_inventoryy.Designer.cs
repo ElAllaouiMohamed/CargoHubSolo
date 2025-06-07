@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using CargohubV2.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CargoHubV2.Migrations
 {
     [DbContext(typeof(CargoHubDbContext))]
-    partial class CargoHubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250607211406_inventoryy")]
+    partial class inventoryy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -172,7 +175,8 @@ namespace CargoHubV2.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<int>("HazardClassification")
                         .HasColumnType("integer");
@@ -182,10 +186,12 @@ namespace CargoHubV2.Migrations
 
                     b.Property<string>("ItemId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("ItemReference")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.PrimitiveCollection<List<int>>("Locations")
                         .HasColumnType("integer[]");

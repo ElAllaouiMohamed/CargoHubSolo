@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "32tItateD7E=",
+  "dgSpecHash": "FpRpCLedd4c=",
   "success": true,
   "projectFilePath": "C:\\Users\\mootj\\Documents\\School\\jaar2\\Project D\\CargoHubSolo\\UnitTests\\UnitTests.csproj",
   "expectedPackageFiles": [
@@ -10,8 +10,11 @@
     "C:\\Users\\mootj\\.nuget\\packages\\dotnetenv\\3.1.1\\dotnetenv.3.1.1.nupkg.sha512",
     "C:\\Users\\mootj\\.nuget\\packages\\fluentassertions\\8.3.0\\fluentassertions.8.3.0.nupkg.sha512",
     "C:\\Users\\mootj\\.nuget\\packages\\microsoft.applicationinsights\\2.23.0\\microsoft.applicationinsights.2.23.0.nupkg.sha512",
+    "C:\\Users\\mootj\\.nuget\\packages\\microsoft.aspnetcore.jsonpatch\\8.0.5\\microsoft.aspnetcore.jsonpatch.8.0.5.nupkg.sha512",
+    "C:\\Users\\mootj\\.nuget\\packages\\microsoft.aspnetcore.mvc.newtonsoftjson\\8.0.5\\microsoft.aspnetcore.mvc.newtonsoftjson.8.0.5.nupkg.sha512",
     "C:\\Users\\mootj\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.10\\microsoft.aspnetcore.openapi.8.0.10.nupkg.sha512",
     "C:\\Users\\mootj\\.nuget\\packages\\microsoft.codecoverage\\17.14.0\\microsoft.codecoverage.17.14.0.nupkg.sha512",
+    "C:\\Users\\mootj\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
     "C:\\Users\\mootj\\.nuget\\packages\\microsoft.entityframeworkcore\\9.0.5\\microsoft.entityframeworkcore.9.0.5.nupkg.sha512",
     "C:\\Users\\mootj\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\9.0.5\\microsoft.entityframeworkcore.abstractions.9.0.5.nupkg.sha512",
     "C:\\Users\\mootj\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\9.0.5\\microsoft.entityframeworkcore.analyzers.9.0.5.nupkg.sha512",
@@ -47,6 +50,7 @@
     "C:\\Users\\mootj\\.nuget\\packages\\mstest.testframework\\3.9.0\\mstest.testframework.3.9.0.nupkg.sha512",
     "C:\\Users\\mootj\\.nuget\\packages\\netstandard.library\\1.6.1\\netstandard.library.1.6.1.nupkg.sha512",
     "C:\\Users\\mootj\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
+    "C:\\Users\\mootj\\.nuget\\packages\\newtonsoft.json.bson\\1.0.2\\newtonsoft.json.bson.1.0.2.nupkg.sha512",
     "C:\\Users\\mootj\\.nuget\\packages\\npgsql\\9.0.3\\npgsql.9.0.3.nupkg.sha512",
     "C:\\Users\\mootj\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\9.0.4\\npgsql.entityframeworkcore.postgresql.9.0.4.nupkg.sha512",
     "C:\\Users\\mootj\\.nuget\\packages\\reportgenerator\\5.4.3\\reportgenerator.5.4.3.nupkg.sha512",
