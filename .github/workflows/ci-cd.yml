@@ -166,6 +166,9 @@ jobs:
           dotnet restore ${{ env.SOLUTION_PATH }}
           dotnet build ${{ env.SOLUTION_PATH }} --configuration Release
 
+      - name: Install dotnet-ef tool
+        run: dotnet tool install --global dotnet-ef
+
       - name: Apply database migrations
         env:
           ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=cargohub;Username=postgres;Password=postgres;"
