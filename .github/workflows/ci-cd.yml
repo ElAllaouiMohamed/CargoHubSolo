@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - dev
-      - testing-pipeline
+      - feature/client-endpoint
   pull_request:
     branches:
       - main
