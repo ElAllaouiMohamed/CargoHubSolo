@@ -120,7 +120,6 @@ jobs:
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Line Coverage | ${COVERAGE}% |" >> $GITHUB_STEP_SUMMARY
           if (( $(echo "$COVERAGE < 50" | bc -l) )); then
-          # hoort 80% tezijn eig
             echo "Code coverage is lager dan 50%!" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
@@ -128,7 +127,20 @@ jobs:
   integration-test:
     runs-on: ubuntu-latest
     needs: build
-
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: cargohub
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -154,10 +166,17 @@ jobs:
           dotnet restore ${{ env.SOLUTION_PATH }}
           dotnet build ${{ env.SOLUTION_PATH }} --configuration Release
 
-      - name: Run backend api in achtergrond
+      - name: Apply database migrations
+        env:
+          ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=cargohub;Username=postgres;Password=postgres;"
+        run: dotnet ef migrations apply --project CargoHubV2/CargoHubV2.csproj
+
+      - name: Run backend API in background
+        env:
+          ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=cargohub;Username=postgres;Password=postgres;"
         run: |
           dotnet run --project CargoHubV2/CargoHubV2.csproj &
-          sleep 10
+          sleep 20
 
       - name: Run integration tests
         run: pytest IntegrationTests --maxfail=5 --disable-warnings -v
