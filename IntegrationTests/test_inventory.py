@@ -1,6 +1,6 @@
 import unittest
 from httpx import Client, Timeout
-from datetime import datetime, timezone
+from datetime import datetime
 import os
 import json
 
