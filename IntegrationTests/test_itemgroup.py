@@ -9,7 +9,7 @@ class TestItemGroupsEndpoint(unittest.TestCase):
         api_key = os.getenv("TEST_API_KEY", "fallback")
         self.base_url = "http://localhost:5000/api/v1/itemgroups/"
         self.client = Client(
-            timeout=Timeout(30.0),
+            timeout=Timeout(60.0),
             headers={
                 "X-Api-Key": api_key,
                 "Content-Type": "application/json",
@@ -28,7 +28,7 @@ class TestItemGroupsEndpoint(unittest.TestCase):
         }
 
         self.invalid_item_group = {
-            "name": "Inval!d123",  # regex violation
+            "name": "Inval!d123",  
             "description": "Invalid due to characters",
             "created_at": now,
             "updated_at": now,

@@ -14,7 +14,7 @@ namespace CargohubV2.Models
         [RegularExpression(@"^[a-zA-Z''-'\s]{1,40}$", ErrorMessage = "Numbers and special characters are not allowed")]
         [JsonProperty("name")]
         public string Name { get; set; }
-
+        [Required(ErrorMessage = "Description is verplicht.")]
         [JsonProperty("description")]
         public string Description { get; set; }
 
