@@ -2,17 +2,22 @@ import unittest
 from httpx import Client
 from datetime import datetime
 from httpx import Timeout
+import os
 
 
 class TestItemGroupsEndpoint(unittest.TestCase):
+
     def setUp(self):
+        api_key = os.getenv("TEST_API_KEY", "fallback")
         self.base_url = "http://localhost:5000/api/v1/itemgroups/"
-        timeout = Timeout(60.0)  # 60timout
-        self.client = Client(timeout=timeout)
-        self.client.headers = {
-            "X-Api-Key": "AdminKey123",
-            "Content-Type": "application/json",
-        }
+        timeout = Timeout(60.0)
+        self.client = Client(
+            timeout=timeout,
+            headers={
+                "X-Api-Key": api_key,
+                "Content-Type": "application/json",
+            },
+        )
         self.test_id = None  # Will store ID after creation
 
         self.test_item_group = {

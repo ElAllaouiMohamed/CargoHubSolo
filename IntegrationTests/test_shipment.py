@@ -1,17 +1,22 @@
 import unittest
 from httpx import Client, Timeout
 from datetime import datetime
+import os
 
 
 class TestOrdersEndpoint(unittest.TestCase):
+
     def setUp(self):
-        self.base_url = "http://localhost:5000/api/v1/orders/"
-        timeout = Timeout(60.0)  # timeout om lange requests te voorkomen
-        self.client = Client(timeout=timeout)
-        self.client.headers = {
-            "X-Api-Key": "AdminKey123",
-            "Content-Type": "application/json",
-        }
+        api_key = os.getenv("TEST_API_KEY", "fallback")
+        self.base_url = "http://localhost:5000/api/v1/shipments/"
+        timeout = Timeout(60.0)
+        self.client = Client(
+            timeout=timeout,
+            headers={
+                "X-Api-Key": api_key,
+                "Content-Type": "application/json",
+            },
+        )
         self.test_id = None
 
         now_iso = datetime.utcnow().isoformat() + "Z"
