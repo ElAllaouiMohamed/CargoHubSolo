@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
-      - Development
+      - dev
   pull_request:
     branches:
       - main
-      - Development
+      - dev
 
 env:
   DOTNET_VERSION: '8.0.x'
