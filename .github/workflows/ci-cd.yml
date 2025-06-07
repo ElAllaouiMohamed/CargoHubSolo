@@ -13,7 +13,7 @@ on:
 
 env:
   DOTNET_VERSION: '8.0.x'
-  PYTHON_VERSION: '3.12'
+  PYTHON_VERSION: '3.12'sss
   SOLUTION_PATH: 'CargoHubSolo.sln'
 
 jobs:
