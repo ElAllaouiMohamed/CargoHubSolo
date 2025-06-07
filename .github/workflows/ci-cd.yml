@@ -176,13 +176,21 @@ jobs:
           ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=cargohub;Username=postgres;Password=postgres;"
         run: dotnet ef database update --project CargoHubV2/CargoHubV2.csproj
 
+      - name: Wait for Postgres to be ready
+        run: |
+          until pg_isready -h localhost -p 5432; do
+            echo "Waiting for postgres..."
+            sleep 2
+          done
+
       - name: Seed database with API key
         env:
-          PGPASSWORD: postgres
           TEST_API_KEY: ${{ secrets.INTEGRATION_TEST_API_KEY }}
+          PGPASSWORD: postgres
         run: |
           HASH=$(echo -n "$TEST_API_KEY" | sha256sum | awk '{print $1}')
-          psql -h postgres -U postgres -d cargohub -c "INSERT INTO \"ApiKeys\" (\"Name\", \"KeyHash\") VALUES ('Admin', '$HASH');"
+          psql -h localhost -U postgres -d cargohub -c "INSERT INTO \"ApiKeys\" (\"Name\", \"KeyHash\") VALUES ('Admin', '$HASH');"
+
 
       - name: Run backend API in background
         env:
