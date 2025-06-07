@@ -172,7 +172,7 @@ jobs:
       - name: Apply database migrations
         env:
           ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=cargohub;Username=postgres;Password=postgres;"
-        run: dotnet ef migrations apply --project CargoHubV2/CargoHubV2.csproj
+        run: dotnet ef database update --project CargoHubV2/CargoHubV2.csproj
 
       - name: Run backend API in background
         env:
