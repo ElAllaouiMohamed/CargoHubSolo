@@ -1,7 +1,7 @@
 import unittest
 from httpx import Client
 from datetime import datetime
-
+from httpx import Timeout
 import os
 
 class TestWarehousesEndpoint(unittest.TestCase):
