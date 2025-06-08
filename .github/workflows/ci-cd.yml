@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - dev
-      - feature/itemtype-endpoint
+      - feature/location-endpoint
   pull_request:
     branches:
       - main

@@ -20,22 +20,24 @@ class TestLocationEndpoint(unittest.TestCase):
         )
         self.created_location_id = None
 
+        now = datetime.utcnow().isoformat() + "Z"
+
         self.test_location = {
-            "warehouse_id": 1,
-            "code": "LOC001",
-            "name": "Test Location",
-            "created_at": datetime.utcnow().isoformat() + "Z",
-            "updated_at": datetime.utcnow().isoformat() + "Z",
-            "is_deleted": False,
+            "WarehouseId": 1,
+            "Code": "LOC001",
+            "Name": "Test Location",
+            "CreatedAt": now,
+            "UpdatedAt": now,
+            "IsDeleted": False,
         }
 
         self.updated_location = {
-            "warehouse_id": 2,
-            "code": "LOC002",
-            "name": "Updated Location",
-            "created_at": self.test_location["created_at"],
-            "updated_at": datetime.utcnow().isoformat() + "Z",
-            "is_deleted": False,
+            "WarehouseId": 2,
+            "Code": "LOC002",
+            "Name": "Updated Location",
+            "CreatedAt": now,
+            "UpdatedAt": datetime.utcnow().isoformat() + "Z",
+            "IsDeleted": False,
         }
 
     def test_1_create_location(self):
@@ -45,7 +47,7 @@ class TestLocationEndpoint(unittest.TestCase):
         self.created_location_id = data.get("id") or data.get("Id")
         self.assertIsNotNone(self.created_location_id, "No ID returned from POST")
         self.assertEqual(
-            data.get("code") or data.get("Code"), self.test_location["code"]
+            data.get("Code") or data.get("code"), self.test_location["Code"]
         )
 
     def test_2_get_location_by_id(self):
@@ -65,7 +67,7 @@ class TestLocationEndpoint(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(
-            data.get("name") or data.get("Name"), self.updated_location["name"]
+            data.get("Name") or data.get("name"), self.updated_location["Name"]
         )
 
     def test_4_get_all_locations(self):

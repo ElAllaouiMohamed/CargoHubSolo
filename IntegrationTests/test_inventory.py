@@ -19,15 +19,16 @@ class TestInventoriesEndpoint(unittest.TestCase):
         )
         self.TEST_INVENTORY_ID = None
 
+        now = datetime.utcnow().isoformat() + "Z"
         location_response = self.client.post(
             "http://localhost:5000/api/v1/locations/",
             json={
-                "Name": "TestLoc",
-                "Address": "Teststraat 1",
-                "City": "Teststad",
-                "ZipCode": "1234AB",
-                "Province": "Zuid-Holland",
-                "Country": "Nederland",
+                "WarehouseId": 1,
+                "Code": "INV-LOC",
+                "Name": "Inventory Location",
+                "CreatedAt": now,
+                "UpdatedAt": now,
+                "IsDeleted": False,
             },
         )
         assert location_response.status_code in [200, 201]

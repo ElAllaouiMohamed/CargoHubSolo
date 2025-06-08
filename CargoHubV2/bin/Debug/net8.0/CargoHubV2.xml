@@ -136,5 +136,17 @@
         <member name="M:CargoHubV2.Migrations.iitema.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:CargoHubV2.Migrations.location">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.location.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.location.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.location.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>
