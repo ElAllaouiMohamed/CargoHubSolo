@@ -148,5 +148,29 @@
         <member name="M:CargoHubV2.Migrations.location.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:CargoHubV2.Migrations.oreder">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.oreder.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.oreder.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.oreder.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:CargoHubV2.Migrations.oredeer">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.oredeer.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.oredeer.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.oredeer.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>

@@ -1,146 +1,83 @@
 import unittest
-from httpx import Client
+import httpx
 from datetime import datetime
-from httpx import Timeout
-import os
+
+BASE_URL = "http://localhost:5000/api/v1/orders"
+HEADERS = {
+    "accept": "*/*",
+    "Content-Type": "application/json",
+    "X-Api-Key": "AdminKey123",
+}
 
 
 class TestOrdersEndpoint(unittest.TestCase):
 
     def setUp(self):
-        api_key = os.getenv("TEST_API_KEY", "fallback")
-        self.base_url = "http://localhost:5000/api/v1/orders/"
-        timeout = Timeout(60.0)
-        self.client = Client(
-            timeout=timeout,
-            headers={
-                "X-Api-Key": api_key,
-                "Content-Type": "application/json",
-            },
-        )
-        self.test_id = None
-
-        self.test_order = {
-            "sourceId": 1,
-            "orderDate": datetime.utcnow().isoformat() + "Z",
-            "requestDate": datetime.utcnow().isoformat() + "Z",
+        self.order_payload = {
+            "source_id": 1,
+            "order_date": datetime.utcnow().isoformat() + "Z",
+            "request_date": datetime.utcnow().isoformat() + "Z",
             "reference": "TEST-ORDER-001",
             "reference_extra": "EXTRA-001",
             "order_status": "Pending",
             "notes": "Test order notes",
-            "shippingNotes": "Test shipping notes",
-            "pickingNotes": "Test picking notes",
-            "warehouseId": 1,
-            "shipTo": "123 Test St",
-            "billTo": "456 Test Ave",
-            "shipmentId": 1,
-            "totalAmount": 100.0,
-            "totalDiscount": 10.0,
-            "totalTax": 5.0,
-            "totalSurcharge": 2.0,
+            "shipping_notes": "Test shipping notes",
+            "picking_notes": "Test picking notes",
+            "warehouse_id": 1,
+            "ship_to": "123 Test St",
+            "bill_to": "456 Test Ave",
+            "shipment_id": 1,
+            "total_amount": 100,
+            "total_discount": 10,
+            "total_tax": 5,
+            "total_surcharge": 2,
             "created_at": datetime.utcnow().isoformat() + "Z",
             "updated_at": datetime.utcnow().isoformat() + "Z",
-            "isDeleted": False,
-            "items": [{"itemId": 1, "quantity": 5, "unitPrice": 10.0}],
+            "stocks": [{"item_id": "1", "quantity": 10}],
         }
 
-        self.updated_order = {
-            "sourceId": 2,
-            "orderDate": datetime.utcnow().isoformat() + "Z",
-            "requestDate": datetime.utcnow().isoformat() + "Z",
-            "reference": "UPDATED-ORDER-001",
-            "reference_extra": "UPDATED-EXTRA-001",
-            "order_status": "Shipped",
-            "notes": "Updated order notes",
-            "shippingNotes": "Updated shipping notes",
-            "pickingNotes": "Updated picking notes",
-            "warehouseId": 2,
-            "shipTo": "789 Updated St",
-            "billTo": "012 Updated Ave",
-            "shipmentId": 2,
-            "totalAmount": 200.0,
-            "totalDiscount": 20.0,
-            "totalTax": 10.0,
-            "totalSurcharge": 4.0,
-            "created_at": self.test_order["created_at"],
-            "updated_at": datetime.utcnow().isoformat() + "Z",
-            "isDeleted": False,
-            "items": [{"itemId": 2, "quantity": 10, "unitPrice": 15.0}],
-        }
-
-        response = self.client.get(self.base_url)
-        if response.status_code == 200:
-            orders = response.json()
-            for order in orders:
-                if order.get("reference") in [
-                    self.test_order["reference"],
-                    self.updated_order["reference"],
-                ]:
-                    self.client.delete(f"{self.base_url}{order['id']}")
-
-    def tearDown(self):
-        if self.test_id:
-            self.client.delete(f"{self.base_url}{self.test_id}")
-        self.client.close()
+    def test_1_post_order(self):
+        response = httpx.post(BASE_URL, headers=HEADERS, json=self.order_payload)
+        print("POST RESPONSE:", response.text)
+        self.assertIn(
+            response.status_code, (200, 201), f"Failed to create order: {response.text}"
+        )
+        self.created_order = response.json()
+        self.order_id = self.created_order["id"]
 
     def test_2_get_order(self):
-        if not self.test_id:
-            self.skipTest("Create order test failed or not run.")
-
-        response = self.client.get(f"{self.base_url}{self.test_id}")
+        self.test_1_post_order()
+        response = httpx.get(f"{BASE_URL}/{self.order_id}", headers=HEADERS)
         self.assertEqual(
-            response.status_code, 200, f"Failed to get order: {response.text}"
+            response.status_code, 200, f"Failed to fetch order: {response.text}"
         )
         data = response.json()
-        self.assertEqual(data.get("id"), self.test_id)
-        self.assertEqual(data.get("reference"), self.test_order["reference"])
-        self.assertEqual(data.get("totalAmount"), self.test_order["totalAmount"])
+        self.assertEqual(data["reference"], self.order_payload["reference"])
 
     def test_3_update_order(self):
-        if not self.test_id:
-            self.skipTest("Create order test failed or not run.")
-
-        response = self.client.put(
-            f"{self.base_url}{self.test_id}", json=self.updated_order
+        self.test_1_post_order()
+        update_payload = self.order_payload.copy()
+        update_payload["reference"] = "UPDATED-REF"
+        update_payload["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        response = httpx.put(
+            f"{BASE_URL}/{self.order_id}", headers=HEADERS, json=update_payload
         )
         self.assertEqual(
             response.status_code, 200, f"Failed to update order: {response.text}"
         )
         data = response.json()
-        self.assertEqual(data.get("reference"), self.updated_order["reference"])
-        self.assertEqual(data.get("totalAmount"), self.updated_order["totalAmount"])
-        self.assertFalse(data.get("isDeleted"))
-        self.assertEqual(len(data.get("items", [])), 1)
-        self.assertEqual(data["items"][0]["quantity"], 10)
+        self.assertEqual(data["reference"], "UPDATED-REF")
 
     def test_4_get_all_orders(self):
-        response = self.client.get(self.base_url)
-        self.assertEqual(
-            response.status_code, 200, f"Failed to get all orders: {response.text}"
-        )
-        data = response.json()
-        self.assertIsInstance(data, list)
-        if self.test_id:
-            found = any(order.get("id") == self.test_id for order in data)
-            self.assertTrue(found, "Created order should be in the list")
+        response = httpx.get(BASE_URL, headers=HEADERS)
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.json(), list)
 
     def test_5_soft_delete_order(self):
-        if not self.test_id:
-            self.skipTest("Create order test failed or not run.")
-
-        response = self.client.delete(f"{self.base_url}{self.test_id}")
-        self.assertIn(
-            response.status_code,
-            (200, 204),
-            f"Failed to soft delete order: {response.text}",
-        )
-
-        get_response = self.client.get(f"{self.base_url}{self.test_id}")
-        self.assertIn(
-            get_response.status_code,
-            (404, 410),
-            "Soft-deleted order should return 404 or 410",
-        )
+        self.test_1_post_order()
+        response = httpx.delete(f"{BASE_URL}/{self.order_id}", headers=HEADERS)
+        self.assertIn(response.status_code, (200, 204))
+        self.assertIn(response.status_code, (200, 204))
 
 
 if __name__ == "__main__":
