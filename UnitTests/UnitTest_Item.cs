@@ -36,7 +36,19 @@ namespace UnitTests
             {
                 UId = "uid123",
                 Code = "codeABC",
-                Description = "Test item"
+                Description = "Test item",
+                ShortDescription = "Short test",
+                ItemLineId = 1,
+                ItemGroupId = 1,
+                ItemTypeId = 1,
+                UnitPurchaseQuantity = 0,
+                UnitOrderQuantity = 0,
+                PackOrderQuantity = 0,
+                SupplierId = 1,
+                SupplierCode = "SUP001",
+                SupplierPartNumber = "SPN-001",
+                WeightInKg = 100,
+                IsDeleted = false
             };
 
             var result = await _itemService.AddItemAsync(item);
@@ -61,11 +73,45 @@ namespace UnitTests
         [TestMethod]
         public async Task UpdateItemAsync_ShouldUpdateAndLog_WhenExists()
         {
-            var item = new Item { UId = "oldUid", Description = "oldDesc" };
+            var item = new Item
+            {
+                UId = "oldUid",
+                Code = "oldCode",
+                Description = "oldDesc",
+                ShortDescription = "Old short",
+                ItemLineId = 1,
+                ItemGroupId = 1,
+                ItemTypeId = 1,
+                UnitPurchaseQuantity = 0,
+                UnitOrderQuantity = 0,
+                PackOrderQuantity = 0,
+                SupplierId = 1,
+                SupplierCode = "SUP001",
+                SupplierPartNumber = "SPN-001",
+                WeightInKg = 50,
+                IsDeleted = false
+            };
             _dbContext.Items.Add(item);
             await _dbContext.SaveChangesAsync();
 
-            var updated = new Item { UId = "newUid", Description = "newDesc" };
+            var updated = new Item
+            {
+                UId = "newUid",
+                Code = "newCode",
+                Description = "newDesc",
+                ShortDescription = "New short",
+                ItemLineId = 1,
+                ItemGroupId = 1,
+                ItemTypeId = 1,
+                UnitPurchaseQuantity = 10,
+                UnitOrderQuantity = 5,
+                PackOrderQuantity = 2,
+                SupplierId = 1,
+                SupplierCode = "SUP002",
+                SupplierPartNumber = "SPN-002",
+                WeightInKg = 75,
+                IsDeleted = false
+            };
 
             var result = await _itemService.UpdateItemAsync(item.Id, updated);
 
@@ -79,7 +125,24 @@ namespace UnitTests
         [TestMethod]
         public async Task UpdateItemAsync_ShouldReturnNull_WhenNotExists()
         {
-            var updated = new Item { UId = "newUid" };
+            var updated = new Item
+            {
+                UId = "newUid",
+                Code = "newCode",
+                Description = "newDesc",
+                ShortDescription = "New short",
+                ItemLineId = 1,
+                ItemGroupId = 1,
+                ItemTypeId = 1,
+                UnitPurchaseQuantity = 0,
+                UnitOrderQuantity = 0,
+                PackOrderQuantity = 0,
+                SupplierId = 1,
+                SupplierCode = "SUP001",
+                SupplierPartNumber = "SPN-001",
+                WeightInKg = 100,
+                IsDeleted = false
+            };
             var result = await _itemService.UpdateItemAsync(-1, updated);
             Assert.IsNull(result);
         }
@@ -87,7 +150,24 @@ namespace UnitTests
         [TestMethod]
         public async Task SoftDeleteByIdAsync_ShouldSoftDeleteAndLog_WhenExists()
         {
-            var item = new Item { UId = "toDelete" };
+            var item = new Item
+            {
+                UId = "toDelete",
+                Code = "delCode",
+                Description = "To delete",
+                ShortDescription = "Delete short",
+                ItemLineId = 1,
+                ItemGroupId = 1,
+                ItemTypeId = 1,
+                UnitPurchaseQuantity = 0,
+                UnitOrderQuantity = 0,
+                PackOrderQuantity = 0,
+                SupplierId = 1,
+                SupplierCode = "SUP001",
+                SupplierPartNumber = "SPN-001",
+                WeightInKg = 50,
+                IsDeleted = false
+            };
             _dbContext.Items.Add(item);
             await _dbContext.SaveChangesAsync();
 
