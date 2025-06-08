@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using CargohubV2.DataConverters;
 using Newtonsoft.Json;
 
@@ -5,28 +8,27 @@ namespace CargohubV2.Models
 {
     public class Supplier
     {
-        public ICollection<ContactPerson> ContactPersons { get; set; } = new List<ContactPerson>();
-
-
         [JsonProperty("id")]
         public int Id { get; set; }
 
         [JsonProperty("code")]
-        public string? Code { get; set; }
+        [Required, StringLength(50)]
+        public string Code { get; set; } = string.Empty;
 
         [JsonProperty("name")]
-        public string? Name { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty;
 
         [JsonProperty("address")]
         public string? Address { get; set; }
 
-        [JsonProperty("address_extra")]
+        [JsonProperty("addressExtra")]
         public string? AddressExtra { get; set; }
 
         [JsonProperty("city")]
         public string? City { get; set; }
 
-        [JsonProperty("zip_code")]
+        [JsonProperty("zipCode")]
         public string? ZipCode { get; set; }
 
         [JsonProperty("province")]
@@ -35,24 +37,27 @@ namespace CargohubV2.Models
         [JsonProperty("country")]
         public string? Country { get; set; }
 
-        [JsonProperty("contact_name")]
+        [JsonProperty("contactName")]
         public string? ContactName { get; set; }
 
-        [JsonProperty("phonenumber")]
+        [JsonProperty("phoneNumber")]
         public string? PhoneNumber { get; set; }
 
         [JsonProperty("reference")]
         public string? Reference { get; set; }
 
         [JsonProperty("created_at")]
-        [JsonConverter(typeof(FlexibleDateTimeConverter))]
+        [Required, JsonConverter(typeof(FlexibleDateTimeConverter))]
         public DateTime CreatedAt { get; set; }
 
         [JsonProperty("updated_at")]
-        [JsonConverter(typeof(FlexibleDateTimeConverter))]
+        [Required, JsonConverter(typeof(FlexibleDateTimeConverter))]
         public DateTime UpdatedAt { get; set; }
+
+        [JsonProperty("isDeleted")]
         public bool IsDeleted { get; set; } = false;
 
+        [JsonProperty("contactPersons")]
+        public List<ContactPerson> ContactPersons { get; set; } = new();
     }
 }
-

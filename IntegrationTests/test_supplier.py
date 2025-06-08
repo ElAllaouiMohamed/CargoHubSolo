@@ -1,146 +1,89 @@
 import unittest
-from httpx import Client
+from httpx import Client, Timeout
 from datetime import datetime
-from httpx import Timeout
 import os
 
 
 class TestSuppliersEndpoint(unittest.TestCase):
-
     def setUp(self):
-        api_key = os.getenv("TEST_API_KEY", "fallback")
         self.base_url = "http://localhost:5000/api/v1/suppliers/"
-        timeout = Timeout(60.0)
+        api_key = os.getenv("TEST_API_KEY", "fallback")
         self.client = Client(
-            timeout=timeout,
-            headers={
-                "X-Api-Key": api_key,
-                "Content-Type": "application/json",
-            },
+            timeout=Timeout(60.0),
+            headers={"X-Api-Key": api_key, "Content-Type": "application/json"},
         )
         self.test_id = None
 
-        now_iso = datetime.utcnow().isoformat() + "Z"
+        now = datetime.utcnow().isoformat() + "Z"
         self.test_supplier = {
-            "code": "SUP001",
+            "code": "SUPTEST001",
             "name": "Test Supplier",
             "address": "123 Supplier St",
-            "addressExtra": "Suite 100",
+            "addressExtra": "Suite A",
             "city": "Test City",
-            "zipCode": "12345",
-            "province": "Test Province",
-            "country": "Test Country",
-            "contactName": "John Doe",
+            "zipCode": "10001",
+            "province": "Test State",
+            "country": "Testland",
+            "contactName": "Jane Doe",
             "phoneNumber": "+1234567890",
-            "reference": "REF001",
-            "created_at": now_iso,
-            "updated_at": now_iso,
+            "reference": "REFTEST001",
+            "created_at": now,
+            "updated_at": now,
             "isDeleted": False,
         }
 
         self.updated_supplier = {
-            "code": "SUP002",
+            **self.test_supplier,
             "name": "Updated Supplier",
-            "address": "456 Updated Ave",
-            "addressExtra": "Building B",
-            "city": "Updated City",
-            "zipCode": "54321",
-            "province": "Updated Province",
-            "country": "Updated Country",
-            "contactName": "Jane Smith",
-            "phoneNumber": "+0987654321",
-            "reference": "REF002",
-            "created_at": self.test_supplier["created_at"],
-            "updated_at": now_iso,
-            "isDeleted": False,
+            "code": "SUPTEST002",
+            "reference": "REFTEST002",
         }
-
-        # Cleanup oude test data
-        response = self.client.get(self.base_url)
-        if response.status_code == 200:
-            suppliers = response.json()
-            for supplier in suppliers:
-                if supplier.get("name") in [
-                    self.test_supplier["name"],
-                    self.updated_supplier["name"],
-                ]:
-                    self.client.delete(f"{self.base_url}{supplier['id']}")
 
     def tearDown(self):
         if self.test_id:
             self.client.delete(f"{self.base_url}{self.test_id}")
         self.client.close()
 
-    def test_1_post_supplier(self):
-        response = self.client.post(self.base_url, json=self.test_supplier)
-        self.assertIn(
-            response.status_code,
-            (200, 201),
-            f"Failed to create supplier: {response.text}",
-        )
-        data = response.json()
+    def test_1_create_supplier(self):
+        res = self.client.post(self.base_url, json=self.test_supplier)
+        self.assertIn(res.status_code, [200, 201], f"Create failed: {res.text}")
+        data = res.json()
         self.test_id = data.get("id")
-        self.assertIsNotNone(self.test_id, "Supplier ID should be returned")
-        self.assertEqual(data.get("name"), self.test_supplier["name"])
-        self.assertEqual(data.get("code"), self.test_supplier["code"])
-        self.assertFalse(data.get("isDeleted"))
+        self.assertIsNotNone(self.test_id)
+        self.assertEqual(data["name"], self.test_supplier["name"])
+        self.assertEqual(data["code"], self.test_supplier["code"])
+        self.assertFalse(data["isDeleted"])
 
-    def test_2_get_supplier(self):
-        if not self.test_id:
-            self.skipTest("Create supplier test failed or not run.")
-
-        response = self.client.get(f"{self.base_url}{self.test_id}")
-        self.assertEqual(
-            response.status_code, 200, f"Failed to get supplier: {response.text}"
-        )
-        data = response.json()
-        self.assertEqual(data.get("id"), self.test_id)
-        self.assertEqual(data.get("name"), self.test_supplier["name"])
-        self.assertEqual(data.get("code"), self.test_supplier["code"])
+    def test_2_get_supplier_by_id(self):
+        self.test_1_create_supplier()
+        res = self.client.get(f"{self.base_url}{self.test_id}")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["id"], self.test_id)
 
     def test_3_update_supplier(self):
-        if not self.test_id:
-            self.skipTest("Create supplier test failed or not run.")
-
-        response = self.client.put(
+        self.test_1_create_supplier()
+        res = self.client.put(
             f"{self.base_url}{self.test_id}", json=self.updated_supplier
         )
-        self.assertEqual(
-            response.status_code, 200, f"Failed to update supplier: {response.text}"
-        )
-        data = response.json()
-        self.assertEqual(data.get("name"), self.updated_supplier["name"])
-        self.assertEqual(data.get("code"), self.updated_supplier["code"])
-        self.assertFalse(data.get("isDeleted"))
+        self.assertEqual(res.status_code, 200, f"Update failed: {res.text}")
+        data = res.json()
+        self.assertEqual(data["name"], self.updated_supplier["name"])
+        self.assertEqual(data["reference"], self.updated_supplier["reference"])
 
     def test_4_get_all_suppliers(self):
-        response = self.client.get(self.base_url)
-        self.assertEqual(
-            response.status_code, 200, f"Failed to get all suppliers: {response.text}"
-        )
-        data = response.json()
-        self.assertTrue(isinstance(data, list))
-        if self.test_id:
-            found = any(supplier.get("id") == self.test_id for supplier in data)
-            self.assertTrue(found, "Created supplier should be in the list")
+        self.test_1_create_supplier()
+        res = self.client.get(self.base_url)
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(any(s["id"] == self.test_id for s in data))
 
     def test_5_soft_delete_supplier(self):
-        if not self.test_id:
-            self.skipTest("Create supplier test failed or not run.")
-
-        response = self.client.delete(f"{self.base_url}{self.test_id}")
-        self.assertIn(
-            response.status_code,
-            (200, 204),
-            f"Failed to soft delete supplier: {response.text}",
-        )
-
-        get_response = self.client.get(f"{self.base_url}{self.test_id}")
-        self.assertIn(
-            get_response.status_code,
-            (404, 410),
-            "Soft-deleted supplier should return 404 or 410",
-        )
+        self.test_1_create_supplier()
+        res = self.client.delete(f"{self.base_url}{self.test_id}")
+        self.assertIn(res.status_code, [204, 200])
+        follow_up = self.client.get(f"{self.base_url}{self.test_id}")
+        self.assertEqual(follow_up.status_code, 404)
 
 
 if __name__ == "__main__":
