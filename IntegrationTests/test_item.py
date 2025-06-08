@@ -60,19 +60,27 @@ class TestItemsEndpoint(unittest.TestCase):
             "UpdatedAt": datetime.now(timezone.utc).isoformat(),
         }
 
+
     def create_supplier(self):
-        response = self.client.post(
-            "http://localhost:5000/api/v1/suppliers/",
-            json={
-                "Name": "Test Supplier",
-                "Email": "test@supplier.com",
-                "Phone": "0612345678",
-                "Address": "Teststraat 1",
-                "City": "Teststad",
-                "ZipCode": "1234AB",
-                "Country": "Nederland",
-            },
-        )
+        now = datetime.utcnow().isoformat() + "Z"
+        payload = {
+            "code": "SUPITEM001",
+            "name": "Item Supplier",
+            "address": "Straat 12",
+            "addressExtra": "Unit A",
+            "city": "Teststad",
+            "zipCode": "1234AB",
+            "province": "Testprovincie",
+            "country": "Nederland",
+            "contactName": "Test Persoon",
+            "phoneNumber": "0612345678",
+            "reference": "ITEM-REF-01",
+            "created_at": now,
+            "updated_at": now,
+            "isDeleted": False,
+        }
+
+        response = self.client.post("http://localhost:5000/api/v1/suppliers/", json=payload)
         assert response.status_code in [
             200,
             201,
