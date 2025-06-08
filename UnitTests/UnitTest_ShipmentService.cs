@@ -4,6 +4,7 @@ using Moq;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using CargohubV2.Contexts;
 using CargohubV2.Models;
 using CargohubV2.Services;
@@ -45,9 +46,9 @@ namespace UnitTests
                     Id = 1,
                     OrderId = 1,
                     SourceId = 1,
-                    OrderDate = "2025-05-25",
-                    RequestDate = "2025-05-26",
-                    ShipmentDate = "2025-05-27",
+                    OrderDate = new DateTime(2025, 5, 25),
+                    RequestDate = new DateTime(2025, 5, 26),
+                    ShipmentDate = new DateTime(2025, 5, 27),
                     ShipmentType = "Standard",
                     ShipmentStatus = "Pending",
                     Notes = "Note1",
@@ -71,9 +72,9 @@ namespace UnitTests
                     Id = 2,
                     OrderId = 2,
                     SourceId = 2,
-                    OrderDate = "2025-05-24",
-                    RequestDate = "2025-05-25",
-                    ShipmentDate = "2025-05-26",
+                    OrderDate = new DateTime(2025, 5, 24),
+                    RequestDate = new DateTime(2025, 5, 25),
+                    ShipmentDate = new DateTime(2025, 5, 26),
                     ShipmentType = "Express",
                     ShipmentStatus = "Shipped",
                     Notes = "Note2",
@@ -97,9 +98,9 @@ namespace UnitTests
                     Id = 3,
                     OrderId = 3,
                     SourceId = 3,
-                    OrderDate = "2025-05-23",
-                    RequestDate = "2025-05-24",
-                    ShipmentDate = "2025-05-25",
+                    OrderDate = new DateTime(2025, 5, 23),
+                    RequestDate = new DateTime(2025, 5, 24),
+                    ShipmentDate = new DateTime(2025, 5, 25),
                     ShipmentType = "Standard",
                     ShipmentStatus = "Cancelled",
                     Notes = "Note3",
@@ -173,9 +174,9 @@ namespace UnitTests
             {
                 OrderId = 4,
                 SourceId = 4,
-                OrderDate = "2025-05-28",
-                RequestDate = "2025-05-29",
-                ShipmentDate = "2025-05-30",
+                OrderDate = new DateTime(2025, 5, 28),
+                RequestDate = new DateTime(2025, 5, 29),
+                ShipmentDate = new DateTime(2025, 5, 30),
                 ShipmentType = "Express",
                 ShipmentStatus = "New",
                 Notes = "Note4",
@@ -217,9 +218,9 @@ namespace UnitTests
             {
                 OrderId = 1,
                 SourceId = 1,
-                OrderDate = "2025-05-26",
-                RequestDate = "2025-05-27",
-                ShipmentDate = "2025-05-28",
+                OrderDate = new DateTime(2025, 5, 28),
+                RequestDate = new DateTime(2025, 5, 29),
+                ShipmentDate = new DateTime(2025, 5, 30),
                 ShipmentType = "Standard",
                 ShipmentStatus = "Processing",
                 Notes = "Updated Note",
@@ -259,9 +260,9 @@ namespace UnitTests
             {
                 OrderId = 999,
                 SourceId = 999,
-                OrderDate = "2025-05-28",
-                RequestDate = "2025-05-29",
-                ShipmentDate = "2025-05-30",
+                OrderDate = new DateTime(2025, 5, 28),
+                RequestDate = new DateTime(2025, 5, 29),
+                ShipmentDate = new DateTime(2025, 5, 30),
                 ShipmentStatus = "New",
                 TotalPackageCount = 1,
                 TotalPackageWeight = 5.0

@@ -172,5 +172,17 @@
         <member name="M:CargoHubV2.Migrations.oredeer.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:CargoHubV2.Migrations.shipm11t">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.shipm11t.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.shipm11t.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CargoHubV2.Migrations.shipm11t.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>
