@@ -1,8 +1,8 @@
 import unittest
-from httpx import Client
-from datetime import datetime
-from httpx import Timeout
+from httpx import Client, Timeout
+from datetime import datetime, timezone
 import os
+import json
 
 
 class TestItemsEndpoint(unittest.TestCase):
@@ -21,72 +21,83 @@ class TestItemsEndpoint(unittest.TestCase):
         self.created_item_id = None
 
         self.test_item = {
-            "uid": "test-uid",
-            "code": "test-code",
-            "description": "Test item description",
-            "short_description": "Test short desc",
-            "upc_code": "123456789012",
-            "model_number": "MN-001",
-            "commodity_code": "CC-001",
-            "item_line": None,
-            "item_group": None,
-            "item_type": None,
-            "unit_purchase_quantity": 10,
-            "unit_order_quantity": 5,
-            "pack_order_quantity": 2,
-            "supplier_id": 1,
-            "supplier_code": "SUP001",
-            "supplier_part_number": "SPN-001",
-            "weight_in_kg": 100,
-            "created_at": datetime.utcnow().isoformat() + "Z",
-            "updated_at": datetime.utcnow().isoformat() + "Z",
-            "is_deleted": False,
+            "UId": "test-uid",
+            "Code": "test-code",
+            "Description": "Test item description",
+            "ShortDescription": "Test short desc",
+            "UpcCode": "123456789012",
+            "ModelNumber": "MN-001",
+            "CommodityCode": "CC-001",
+            "ItemLineId": 1,
+            "ItemGroupId": 1,
+            "ItemTypeId": 1,
+            "UnitPurchaseQuantity": 0,
+            "UnitOrderQuantity": 0,
+            "PackOrderQuantity": 0,
+            "SupplierId": 1,
+            "SupplierCode": "SUP001",
+            "SupplierPartNumber": "SPN-001",
+            "WeightInKg": 100,
+            "IsDeleted": False,
         }
 
         self.updated_item = {
-            "uid": "updated-uid",
-            "code": "updated-code",
-            "description": "Updated description",
-            "short_description": "Updated short desc",
-            "upc_code": "987654321098",
-            "model_number": "MN-002",
-            "commodity_code": "CC-002",
-            "item_line": None,
-            "item_group": None,
-            "item_type": None,
-            "unit_purchase_quantity": 20,
-            "unit_order_quantity": 10,
-            "pack_order_quantity": 5,
-            "supplier_id": 1,
-            "supplier_code": "SUP001",
-            "supplier_part_number": "SPN-002",
-            "weight_in_kg": 200,
-            "created_at": self.test_item["created_at"],
-            "updated_at": datetime.utcnow().isoformat() + "Z",
-            "is_deleted": False,
+            "UId": "updated-uid",
+            "Code": "updated-code",
+            "Description": "Updated description",
+            "ShortDescription": "Updated short desc",
+            "UpcCode": "987654321098",
+            "ModelNumber": "MN-002",
+            "CommodityCode": "CC-002",
+            "ItemLineId": 1,
+            "ItemGroupId": 1,
+            "ItemTypeId": 1,
+            "UnitPurchaseQuantity": 20,
+            "UnitOrderQuantity": 10,
+            "PackOrderQuantity": 5,
+            "SupplierId": 1,
+            "SupplierCode": "SUP001",
+            "SupplierPartNumber": "SPN-002",
+            "WeightInKg": 200,
+            "IsDeleted": False,
         }
+
+    def test_1_create_item(self):
+        response = self.client.post(self.base_url, json=self.test_item)
+        print("RESPONSE TEXT:", response.text)
+        print("REQUEST JSON:", json.dumps(self.test_item, indent=2))
+        self.assertIn(response.status_code, [200, 201])
+        json_resp = response.json()
+        self.created_item_id = json_resp.get("id") or json_resp.get("Id")
+        self.assertIsNotNone(self.created_item_id)
+        self.assertEqual(
+            json_resp.get("Description") or json_resp.get("description"),
+            self.test_item["Description"],
+        )
 
     def test_2_get_item(self):
         if not self.created_item_id:
-            self.skipTest("Create item failed or did not run")
+            self.skipTest("Create item test failed or not run.")
 
         response = self.client.get(f"{self.base_url}{self.created_item_id}")
         self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data.get("id") or data.get("Id"), self.created_item_id)
+        json_resp = response.json()
+        self.assertEqual(
+            json_resp.get("id") or json_resp.get("Id"), self.created_item_id
+        )
 
     def test_3_update_item(self):
         if not self.created_item_id:
-            self.skipTest("Create item failed or did not run")
+            self.skipTest("Create item test failed or not run.")
 
         response = self.client.put(
             f"{self.base_url}{self.created_item_id}", json=self.updated_item
         )
         self.assertEqual(response.status_code, 200)
-        data = response.json()
+        json_resp = response.json()
         self.assertEqual(
-            data.get("description") or data.get("Description"),
-            self.updated_item["description"],
+            json_resp.get("Description") or json_resp.get("description"),
+            self.updated_item["Description"],
         )
 
     def test_4_get_all_items(self):
@@ -97,14 +108,14 @@ class TestItemsEndpoint(unittest.TestCase):
 
     def test_5_soft_delete_item(self):
         if not self.created_item_id:
-            self.skipTest("Create item failed or did not run")
+            self.skipTest("Create item test failed or not run.")
 
         response = self.client.delete(f"{self.base_url}{self.created_item_id}")
-        self.assertIn(response.status_code, (200, 204))
+        self.assertIn(response.status_code, [200, 204])
 
         # Controleer dat item niet meer gevonden wordt (soft delete)
         get_response = self.client.get(f"{self.base_url}{self.created_item_id}")
-        self.assertIn(get_response.status_code, (404, 410))
+        self.assertIn(get_response.status_code, [404, 410])
 
     def tearDown(self):
         self.client.close()
