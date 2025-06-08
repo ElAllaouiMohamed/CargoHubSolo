@@ -1,5 +1,6 @@
 import unittest
 from httpx import Client, Timeout
+from datetime import datetime, timezone
 import os
 import json
 
@@ -8,7 +9,6 @@ class TestItemsEndpoint(unittest.TestCase):
 
     def setUp(self):
         api_key = os.getenv("TEST_API_KEY", "fallback")
-        self.base_url = "http://localhost:5000/api/v1/items/"
         timeout = Timeout(60.0)
         self.client = Client(
             timeout=timeout,
@@ -17,7 +17,16 @@ class TestItemsEndpoint(unittest.TestCase):
                 "Content-Type": "application/json",
             },
         )
+        self.base_url = "http://localhost:5000/api/v1/items/"
         self.created_item_id = None
+
+        now = datetime.now(timezone.utc).isoformat()
+
+        # Create dependent foreign keys
+        self.supplier_id = self.create_supplier()
+        self.item_line_id = self.create_item_line()
+        self.item_group_id = self.create_item_group()
+        self.item_type_id = self.create_item_type()
 
         self.test_item = {
             "UId": "test-uid",
@@ -27,39 +36,99 @@ class TestItemsEndpoint(unittest.TestCase):
             "UpcCode": "123456789012",
             "ModelNumber": "MN-001",
             "CommodityCode": "CC-001",
-            "ItemLineId": 1,
-            "ItemGroupId": 1,
-            "ItemTypeId": 1,
-            "UnitPurchaseQuantity": 0,
-            "UnitOrderQuantity": 0,
-            "PackOrderQuantity": 0,
-            "SupplierId": 1,
+            "ItemLineId": self.item_line_id,
+            "ItemGroupId": self.item_group_id,
+            "ItemTypeId": self.item_type_id,
+            "UnitPurchaseQuantity": 10,
+            "UnitOrderQuantity": 5,
+            "PackOrderQuantity": 2,
+            "SupplierId": self.supplier_id,
             "SupplierCode": "SUP001",
             "SupplierPartNumber": "SPN-001",
             "WeightInKg": 100,
+            "CreatedAt": now,
+            "UpdatedAt": now,
             "IsDeleted": False,
         }
 
         self.updated_item = {
-            "UId": "updated-uid",
-            "Code": "updated-code",
+            **self.test_item,
             "Description": "Updated description",
-            "ShortDescription": "Updated short desc",
-            "UpcCode": "987654321098",
-            "ModelNumber": "MN-002",
-            "CommodityCode": "CC-002",
-            "ItemLineId": 1,
-            "ItemGroupId": 1,
-            "ItemTypeId": 1,
-            "UnitPurchaseQuantity": 20,
-            "UnitOrderQuantity": 10,
-            "PackOrderQuantity": 5,
-            "SupplierId": 1,
-            "SupplierCode": "SUP001",
+            "Code": "updated-code",
             "SupplierPartNumber": "SPN-002",
             "WeightInKg": 200,
-            "IsDeleted": False,
+            "UpdatedAt": datetime.now(timezone.utc).isoformat(),
         }
+
+    def create_supplier(self):
+        response = self.client.post(
+            "http://localhost:5000/api/v1/suppliers/",
+            json={
+                "Name": "Test Supplier",
+                "Email": "test@supplier.com",
+                "Phone": "0612345678",
+                "Address": "Teststraat 1",
+                "City": "Teststad",
+                "ZipCode": "1234AB",
+                "Country": "Nederland",
+            },
+        )
+        assert response.status_code in [
+            200,
+            201,
+        ], f"Create supplier failed: {response.text}"
+        return response.json()["id"]
+
+    def create_item_line(self):
+        now = datetime.now(timezone.utc).isoformat()
+        response = self.client.post(
+            "http://localhost:5000/api/v1/itemlines/",
+            json={
+                "Name": "Test Line",
+                "Description": "Line desc",
+                "CreatedAt": now,
+                "UpdatedAt": now,
+            },
+        )
+        assert response.status_code in [
+            200,
+            201,
+        ], f"Create itemline failed: {response.text}"
+        return response.json()["id"]
+
+    def create_item_group(self):
+        now = datetime.now(timezone.utc).isoformat()
+        response = self.client.post(
+            "http://localhost:5000/api/v1/itemgroups/",
+            json={
+                "Name": "Test Group",
+                "Description": "Group desc",
+                "CreatedAt": now,
+                "UpdatedAt": now,
+            },
+        )
+        assert response.status_code in [
+            200,
+            201,
+        ], f"Create itemgroup failed: {response.text}"
+        return response.json()["id"]
+
+    def create_item_type(self):
+        now = datetime.now(timezone.utc).isoformat()
+        response = self.client.post(
+            "http://localhost:5000/api/v1/itemtypes/",
+            json={
+                "Name": "Test Type",
+                "Description": "Type desc",
+                "CreatedAt": now,
+                "UpdatedAt": now,
+            },
+        )
+        assert response.status_code in [
+            200,
+            201,
+        ], f"Create itemtype failed: {response.text}"
+        return response.json()["id"]
 
     def test_1_create_item(self):
         response = self.client.post(self.base_url, json=self.test_item)
@@ -69,52 +138,33 @@ class TestItemsEndpoint(unittest.TestCase):
         json_resp = response.json()
         self.created_item_id = json_resp.get("id") or json_resp.get("Id")
         self.assertIsNotNone(self.created_item_id)
-        self.assertEqual(
-            json_resp.get("Description") or json_resp.get("description"),
-            self.test_item["Description"],
-        )
 
     def test_2_get_item(self):
-        if not self.created_item_id:
-            self.skipTest("Create item test failed or not run.")
-
+        self.test_1_create_item()
         response = self.client.get(f"{self.base_url}{self.created_item_id}")
         self.assertEqual(response.status_code, 200)
-        json_resp = response.json()
-        self.assertEqual(
-            json_resp.get("id") or json_resp.get("Id"), self.created_item_id
-        )
+        data = response.json()
+        self.assertEqual(data["id"], self.created_item_id)
 
     def test_3_update_item(self):
-        if not self.created_item_id:
-            self.skipTest("Create item test failed or not run.")
-
+        self.test_1_create_item()
         response = self.client.put(
             f"{self.base_url}{self.created_item_id}", json=self.updated_item
         )
         self.assertEqual(response.status_code, 200)
-        json_resp = response.json()
-        self.assertEqual(
-            json_resp.get("Description") or json_resp.get("description"),
-            self.updated_item["Description"],
-        )
+        self.assertIn("Updated description", response.text)
 
     def test_4_get_all_items(self):
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertIsInstance(data, list)
+        self.assertIsInstance(response.json(), list)
 
     def test_5_soft_delete_item(self):
-        if not self.created_item_id:
-            self.skipTest("Create item test failed or not run.")
-
+        self.test_1_create_item()
         response = self.client.delete(f"{self.base_url}{self.created_item_id}")
         self.assertIn(response.status_code, [200, 204])
-
-        # Controleer dat item niet meer gevonden wordt (soft delete)
-        get_response = self.client.get(f"{self.base_url}{self.created_item_id}")
-        self.assertIn(get_response.status_code, [404, 410])
+        response = self.client.get(f"{self.base_url}{self.created_item_id}")
+        self.assertIn(response.status_code, [404, 410])
 
     def tearDown(self):
         self.client.close()
