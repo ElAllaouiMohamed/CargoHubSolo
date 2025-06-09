@@ -43,7 +43,7 @@ namespace CargohubV2.Models
         public string? ContactName { get; set; }
 
         [Required]
-        [RegularExpression(@"^\+?[0-9\s\-]+$", ErrorMessage = "ongeldige phone number.")]
+        [RegularExpression(@"^\+?[0-9\s\-]+$", ErrorMessage = "ongeldige phone number formaat.")]
         [JsonProperty("contact_phone")]
         public string? ContactPhone { get; set; }
 
