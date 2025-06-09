@@ -196,16 +196,16 @@
         <member name="M:CargoHubV2.Migrations.supplier.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:CargoHubV2.Migrations.transfer">
+        <member name="T:CargoHubV2.Migrations.warehouse">
             <inheritdoc />
         </member>
-        <member name="M:CargoHubV2.Migrations.transfer.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:CargoHubV2.Migrations.warehouse.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:CargoHubV2.Migrations.transfer.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:CargoHubV2.Migrations.warehouse.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:CargoHubV2.Migrations.transfer.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:CargoHubV2.Migrations.warehouse.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:CargoHubV2.Migrations.warehouse">
