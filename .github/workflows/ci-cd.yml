@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - dev
-      - feature/transfer-endpoint
+      - feature/warehouse-endpoint
   pull_request:
     branches:
       - main
