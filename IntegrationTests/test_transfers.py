@@ -2,17 +2,22 @@ import unittest
 from httpx import Client
 from datetime import datetime
 from httpx import Timeout
+import os
 
 
 class TestTransfersEndpoint(unittest.TestCase):
+
     def setUp(self):
+        api_key = os.getenv("TEST_API_KEY", "fallback")
         self.base_url = "http://localhost:5000/api/v1/transfers/"
-        timeout = Timeout(60.0)  # 15 seconden timeout
-        self.client = Client(timeout=timeout)
-        self.client.headers = {
-            "X-Api-Key": "AdminKey123",
-            "Content-Type": "application/json",
-        }
+        timeout = Timeout(60.0)
+        self.client = Client(
+            timeout=timeout,
+            headers={
+                "X-Api-Key": api_key,
+                "Content-Type": "application/json",
+            },
+        )
         self.created_transfer_id = None
 
         self.test_transfer = {
@@ -80,7 +85,6 @@ class TestTransfersEndpoint(unittest.TestCase):
         response = self.client.delete(f"{self.base_url}{self.created_transfer_id}")
         self.assertIn(response.status_code, [200, 204])
 
-        # Check that transfer is soft deleted (should return 404 or similar)
         response_get = self.client.get(f"{self.base_url}{self.created_transfer_id}")
         self.assertIn(response_get.status_code, [404, 410])
 

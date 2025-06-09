@@ -1,61 +1,72 @@
 import unittest
 from httpx import Client
 from httpx import Timeout
+import os
 
 
 class TestClientsEndpoint(unittest.TestCase):
     def setUp(self):
+        api_key = os.getenv("TEST_API_KEY", "fallback")
         self.base_url = "http://localhost:5000/api/v1/clients/"
         timeout = Timeout(60.0)
-        self.client = Client(timeout=timeout)
-        self.client.headers = {
-            "X-Api-Key": "AdminKey123",
-            "Content-Type": "application/json",
-        }
+        self.client = Client(
+            timeout=timeout,
+            headers={
+                "X-Api-Key": api_key,
+                "Content-Type": "application/json",
+            },
+        )
         self.TEST_CLIENT_ID = None
 
         self.TEST_CLIENT = {
-            "name": "Integration Test Client",
-            "address": "123 Test St",
-            "city": "Test City",
-            "zip_code": "12345",
-            "province": "Test Province",
-            "country": "Test Country",
-            "contact_name": "Tester",
-            "contact_phone": "+1234567890",
-            "contact_email": "tester@example.com",
+            "Name": "Integration Test Client",
+            "Address": "123 Test St",
+            "City": "Test City",
+            "ZipCode": "12345",
+            "Province": "Test Province",
+            "Country": "Test Country",
+            "ContactName": "Tester",
+            "ContactPhone": "+1234567890",
+            "ContactEmail": "tester@example.com"
         }
 
+
         self.UPDATE_CLIENT = {
-            "name": "Updated Client Name",
-            "address": "321 Updated St",
-            "city": "Updated City",
-            "zip_code": "54321",
-            "province": "Updated Province",
-            "country": "Updated Country",
-            "contact_name": "Updated Tester",
-            "contact_phone": "+0987654321",
-            "contact_email": "updated@example.com",
+            "Name": "Updated Client Name",
+            "Address": "321 Updated St",
+            "City": "Updated City",
+            "ZipCode": "54321",
+            "Province": "Updated Province",
+            "Country": "Updated Country",
+            "ContactName": "Updated Tester",
+            "ContactPhone": "+0987654321",
+            "ContactEmail": "updated@example.com",
         }
 
     def test_1_create_client(self):
         response = self.client.post(self.base_url, json=self.TEST_CLIENT)
+        print("RESPONSE TEXT:", response.text)  # Debug info
         self.assertIn(response.status_code, [200, 201])
         json_resp = response.json()
-        self.TEST_CLIENT_ID = json_resp.get("id")
+        self.TEST_CLIENT_ID = json_resp.get("id") or json_resp.get("Id")
         self.assertIsNotNone(self.TEST_CLIENT_ID)
-        self.assertEqual(json_resp["name"], self.TEST_CLIENT["name"])
+        self.assertEqual(
+            json_resp.get("Name") or json_resp.get("name"), self.TEST_CLIENT["Name"]
+        )
 
     def test_2_get_client_by_id(self):
-
         if not self.TEST_CLIENT_ID:
             self.skipTest("Create client test failed or not run.")
 
         response = self.client.get(f"{self.base_url}{self.TEST_CLIENT_ID}")
         self.assertEqual(response.status_code, 200)
         json_resp = response.json()
-        self.assertEqual(json_resp["id"], self.TEST_CLIENT_ID)
-        self.assertEqual(json_resp["name"], self.TEST_CLIENT["name"])
+        self.assertEqual(
+            json_resp.get("id") or json_resp.get("Id"), self.TEST_CLIENT_ID
+        )
+        self.assertEqual(
+            json_resp.get("Name") or json_resp.get("name"), self.TEST_CLIENT["Name"]
+        )
 
     def test_3_update_client(self):
         if not self.TEST_CLIENT_ID:
@@ -66,7 +77,9 @@ class TestClientsEndpoint(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         json_resp = response.json()
-        self.assertEqual(json_resp["name"], self.UPDATE_CLIENT["name"])
+        self.assertEqual(
+            json_resp.get("Name") or json_resp.get("name"), self.UPDATE_CLIENT["Name"]
+        )
 
     def test_4_delete_client(self):
         if not self.TEST_CLIENT_ID:

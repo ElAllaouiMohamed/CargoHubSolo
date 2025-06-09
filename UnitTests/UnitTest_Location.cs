@@ -54,7 +54,12 @@ namespace UnitTests
         [TestMethod]
         public async Task GetByIdAsync_ShouldReturnLocation_WhenExists()
         {
-            var location = new Location { Code = "LOC002", WarehouseId = 2 };
+            var location = new Location
+            {
+                Code = "LOC002",
+                WarehouseId = 2,
+                Name = "Test Location 2"
+            };
             _dbContext.Locations.Add(location);
             await _dbContext.SaveChangesAsync();
 
@@ -63,6 +68,7 @@ namespace UnitTests
             Assert.IsNotNull(result);
             Assert.AreEqual("LOC002", result.Code);
         }
+
 
         [TestMethod]
         public async Task GetByIdAsync_ShouldReturnNull_WhenNotExists()
@@ -100,7 +106,12 @@ namespace UnitTests
         [TestMethod]
         public async Task SoftDeleteByIdAsync_ShouldSoftDeleteAndLog_WhenExists()
         {
-            var location = new Location { Code = "LOC004" };
+            var location = new Location
+            {
+                Code = "LOC004",
+                WarehouseId = 3,
+                Name = "To Be Deleted"
+            };
             _dbContext.Locations.Add(location);
             await _dbContext.SaveChangesAsync();
 
@@ -113,6 +124,7 @@ namespace UnitTests
 
             _mockLogging.Verify(m => m.LogAsync("system", "Location", "Delete", $"/api/v1/locations/{location.Id}", It.IsAny<string>()), Times.Once);
         }
+
 
         [TestMethod]
         public async Task SoftDeleteByIdAsync_ShouldReturnFalse_WhenNotExists()
