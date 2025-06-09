@@ -84,11 +84,11 @@ namespace CargohubV2.Models
 
         [JsonProperty("created_at")]
         [JsonConverter(typeof(FlexibleDateTimeConverter))]
-        public DateTime CreatedAt { get; set; } // Aanpasbaar gemaakt om CS0272 te vermijden
+        public DateTime CreatedAt { get; set; }
 
         [JsonProperty("updated_at")]
         [JsonConverter(typeof(FlexibleDateTimeConverter))]
-        public DateTime UpdatedAt { get; set; } // Aanpasbaar gemaakt om CS0272 te vermijden
+        public DateTime UpdatedAt { get; set; }
 
         [JsonProperty("weight_in_kg")]
         [Range(0, int.MaxValue, ErrorMessage = "WeightInKg moet ≥ 0 zijn.")]
