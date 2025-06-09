@@ -1,14 +1,12 @@
-using CargohubV2.DataConverters;
+﻿using CargohubV2.DataConverters;
 using Newtonsoft.Json;
-using CargohubV2.Models;
+using System;
+using System.Collections.Generic;
 
 namespace CargohubV2.Models
 {
     public class Warehouse
     {
-        public ICollection<ContactPerson> ContactPersons { get; set; } = new List<ContactPerson>();
-
-        public HazardClassification HazardClassification { get; set; }
         [JsonProperty("id")]
         public int Id { get; set; }
 
@@ -34,7 +32,7 @@ namespace CargohubV2.Models
         public string? Country { get; set; }
 
         [JsonProperty("contact")]
-        public Contact Contact { get; set; }
+        public Contact Contact { get; set; } = new Contact();
 
         [JsonProperty("created_at")]
         [JsonConverter(typeof(FlexibleDateTimeConverter))]
@@ -43,10 +41,11 @@ namespace CargohubV2.Models
         [JsonProperty("updated_at")]
         [JsonConverter(typeof(FlexibleDateTimeConverter))]
         public DateTime UpdatedAt { get; set; }
+
         public bool IsDeleted { get; set; } = false;
 
+        public ICollection<ContactPerson> ContactPersons { get; set; } = new List<ContactPerson>();
+
+        public HazardClassification HazardClassification { get; set; }
     }
-
-
 }
-

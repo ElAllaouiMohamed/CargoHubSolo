@@ -85,7 +85,6 @@ class TestTransfersEndpoint(unittest.TestCase):
         response = self.client.delete(f"{self.base_url}{self.created_transfer_id}")
         self.assertIn(response.status_code, [200, 204])
 
-        # Check that transfer is soft deleted (should return 404 or similar)
         response_get = self.client.get(f"{self.base_url}{self.created_transfer_id}")
         self.assertIn(response_get.status_code, [404, 410])
 
