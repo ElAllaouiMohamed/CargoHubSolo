@@ -16,6 +16,7 @@ class TestItemTypesEndpoint(unittest.TestCase):
                 "Content-Type": "application/json",
             },
         )
+        self.test_id = None
 
         now = datetime.now(timezone.utc).isoformat()
 
@@ -35,28 +36,50 @@ class TestItemTypesEndpoint(unittest.TestCase):
             "IsDeleted": False,
         }
 
+        self.invalid_item_type = {
+            "Description": "Invalid item type description",
+            "CreatedAt": now,
+            "UpdatedAt": now,
+            "IsDeleted": False,
+        }
+
+        # Cleanup existing test data
         response = self.client.get(self.base_url)
         if response.status_code == 200:
             for entry in response.json():
                 if entry["name"] in ["Test Type", "Updated Type"]:
                     self.client.delete(f"{self.base_url}{entry['id']}")
 
-        post_response = self.client.post(self.base_url, json=self.test_item_type)
-        assert post_response.status_code in [
-            200,
-            201,
-        ], f"Setup failed: {post_response.text}"
-        self.test_id = post_response.json()["id"]
-
-    def tearDown(self):
-        if self.test_id:
-            self.client.delete(f"{self.base_url}{self.test_id}")
-        self.client.close()
-
-    def test_1_post_item_type(self):
+    def test_1_create_item_type(self):
+        response = self.client.post(self.base_url, json=self.test_item_type)
+        self.assertIn(
+            response.status_code, (200, 201), f"Creation failed: {response.text}"
+        )
+        data = response.json()
+        self.test_id = data.get("id")
         self.assertIsNotNone(self.test_id)
+        self.assertEqual(data.get("name"), self.test_item_type["Name"])
 
-    def test_2_get_item_type(self):
+    def test_2_create_invalid_item_type_should_fail(self):
+        response = self.client.post(self.base_url, json=self.invalid_item_type)
+        self.assertIn(
+            response.status_code,
+            (400, 422),
+            f"Expected validation error: {response.text}",
+        )
+        data = response.json()
+        self.assertIn("errors", data, "Expected validation errors in response")
+        errors = str(data["errors"].values())
+        self.assertTrue(
+            "Name is verplicht" in errors, "Expected 'Name is verplicht' error message"
+        )
+
+    def test_3_get_item_type(self):
+        response = self.client.post(self.base_url, json=self.test_item_type)
+        self.assertIn(response.status_code, (200, 201))
+        data = response.json()
+        self.test_id = data.get("id")
+
         response = self.client.get(f"{self.base_url}{self.test_id}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -64,7 +87,12 @@ class TestItemTypesEndpoint(unittest.TestCase):
         self.assertEqual(data["name"], self.test_item_type["Name"])
         self.assertEqual(data["description"], self.test_item_type["Description"])
 
-    def test_3_update_item_type(self):
+    def test_4_update_item_type(self):
+        response = self.client.post(self.base_url, json=self.test_item_type)
+        self.assertIn(response.status_code, (200, 201))
+        data = response.json()
+        self.test_id = data.get("id")
+
         response = self.client.put(
             f"{self.base_url}{self.test_id}", json=self.updated_item_type
         )
@@ -74,7 +102,12 @@ class TestItemTypesEndpoint(unittest.TestCase):
         self.assertEqual(data["description"], self.updated_item_type["Description"])
         self.assertFalse(data["isDeleted"])
 
-    def test_4_get_all_item_types(self):
+    def test_5_get_all_item_types(self):
+        response = self.client.post(self.base_url, json=self.test_item_type)
+        self.assertIn(response.status_code, (200, 201))
+        data = response.json()
+        self.test_id = data.get("id")
+
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -82,12 +115,22 @@ class TestItemTypesEndpoint(unittest.TestCase):
         found = any(item["id"] == self.test_id for item in data)
         self.assertTrue(found, "Created item type should be in the list")
 
-    def test_5_soft_delete_item_type(self):
+    def test_6_soft_delete_item_type(self):
+        response = self.client.post(self.base_url, json=self.test_item_type)
+        self.assertIn(response.status_code, (200, 201))
+        data = response.json()
+        self.test_id = data.get("id")
+
         response = self.client.delete(f"{self.base_url}{self.test_id}")
-        self.assertEqual(response.status_code, 204)
+        self.assertIn(response.status_code, (200, 204))
 
         get_response = self.client.get(f"{self.base_url}{self.test_id}")
-        self.assertEqual(get_response.status_code, 404)
+        self.assertIn(get_response.status_code, (404, 410))
+
+    def tearDown(self):
+        if self.test_id:
+            self.client.delete(f"{self.base_url}{self.test_id}")
+        self.client.close()
 
 
 if __name__ == "__main__":

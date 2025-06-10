@@ -3,6 +3,7 @@ from httpx import Client
 from datetime import datetime
 from httpx import Timeout
 import os
+from datetime import timezone
 
 
 class TestLocationEndpoint(unittest.TestCase):
@@ -20,7 +21,7 @@ class TestLocationEndpoint(unittest.TestCase):
         )
         self.created_location_id = None
 
-        now = datetime.utcnow().isoformat() + "Z"
+        now = datetime.now(timezone.utc).isoformat()
 
         self.test_location = {
             "WarehouseId": 1,
@@ -36,7 +37,13 @@ class TestLocationEndpoint(unittest.TestCase):
             "Code": "LOC002",
             "Name": "Updated Location",
             "CreatedAt": now,
-            "UpdatedAt": datetime.utcnow().isoformat() + "Z",
+            "UpdatedAt": datetime.now(timezone.utc).isoformat(),
+            "IsDeleted": False,
+        }
+
+        self.invalid_location = {
+            "CreatedAt": now,
+            "UpdatedAt": now,
             "IsDeleted": False,
         }
 
@@ -50,17 +57,40 @@ class TestLocationEndpoint(unittest.TestCase):
             data.get("Code") or data.get("code"), self.test_location["Code"]
         )
 
-    def test_2_get_location_by_id(self):
-        if not self.created_location_id:
-            self.skipTest("Create location failed or did not run")
+    def test_2_create_invalid_location_should_fail(self):
+        response = self.client.post(self.base_url, json=self.invalid_location)
+        self.assertIn(
+            response.status_code,
+            (400, 422),
+            f"Expected validation error: {response.text}",
+        )
+        data = response.json()
+        self.assertIn("errors", data, "Expected validation errors in response")
+        errors = str(data["errors"].values())
+        self.assertTrue(
+            "Code is verplicht" in errors
+            or "Name is verplicht" in errors
+            or "WarehouseId moet een positief getal zijn" in errors,
+            "Expected specific validation error messages",
+        )
+
+    def test_3_get_location_by_id(self):
+        response = self.client.post(self.base_url, json=self.test_location)
+        self.assertIn(response.status_code, (200, 201))
+        data = response.json()
+        self.created_location_id = data.get("id") or data.get("Id")
+
         response = self.client.get(f"{self.base_url}{self.created_location_id}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data.get("id") or data.get("Id"), self.created_location_id)
 
-    def test_3_update_location(self):
-        if not self.created_location_id:
-            self.skipTest("Create location failed or did not run")
+    def test_4_update_location(self):
+        response = self.client.post(self.base_url, json=self.test_location)
+        self.assertIn(response.status_code, (200, 201))
+        data = response.json()
+        self.created_location_id = data.get("id") or data.get("Id")
+
         response = self.client.put(
             f"{self.base_url}{self.created_location_id}", json=self.updated_location
         )
@@ -70,15 +100,18 @@ class TestLocationEndpoint(unittest.TestCase):
             data.get("Name") or data.get("name"), self.updated_location["Name"]
         )
 
-    def test_4_get_all_locations(self):
+    def test_5_get_all_locations(self):
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIsInstance(data, list)
 
-    def test_5_soft_delete_location(self):
-        if not self.created_location_id:
-            self.skipTest("Create location failed or did not run")
+    def test_6_soft_delete_location(self):
+        response = self.client.post(self.base_url, json=self.test_location)
+        self.assertIn(response.status_code, (200, 201))
+        data = response.json()
+        self.created_location_id = data.get("id") or data.get("Id")
+
         response = self.client.delete(f"{self.base_url}{self.created_location_id}")
         self.assertIn(response.status_code, (200, 204))
 

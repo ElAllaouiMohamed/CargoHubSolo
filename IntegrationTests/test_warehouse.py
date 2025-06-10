@@ -26,10 +26,11 @@ class TestWarehousesEndpoint(unittest.TestCase):
             "code": "WH001",
             "name": "Test Warehouse",
             "address": "123 Warehouse Rd",
-            "zip": "1234AB",  
+            "zip": "1234AB",
             "city": "Test City",
             "province": "Test Province",
             "country": "Test Country",
+            "hazardClassification": 1,
             "contact": {
                 "name": "John Doe",
                 "phone": "+1234567890",
@@ -69,58 +70,50 @@ class TestWarehousesEndpoint(unittest.TestCase):
         data = response.json()
         self.test_id = data.get("id")
         self.assertIsNotNone(self.test_id, "Created warehouse has no ID")
+        self.assertEqual(data["name"], self.test_warehouse["name"])
         self.assertEqual(
-            data["name"], self.test_warehouse["name"], "Name mismatch after creation"
-        )
-        self.assertEqual(
-            data["contact"]["name"],
-            self.test_warehouse["contact"]["name"],
-            "Contact name mismatch",
+            data["contact"]["name"], self.test_warehouse["contact"]["name"]
         )
 
     def test_2_get_by_id(self):
-        self.test_1_create_warehouse()
+        create_response = self.client.post(self.base_url, json=self.test_warehouse)
+        self.test_id = create_response.json().get("id")
         response = self.client.get(f"{self.base_url}{self.test_id}")
-        self.assertEqual(
-            response.status_code, 200, f"GET by ID failed: {response.text}"
-        )
-        data = response.json()
-        self.assertEqual(data["id"], self.test_id, "Warehouse ID mismatch")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["id"], self.test_id)
 
     def test_3_update_warehouse(self):
-        self.test_1_create_warehouse()
+        create_response = self.client.post(self.base_url, json=self.test_warehouse)
+        self.test_id = create_response.json().get("id")
         response = self.client.put(
             f"{self.base_url}{self.test_id}", json=self.updated_warehouse
         )
-        self.assertEqual(response.status_code, 200, f"Update failed: {response.text}")
+        self.assertEqual(response.status_code, 200)
         data = response.json()
+        self.assertEqual(data["name"], self.updated_warehouse["name"])
         self.assertEqual(
-            data["name"], self.updated_warehouse["name"], "Name not updated"
-        )
-        self.assertEqual(
-            data["contact"]["email"],
-            self.updated_warehouse["contact"]["email"],
-            "Contact email not updated",
+            data["contact"]["email"], self.updated_warehouse["contact"]["email"]
         )
 
     def test_4_get_all(self):
+        self.client.post(self.base_url, json=self.test_warehouse)
         response = self.client.get(self.base_url)
-        self.assertEqual(response.status_code, 200, f"GET all failed: {response.text}")
-        self.assertIsInstance(response.json(), list, "GET all did not return a list")
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.json(), list)
 
     def test_5_soft_delete(self):
-        self.test_1_create_warehouse()
+        create_response = self.client.post(self.base_url, json=self.test_warehouse)
+        self.test_id = create_response.json().get("id")
         response = self.client.delete(f"{self.base_url}{self.test_id}")
-        self.assertEqual(
-            response.status_code, 204, f"Soft delete failed: {response.text}"
-        )
+        self.assertEqual(response.status_code, 204)
+        follow_up = self.client.get(f"{self.base_url}{self.test_id}")
+        self.assertIn(follow_up.status_code, [404, 410])
 
-        response_check = self.client.get(f"{self.base_url}{self.test_id}")
-        self.assertIn(
-            response_check.status_code,
-            [404, 410],
-            f"Expected 404 or 410 after delete, got: {response_check.status_code}",
-        )
+    def test_6_create_invalid_warehouse(self):
+        invalid_warehouse = self.test_warehouse.copy()
+        del invalid_warehouse["name"]  # vereist veld
+        response = self.client.post(self.base_url, json=invalid_warehouse)
+        self.assertEqual(response.status_code, 400)
 
 
 if __name__ == "__main__":

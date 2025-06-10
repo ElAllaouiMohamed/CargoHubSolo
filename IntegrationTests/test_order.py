@@ -1,28 +1,25 @@
 import unittest
-from httpx import Client
-from datetime import datetime
-from httpx import Timeout
+from httpx import Client, Timeout
+from datetime import datetime, timezone
 import os
 
 
 class TestOrdersEndpoint(unittest.TestCase):
-
-    def setUp(self):
-        api_key = os.getenv("TEST_API_KEY", "fallback")
-        self.base_url = "http://localhost:5000/api/v1/orders/"
-        timeout = Timeout(60.0)
-        self.client = Client(
-            timeout=timeout,
+    @classmethod
+    def setUpClass(cls):
+        cls.api_key = os.getenv("TEST_API_KEY", "fallback")
+        cls.base_url = "http://localhost:5000/api/v1/orders/"
+        cls.client = Client(
+            timeout=Timeout(60.0),
             headers={
-                "X-Api-Key": api_key,
+                "X-Api-Key": cls.api_key,
                 "Content-Type": "application/json",
             },
         )
-        self.order_id = None
 
-        now = datetime.utcnow().isoformat() + "Z"
+        now = datetime.now(timezone.utc).isoformat()
 
-        self.order_payload = {
+        cls.valid_payload = {
             "source_id": 1,
             "order_date": now,
             "request_date": now,
@@ -45,79 +42,59 @@ class TestOrdersEndpoint(unittest.TestCase):
             "stocks": [{"item_id": "1", "quantity": 10}],
         }
 
-        self.updated_order = {
-            "source_id": 2,
-            "order_date": now,
-            "request_date": now,
-            "reference": "UPDATED-ORDER-001",
-            "reference_extra": "UPDATED-EXTRA-001",
-            "order_status": "Shipped",
-            "notes": "Updated order notes",
-            "shipping_notes": "Updated shipping notes",
-            "picking_notes": "Updated picking notes",
-            "warehouse_id": 2,
-            "ship_to": "789 Updated St",
-            "bill_to": "012 Updated Ave",
-            "shipment_id": 2,
-            "total_amount": 200,
-            "total_discount": 20,
-            "total_tax": 10,
-            "total_surcharge": 4,
-            "created_at": now,
-            "updated_at": datetime.utcnow().isoformat() + "Z",
-            "stocks": [{"item_id": "2", "quantity": 20}],
-        }
+        cls.updated_payload = cls.valid_payload.copy()
+        cls.updated_payload["reference"] = "UPDATED-ORDER-001"
+        cls.updated_payload["order_status"] = "Shipped"
+        cls.updated_payload["items"] = [{"item_id": "2", "quantity": 5}]
 
-    def test_1_post_order(self):
-        response = self.client.post(self.base_url, json=self.order_payload)
-        print("POST RESPONSE:", response.text)
+        cls.invalid_payload = cls.valid_payload.copy()
+        del cls.invalid_payload["reference"]
+        cls.invalid_payload["items"] = []  # kan niet leeg zijn
+
+    def test_1_create_order(self):
+        response = self.client.post(self.base_url, json=self.valid_payload)
+        self.assertIn(response.status_code, [200, 201], f"POST failed: {response.text}")
+        data = response.json()
+        print("Created Order:", data)
+        self.__class__.order_id = data["id"]
+        self.assertEqual(data["reference"], self.valid_payload["reference"])
+
+    def test_2_invalid_order_fails(self):
+        response = self.client.post(self.base_url, json=self.invalid_payload)
         self.assertIn(
-            response.status_code, (200, 201), f"Failed to create order: {response.text}"
+            response.status_code,
+            [400, 422],
+            f"Validation did not trigger: {response.text}",
         )
-        data = response.json()
-        self.order_id = data.get("id")
-        self.assertIsNotNone(self.order_id, "Order ID should be returned")
-        self.assertEqual(data.get("reference"), self.order_payload["reference"])
 
-    def test_2_get_order(self):
-        if not self.order_id:
-            self.skipTest("Create order test failed or not run.")
+    def test_3_get_order_by_id(self):
         response = self.client.get(f"{self.base_url}{self.order_id}")
-        self.assertEqual(
-            response.status_code, 200, f"Failed to fetch order: {response.text}"
-        )
-        data = response.json()
-        self.assertEqual(data["reference"], self.order_payload["reference"])
+        self.assertEqual(response.status_code, 200, f"GET failed: {response.text}")
+        self.assertEqual(response.json()["reference"], self.valid_payload["reference"])
 
-    def test_3_update_order(self):
-        if not self.order_id:
-            self.skipTest("Create order test failed or not run.")
+    def test_4_update_order(self):
         response = self.client.put(
-            f"{self.base_url}{self.order_id}", json=self.updated_order
+            f"{self.base_url}{self.order_id}", json=self.updated_payload
         )
-        self.assertEqual(
-            response.status_code, 200, f"Failed to update order: {response.text}"
-        )
+        self.assertEqual(response.status_code, 200, f"PUT failed: {response.text}")
         data = response.json()
-        self.assertEqual(data["reference"], self.updated_order["reference"])
+        self.assertEqual(data["reference"], self.updated_payload["reference"])
+        self.assertEqual(data["order_status"], self.updated_payload["order_status"])
 
-    def test_4_get_all_orders(self):
+    def test_5_get_all_orders(self):
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.json(), list)
 
-    def test_5_soft_delete_order(self):
-        if not self.order_id:
-            self.skipTest("Create order test failed or not run.")
+    def test_6_soft_delete_order(self):
         response = self.client.delete(f"{self.base_url}{self.order_id}")
-        self.assertIn(response.status_code, (200, 204))
+        self.assertIn(response.status_code, [200, 204])
         get_response = self.client.get(f"{self.base_url}{self.order_id}")
-        self.assertIn(get_response.status_code, (404, 410))
+        self.assertIn(get_response.status_code, [404, 410])
 
-    def tearDown(self):
-        if self.order_id:
-            self.client.delete(f"{self.base_url}{self.order_id}")
-        self.client.close()
+    @classmethod
+    def tearDownClass(cls):
+        cls.client.close()
 
 
 if __name__ == "__main__":

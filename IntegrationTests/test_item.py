@@ -2,33 +2,30 @@ import unittest
 from httpx import Client, Timeout
 from datetime import datetime, timezone
 import os
-import json
 
 
 class TestItemsEndpoint(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         api_key = os.getenv("TEST_API_KEY", "fallback")
         timeout = Timeout(60.0)
-        self.client = Client(
+        cls.client = Client(
             timeout=timeout,
             headers={
                 "X-Api-Key": api_key,
                 "Content-Type": "application/json",
             },
         )
-        self.base_url = "http://localhost:5000/api/v1/items/"
-        self.created_item_id = None
-
+        cls.base_url = "http://localhost:5000/api/v1/items/"
         now = datetime.now(timezone.utc).isoformat()
 
-        # Create dependent foreign keys
-        self.supplier_id = self.create_supplier()
-        self.item_line_id = self.create_item_line()
-        self.item_group_id = self.create_item_group()
-        self.item_type_id = self.create_item_type()
+        cls.supplier_id = cls.create_supplier()
+        cls.item_line_id = cls.create_item_line()
+        cls.item_group_id = cls.create_item_group()
+        cls.item_type_id = cls.create_item_type()
 
-        self.test_item = {
+        cls.test_item = {
             "UId": "test-uid",
             "Code": "test-code",
             "Description": "Test item description",
@@ -36,13 +33,13 @@ class TestItemsEndpoint(unittest.TestCase):
             "UpcCode": "123456789012",
             "ModelNumber": "MN-001",
             "CommodityCode": "CC-001",
-            "ItemLineId": self.item_line_id,
-            "ItemGroupId": self.item_group_id,
-            "ItemTypeId": self.item_type_id,
+            "ItemLineId": cls.item_line_id,
+            "ItemGroupId": cls.item_group_id,
+            "ItemTypeId": cls.item_type_id,
             "UnitPurchaseQuantity": 10,
             "UnitOrderQuantity": 5,
             "PackOrderQuantity": 2,
-            "SupplierId": self.supplier_id,
+            "SupplierId": cls.supplier_id,
             "SupplierCode": "SUP001",
             "SupplierPartNumber": "SPN-001",
             "WeightInKg": 100,
@@ -51,8 +48,8 @@ class TestItemsEndpoint(unittest.TestCase):
             "IsDeleted": False,
         }
 
-        self.updated_item = {
-            **self.test_item,
+        cls.updated_item = {
+            **cls.test_item,
             "Description": "Updated description",
             "Code": "updated-code",
             "SupplierPartNumber": "SPN-002",
@@ -60,9 +57,9 @@ class TestItemsEndpoint(unittest.TestCase):
             "UpdatedAt": datetime.now(timezone.utc).isoformat(),
         }
 
-
-    def create_supplier(self):
-        now = datetime.utcnow().isoformat() + "Z"
+    @classmethod
+    def create_supplier(cls):
+        now = datetime.now(timezone.utc).isoformat()
         payload = {
             "code": "SUPITEM001",
             "name": "Item Supplier",
@@ -79,17 +76,19 @@ class TestItemsEndpoint(unittest.TestCase):
             "updated_at": now,
             "isDeleted": False,
         }
-
-        response = self.client.post("http://localhost:5000/api/v1/suppliers/", json=payload)
+        response = cls.client.post(
+            "http://localhost:5000/api/v1/suppliers/", json=payload
+        )
         assert response.status_code in [
             200,
             201,
         ], f"Create supplier failed: {response.text}"
         return response.json()["id"]
 
-    def create_item_line(self):
+    @classmethod
+    def create_item_line(cls):
         now = datetime.now(timezone.utc).isoformat()
-        response = self.client.post(
+        response = cls.client.post(
             "http://localhost:5000/api/v1/itemlines/",
             json={
                 "Name": "Test Line",
@@ -104,9 +103,10 @@ class TestItemsEndpoint(unittest.TestCase):
         ], f"Create itemline failed: {response.text}"
         return response.json()["id"]
 
-    def create_item_group(self):
+    @classmethod
+    def create_item_group(cls):
         now = datetime.now(timezone.utc).isoformat()
-        response = self.client.post(
+        response = cls.client.post(
             "http://localhost:5000/api/v1/itemgroups/",
             json={
                 "Name": "Test Group",
@@ -121,9 +121,10 @@ class TestItemsEndpoint(unittest.TestCase):
         ], f"Create itemgroup failed: {response.text}"
         return response.json()["id"]
 
-    def create_item_type(self):
+    @classmethod
+    def create_item_type(cls):
         now = datetime.now(timezone.utc).isoformat()
-        response = self.client.post(
+        response = cls.client.post(
             "http://localhost:5000/api/v1/itemtypes/",
             json={
                 "Name": "Test Type",
@@ -140,19 +141,16 @@ class TestItemsEndpoint(unittest.TestCase):
 
     def test_1_create_item(self):
         response = self.client.post(self.base_url, json=self.test_item)
-        print("RESPONSE TEXT:", response.text)
-        print("REQUEST JSON:", json.dumps(self.test_item, indent=2))
         self.assertIn(response.status_code, [200, 201])
-        json_resp = response.json()
-        self.created_item_id = json_resp.get("id") or json_resp.get("Id")
+        data = response.json()
+        self.__class__.created_item_id = data.get("id") or data.get("Id")
         self.assertIsNotNone(self.created_item_id)
 
     def test_2_get_item(self):
         self.test_1_create_item()
         response = self.client.get(f"{self.base_url}{self.created_item_id}")
         self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data["id"], self.created_item_id)
+        self.assertEqual(response.json()["id"], self.created_item_id)
 
     def test_3_update_item(self):
         self.test_1_create_item()
@@ -174,8 +172,9 @@ class TestItemsEndpoint(unittest.TestCase):
         response = self.client.get(f"{self.base_url}{self.created_item_id}")
         self.assertIn(response.status_code, [404, 410])
 
-    def tearDown(self):
-        self.client.close()
+    @classmethod
+    def tearDownClass(cls):
+        cls.client.close()
 
 
 if __name__ == "__main__":

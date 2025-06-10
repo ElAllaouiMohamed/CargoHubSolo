@@ -1,24 +1,27 @@
 import unittest
-from httpx import Client
-from httpx import Timeout
+from httpx import Client, Timeout
+from datetime import datetime, timezone
 import os
 
 
 class TestClientsEndpoint(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         api_key = os.getenv("TEST_API_KEY", "fallback")
-        self.base_url = "http://localhost:5000/api/v1/clients/"
+        cls.base_url = "http://localhost:5000/api/v1/clients/"
         timeout = Timeout(60.0)
-        self.client = Client(
+        cls.client = Client(
             timeout=timeout,
             headers={
                 "X-Api-Key": api_key,
                 "Content-Type": "application/json",
             },
         )
-        self.TEST_CLIENT_ID = None
+        cls.created_id = None
 
-        self.TEST_CLIENT = {
+        now = datetime.now(timezone.utc).isoformat()
+
+        cls.valid_client = {
             "Name": "Integration Test Client",
             "Address": "123 Test St",
             "City": "Test City",
@@ -27,73 +30,62 @@ class TestClientsEndpoint(unittest.TestCase):
             "Country": "Test Country",
             "ContactName": "Tester",
             "ContactPhone": "+1234567890",
-            "ContactEmail": "tester@example.com"
+            "ContactEmail": "tester@example.com",
+            "CreatedAt": now,
+            "UpdatedAt": now,
         }
 
+        cls.updated_client = cls.valid_client.copy()
+        cls.updated_client["Name"] = "Updated Client"
+        cls.updated_client["ContactEmail"] = "updated@example.com"
 
-        self.UPDATE_CLIENT = {
-            "Name": "Updated Client Name",
-            "Address": "321 Updated St",
-            "City": "Updated City",
-            "ZipCode": "54321",
-            "Province": "Updated Province",
-            "Country": "Updated Country",
-            "ContactName": "Updated Tester",
-            "ContactPhone": "+0987654321",
-            "ContactEmail": "updated@example.com",
-        }
+        cls.invalid_client = cls.valid_client.copy()
+        del cls.invalid_client["ContactEmail"]
+        cls.invalid_client["ContactPhone"] = "INVALID PHONE"  # fout formaat
 
     def test_1_create_client(self):
-        response = self.client.post(self.base_url, json=self.TEST_CLIENT)
-        print("RESPONSE TEXT:", response.text)  # Debug info
-        self.assertIn(response.status_code, [200, 201])
-        json_resp = response.json()
-        self.TEST_CLIENT_ID = json_resp.get("id") or json_resp.get("Id")
-        self.assertIsNotNone(self.TEST_CLIENT_ID)
+        response = self.client.post(self.base_url, json=self.valid_client)
+        self.assertIn(
+            response.status_code, [200, 201], f"Create failed: {response.text}"
+        )
+        data = response.json()
+        TestClientsEndpoint.created_id = data["id"]
         self.assertEqual(
-            json_resp.get("Name") or json_resp.get("name"), self.TEST_CLIENT["Name"]
+            data.get("name") or data.get("Name"), self.valid_client["Name"]
         )
 
-    def test_2_get_client_by_id(self):
-        if not self.TEST_CLIENT_ID:
-            self.skipTest("Create client test failed or not run.")
+    def test_2_create_invalid_client(self):
+        response = self.client.post(self.base_url, json=self.invalid_client)
+        self.assertIn(
+            response.status_code,
+            [400, 422],
+            f"Invalid create not rejected: {response.text}",
+        )
 
-        response = self.client.get(f"{self.base_url}{self.TEST_CLIENT_ID}")
+    def test_3_get_by_id(self):
+        response = self.client.get(f"{self.base_url}{self.created_id}")
         self.assertEqual(response.status_code, 200)
-        json_resp = response.json()
-        self.assertEqual(
-            json_resp.get("id") or json_resp.get("Id"), self.TEST_CLIENT_ID
-        )
-        self.assertEqual(
-            json_resp.get("Name") or json_resp.get("name"), self.TEST_CLIENT["Name"]
-        )
+        data = response.json()
+        self.assertEqual(data.get("id") or data.get("Id"), self.created_id)
 
-    def test_3_update_client(self):
-        if not self.TEST_CLIENT_ID:
-            self.skipTest("Create client test failed or not run.")
-
+    def test_4_update_client(self):
         response = self.client.put(
-            f"{self.base_url}{self.TEST_CLIENT_ID}", json=self.UPDATE_CLIENT
+            f"{self.base_url}{self.created_id}", json=self.updated_client
         )
         self.assertEqual(response.status_code, 200)
-        json_resp = response.json()
-        self.assertEqual(
-            json_resp.get("Name") or json_resp.get("name"), self.UPDATE_CLIENT["Name"]
-        )
+        data = response.json()
+        print("json test:", data)
+        self.assertEqual(data.get("contactEmail"), self.updated_client["ContactEmail"])
 
-    def test_4_delete_client(self):
-        if not self.TEST_CLIENT_ID:
-            self.skipTest("Create client test failed or not run.")
-
-        response = self.client.delete(f"{self.base_url}{self.TEST_CLIENT_ID}")
+    def test_5_soft_delete_client(self):
+        response = self.client.delete(f"{self.base_url}{self.created_id}")
         self.assertIn(response.status_code, [200, 204])
+        check = self.client.get(f"{self.base_url}{self.created_id}")
+        self.assertIn(check.status_code, [404, 410])
 
-        # Controleer dat client is verwijderd (soft delete: endpoint zou 404 kunnen geven)
-        response_get = self.client.get(f"{self.base_url}{self.TEST_CLIENT_ID}")
-        self.assertIn(response_get.status_code, [404, 410])
-
-    def tearDown(self):
-        self.client.close()
+    @classmethod
+    def tearDownClass(cls):
+        cls.client.close()
 
 
 if __name__ == "__main__":

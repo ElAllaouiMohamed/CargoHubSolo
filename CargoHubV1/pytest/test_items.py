@@ -1,18 +1,20 @@
 import pytest
 import requests
 
+
 # Setup common API info using a fixture
 @pytest.fixture
 def api_data():
-    url = 'http://localhost:3000/api/v1'
-    api_key = 'a1b2c3d4e5'
+    url = "http://localhost:3000/api/v1"
+    api_key = "a1b2c3d4e5"
     return url, api_key
+
 
 # Test to GET all items
 def test_get_all_items(api_data):
     url, api_key = api_data
     response = requests.get(f"{url}/items", headers={"API_KEY": api_key})
-    
+
     assert response.status_code == 200
     items = response.json()
 
@@ -37,6 +39,7 @@ def test_get_all_items(api_data):
         assert "supplier_part_number" in items
         assert "created_at" in items
         assert "updated_at" in items
+
 
 # Test to GET a specific item by its UID
 def test_get_item_by_uid(api_data):
@@ -66,6 +69,7 @@ def test_get_item_by_uid(api_data):
     assert "created_at" in item
     assert "updated_at" in item
 
+
 # Test to ADD a new item and DELETE it afterwards
 def test_add_and_delete_item(api_data):
     url, api_key = api_data
@@ -87,16 +91,21 @@ def test_add_and_delete_item(api_data):
         "supplier_code": "SUP123",
         "supplier_part_number": "PART123",
         "created_at": "2024-01-01 12:00:00",
-        "updated_at": "2024-01-01 12:00:00"
+        "updated_at": "2024-01-01 12:00:00",
     }
 
     # Add the item
-    post_response = requests.post(f"{url}/items", json=new_item, headers={"API_KEY": api_key})
+    post_response = requests.post(
+        f"{url}/items", json=new_item, headers={"API_KEY": api_key}
+    )
     assert post_response.status_code == 201
 
     # Delete the newly added item
-    delete_response = requests.delete(f"{url}/items/{new_item['uid']}", headers={"API_KEY": api_key})
+    delete_response = requests.delete(
+        f"{url}/items/{new_item['uid']}", headers={"API_KEY": api_key}
+    )
     assert delete_response.status_code == 200
+
 
 # Test to UPDATE an existing item
 def test_update_item(api_data):
@@ -104,7 +113,9 @@ def test_update_item(api_data):
     item_uid = 1
 
     # Fetch current item data to update
-    original_data = requests.get(f"{url}/items/{item_uid}", headers={"API_KEY": api_key}).json()
+    original_data = requests.get(
+        f"{url}/items/{item_uid}", headers={"API_KEY": api_key}
+    ).json()
 
     updated_item = {
         "uid": item_uid,
@@ -124,11 +135,13 @@ def test_update_item(api_data):
         "supplier_code": original_data["supplier_code"],
         "supplier_part_number": original_data["supplier_part_number"],
         "created_at": original_data["created_at"],
-        "updated_at": "2024-01-01 12:00:00"
+        "updated_at": "2024-01-01 12:00:00",
     }
 
     # Send the updated item using PUT request
-    put_response = requests.put(f"{url}/items/{item_uid}", json=updated_item, headers={"API_KEY": api_key})
+    put_response = requests.put(
+        f"{url}/items/{item_uid}", json=updated_item, headers={"API_KEY": api_key}
+    )
     assert put_response.status_code == 200
 
     # Verify that the update happened by checking the description
@@ -137,8 +150,11 @@ def test_update_item(api_data):
     assert get_response.json()["description"] == "Updated Item Description"
 
     # Restore original data to keep things clean
-    restore_response = requests.put(f"{url}/items/{item_uid}", json=original_data, headers={"API_KEY": api_key})
+    restore_response = requests.put(
+        f"{url}/items/{item_uid}", json=original_data, headers={"API_KEY": api_key}
+    )
     assert restore_response.status_code == 200
+
 
 # Test to DELETE an item by its UID
 def test_delete_item(api_data):
@@ -161,16 +177,21 @@ def test_delete_item(api_data):
         "supplier_code": "SUP123",
         "supplier_part_number": "PART123",
         "created_at": "2024-01-01 12:00:00",
-        "updated_at": "2024-01-01 12:00:00"
+        "updated_at": "2024-01-01 12:00:00",
     }
 
     # Add the item (POST)
-    post_response = requests.post(f"{url}/items", json=new_item, headers={"API_KEY": api_key})
+    post_response = requests.post(
+        f"{url}/items", json=new_item, headers={"API_KEY": api_key}
+    )
     assert post_response.status_code == 201
 
     # Now delete the added item (DELETE)
-    delete_response = requests.delete(f"{url}/items/{new_item['uid']}", headers={"API_KEY": api_key})
+    delete_response = requests.delete(
+        f"{url}/items/{new_item['uid']}", headers={"API_KEY": api_key}
+    )
     assert delete_response.status_code == 200
+
 
 # Test GET with invalid item UID
 def test_get_item_invalid_uid(api_data):
@@ -178,9 +199,10 @@ def test_get_item_invalid_uid(api_data):
     invalid_uid = "invalid_uid"  # Use an invalid UID
 
     response = requests.get(f"{url}/items/{invalid_uid}", headers={"API_KEY": api_key})
-    
+
     # For invalid UIDs, expect a 400 Bad Request or other error response
     assert response.status_code == 400 or response.status_code == 404
+
 
 # Test GET with an empty item UID
 def test_get_item_empty_uid(api_data):
@@ -191,6 +213,7 @@ def test_get_item_empty_uid(api_data):
 
     # Expecting a 400 Bad Request for empty UID
     assert response.status_code == 400
+
 
 # Test GET with a negative item UID
 def test_get_item_negative_uid(api_data):
