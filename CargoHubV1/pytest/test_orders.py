@@ -1,18 +1,20 @@
 import pytest
 import requests
 
+
 # Setup common API info using a fixture
 @pytest.fixture
 def api_data():
-    url = 'http://localhost:3000/api/v1'
-    api_key = 'a1b2c3d4e5'
+    url = "http://localhost:3000/api/v1"
+    api_key = "a1b2c3d4e5"
     return url, api_key
+
 
 # Test to GET all orders
 def test_get_all_orders(api_data):
     url, api_key = api_data
     response = requests.get(f"{url}/orders", headers={"API_KEY": api_key})
-    
+
     assert response.status_code == 200
     orders = response.json()
 
@@ -40,6 +42,7 @@ def test_get_all_orders(api_data):
         assert "created_at" in orders
         assert "updated_at" in orders
         assert "items" in orders
+
 
 # Test to GET a specific order by its ID
 def test_get_order_by_id(api_data):
@@ -72,6 +75,7 @@ def test_get_order_by_id(api_data):
     assert "updated_at" in order
     assert "items" in order
 
+
 # Test to ADD a new order and DELETE it afterwards
 def test_add_and_delete_order(api_data):
     url, api_key = api_data
@@ -96,16 +100,21 @@ def test_add_and_delete_order(api_data):
         "total_surcharge": 20,
         "created_at": "2024-01-01 12:00:00",
         "updated_at": "2024-01-01 12:00:00",
-        "items": [{"item_id": 101, "quantity": 10}]
+        "items": [{"item_id": 101, "quantity": 10}],
     }
 
     # Add the order
-    post_response = requests.post(f"{url}/orders", json=new_order, headers={"API_KEY": api_key})
+    post_response = requests.post(
+        f"{url}/orders", json=new_order, headers={"API_KEY": api_key}
+    )
     assert post_response.status_code == 201
 
     # Delete the newly added order
-    delete_response = requests.delete(f"{url}/orders/{new_order['id']}", headers={"API_KEY": api_key})
+    delete_response = requests.delete(
+        f"{url}/orders/{new_order['id']}", headers={"API_KEY": api_key}
+    )
     assert delete_response.status_code == 200
+
 
 # Test to UPDATE an existing order
 def test_update_order(api_data):
@@ -113,7 +122,9 @@ def test_update_order(api_data):
     order_id = 1
 
     # Fetch current order data to update
-    original_data = requests.get(f"{url}/orders/{order_id}", headers={"API_KEY": api_key}).json()
+    original_data = requests.get(
+        f"{url}/orders/{order_id}", headers={"API_KEY": api_key}
+    ).json()
 
     updated_order = {
         "id": order_id,
@@ -136,21 +147,28 @@ def test_update_order(api_data):
         "total_surcharge": original_data["total_surcharge"],
         "created_at": original_data["created_at"],
         "updated_at": "2024-01-01 12:00:00",
-        "items": original_data["items"]
+        "items": original_data["items"],
     }
 
     # Send the updated order using PUT request
-    put_response = requests.put(f"{url}/orders/{order_id}", json=updated_order, headers={"API_KEY": api_key})
+    put_response = requests.put(
+        f"{url}/orders/{order_id}", json=updated_order, headers={"API_KEY": api_key}
+    )
     assert put_response.status_code == 200
 
     # Verify that the update happened by checking the order status
-    get_response = requests.get(f"{url}/orders/{order_id}", headers={"API_KEY": api_key})
+    get_response = requests.get(
+        f"{url}/orders/{order_id}", headers={"API_KEY": api_key}
+    )
     assert get_response.status_code == 200
     assert get_response.json()["order_status"] == "completed"
 
     # Restore original data to keep things clean
-    restore_response = requests.put(f"{url}/orders/{order_id}", json=original_data, headers={"API_KEY": api_key})
+    restore_response = requests.put(
+        f"{url}/orders/{order_id}", json=original_data, headers={"API_KEY": api_key}
+    )
     assert restore_response.status_code == 200
+
 
 # Test to DELETE an order by its ID
 def test_delete_order_item(api_data):
@@ -176,16 +194,21 @@ def test_delete_order_item(api_data):
         "total_surcharge": 20,
         "created_at": "2024-01-01 12:00:00",
         "updated_at": "2024-01-01 12:00:00",
-        "items": [{"item_id": 101, "quantity": 10}]
+        "items": [{"item_id": 101, "quantity": 10}],
     }
 
     # Add the order (POST)
-    post_response = requests.post(f"{url}/orders", json=new_order, headers={"API_KEY": api_key})
+    post_response = requests.post(
+        f"{url}/orders", json=new_order, headers={"API_KEY": api_key}
+    )
     assert post_response.status_code == 201
 
     # Now delete the added order (DELETE)
-    delete_response = requests.delete(f"{url}/orders/{new_order['id']}", headers={"API_KEY": api_key})
+    delete_response = requests.delete(
+        f"{url}/orders/{new_order['id']}", headers={"API_KEY": api_key}
+    )
     assert delete_response.status_code == 200
+
 
 # Test GET with invalid order ID
 def test_get_order_invalid_id(api_data):
@@ -193,9 +216,10 @@ def test_get_order_invalid_id(api_data):
     invalid_id = "invalid_id"  # Use an invalid ID
 
     response = requests.get(f"{url}/orders/{invalid_id}", headers={"API_KEY": api_key})
-    
+
     # For invalid IDs, expect a 400 Bad Request or other error response
     assert response.status_code == 400 or response.status_code == 404
+
 
 # Test GET with an empty order ID
 def test_get_order_empty_id(api_data):
@@ -206,6 +230,7 @@ def test_get_order_empty_id(api_data):
 
     # Expecting a 400 Bad Request for empty ID
     assert response.status_code == 400
+
 
 # Test GET with a negative order ID
 def test_get_order_negative_id(api_data):

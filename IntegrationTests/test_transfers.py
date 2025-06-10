@@ -1,95 +1,81 @@
 import unittest
-from httpx import Client
+from httpx import Client, Timeout
 from datetime import datetime
-from httpx import Timeout
 import os
 
 
 class TestTransfersEndpoint(unittest.TestCase):
-
-    def setUp(self):
-        api_key = os.getenv("TEST_API_KEY", "fallback")
-        self.base_url = "http://localhost:5000/api/v1/transfers/"
-        timeout = Timeout(60.0)
-        self.client = Client(
-            timeout=timeout,
+    @classmethod
+    def setUpClass(cls):
+        cls.api_key = os.getenv("TEST_API_KEY", "fallback")
+        cls.base_url = "http://localhost:5000/api/v1/transfers/"
+        cls.client = Client(
+            timeout=Timeout(30.0),
             headers={
-                "X-Api-Key": api_key,
+                "X-Api-Key": cls.api_key,
                 "Content-Type": "application/json",
             },
         )
-        self.created_transfer_id = None
-
-        self.test_transfer = {
-            "reference": "REF-123456",
+        now = datetime.utcnow().isoformat() + "Z"
+        cls.valid_payload = {
+            "reference": "VALID-001",
             "transfer_from": 1,
             "transfer_to": 2,
             "transfer_status": "Pending",
-            "created_at": datetime.utcnow().isoformat() + "Z",
-            "updated_at": datetime.utcnow().isoformat() + "Z",
+            "created_at": now,
+            "updated_at": now,
+            "items": [],
+            "is_deleted": False,
+        }
+        cls.invalid_payload = {
+            "transfer_from": "INVALID",
+            "transfer_to": 2,
+            "transfer_status": "Pending",
+            "created_at": now,
+            "updated_at": now,
             "items": [],
             "is_deleted": False,
         }
 
-        self.updated_transfer = {
-            "reference": "REF-654321",
-            "transfer_from": 3,
-            "transfer_to": 4,
-            "transfer_status": "Completed",
-            "items": [],
-            "is_deleted": False,
-        }
-
-    def test_1_create_transfer(self):
-        response = self.client.post(self.base_url, json=self.test_transfer)
+    def test_1_create_valid_transfer(self):
+        response = self.client.post(self.base_url, json=self.valid_payload)
         self.assertIn(response.status_code, [200, 201])
-        json_resp = response.json()
-        self.created_transfer_id = json_resp.get("id")
-        self.assertIsNotNone(self.created_transfer_id)
-        self.assertEqual(json_resp["reference"], self.test_transfer["reference"])
+        data = response.json()
+        self.__class__.transfer_id = data["id"]
+        self.assertEqual(data["reference"], self.valid_payload["reference"])
 
-    def test_2_get_transfer_by_id(self):
-        if not self.created_transfer_id:
-            self.skipTest("Create transfer test failed or not run.")
+    def test_2_create_invalid_transfer_should_fail(self):
+        response = self.client.post(self.base_url, json=self.invalid_payload)
+        self.assertIn(response.status_code, [400, 422])
 
-        response = self.client.get(f"{self.base_url}{self.created_transfer_id}")
+    def test_3_get_by_id(self):
+        response = self.client.get(f"{self.base_url}{self.transfer_id}")
         self.assertEqual(response.status_code, 200)
-        json_resp = response.json()
-        self.assertEqual(json_resp["id"], self.created_transfer_id)
-        self.assertEqual(json_resp["reference"], self.test_transfer["reference"])
+        self.assertEqual(response.json()["id"], self.transfer_id)
 
-    def test_3_update_transfer(self):
-        if not self.created_transfer_id:
-            self.skipTest("Create transfer test failed or not run.")
+    def test_4_update_transfer(self):
+        updated = self.valid_payload.copy()
+        updated["reference"] = "UPDATED-REF"
+        updated["transferStatus"] = "Completed"
 
-        response = self.client.put(
-            f"{self.base_url}{self.created_transfer_id}", json=self.updated_transfer
-        )
+        response = self.client.put(f"{self.base_url}{self.transfer_id}", json=updated)
         self.assertEqual(response.status_code, 200)
-        json_resp = response.json()
-        self.assertEqual(
-            json_resp["transfer_status"], self.updated_transfer["transfer_status"]
-        )
-        self.assertEqual(json_resp["reference"], self.updated_transfer["reference"])
+        data = response.json()
+        self.assertEqual(data["reference"], "UPDATED-REF")
+        print("UPDATE RESPONSE JSON:", data)
 
-    def test_4_get_all_transfers(self):
-        response = self.client.get(self.base_url)
-        self.assertEqual(response.status_code, 200)
-        json_resp = response.json()
-        self.assertIsInstance(json_resp, list)
+        self.assertEqual(data["transferStatus"], "Completed")
 
-    def test_5_soft_delete_transfer(self):
-        if not self.created_transfer_id:
-            self.skipTest("Create transfer test failed or not run.")
-
-        response = self.client.delete(f"{self.base_url}{self.created_transfer_id}")
+    def test_5_delete_transfer(self):
+        response = self.client.delete(f"{self.base_url}{self.transfer_id}")
         self.assertIn(response.status_code, [200, 204])
 
-        response_get = self.client.get(f"{self.base_url}{self.created_transfer_id}")
-        self.assertIn(response_get.status_code, [404, 410])
+        get_response = self.client.get(f"{self.base_url}{self.transfer_id}")
+        self.assertIn(get_response.status_code, [404, 410])
 
-    def tearDown(self):
-        self.client.close()
+    @classmethod
+    def tearDownClass(cls):
+        cls.client.close()
 
 
 if __name__ == "__main__":

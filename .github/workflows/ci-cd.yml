@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - feature/integration-test-fixes
   pull_request:
     branches:
       - main

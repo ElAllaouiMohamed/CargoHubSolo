@@ -7,7 +7,7 @@ from providers import auth_provider
 from providers import data_provider
 
 from processors import notification_processor
- 
+
 from models.clients import Clients
 from models.orders import Orders
 from models.items import Items
@@ -28,7 +28,7 @@ transfers_instance = Transfers(root_path="./models/", is_debug=False)
 items_instance = Items(root_path="./models/", is_debug=False)
 item_lines_instance = ItemLines(root_path="./models/", is_debug=False)
 item_groups_instance = ItemGroups(root_path="./models/", is_debug=False)
-item_types_instance =  ItemTypes(root_path="./models/", is_debug=False)
+item_types_instance = ItemTypes(root_path="./models/", is_debug=False)
 inventories_instance = Inventories(root_path="./models/", is_debug=False)
 suppliers_instance = Suppliers(root_path="./models/", is_debug=False)
 orders_instance = Orders(root_path="./models/", is_debug=False)
@@ -53,16 +53,23 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                     self.wfile.write(json.dumps(warehouses).encode("utf-8"))
                 case 2:
                     warehouse_id = int(path[1])
-                    warehouse = data_provider.fetch_warehouse_pool().get_warehouse(warehouse_id)
+                    warehouse = data_provider.fetch_warehouse_pool().get_warehouse(
+                        warehouse_id
+                    )
                     self.send_response(200)
                     self.send_header("Content-type", "application/json")
                     self.end_headers()
                     self.wfile.write(json.dumps(warehouse).encode("utf-8"))
                 case 3:
                     warehouse_id = int(path[1])
-                    data = data_provider.fetch_warehouse_pool().get_warehouse_data(warehouse_id, path[2])
+                    data = data_provider.fetch_warehouse_pool().get_warehouse_data(
+                        warehouse_id, path[2]
+                    )
                     if data == None:
-                        self.send_response(404, "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.")
+                        self.send_response(
+                            404,
+                            "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.",
+                        )
                         self.end_headers()
                     else:
                         self.send_response(200)
@@ -83,16 +90,23 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                     self.wfile.write(json.dumps(locations).encode("utf-8"))
                 case 2:
                     location_id = int(path[1])
-                    location = data_provider.fetch_location_pool().get_location(location_id)
+                    location = data_provider.fetch_location_pool().get_location(
+                        location_id
+                    )
                     self.send_response(200)
                     self.send_header("Content-type", "application/json")
                     self.end_headers()
                     self.wfile.write(json.dumps(location).encode("utf-8"))
                 case 3:
                     location_id = int(path[1])
-                    data = data_provider.fetch_location_pool().get_location_data(location_id, path[2])
+                    data = data_provider.fetch_location_pool().get_location_data(
+                        location_id, path[2]
+                    )
                     if data == None:
-                        self.send_response(404, "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.")
+                        self.send_response(
+                            404,
+                            "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.",
+                        )
                         self.end_headers()
                     else:
                         self.send_response(200)
@@ -113,16 +127,23 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                     self.wfile.write(json.dumps(transfers).encode("utf-8"))
                 case 2:
                     transfer_id = int(path[1])
-                    transfer = data_provider.fetch_transfer_pool().get_transfer(transfer_id)
+                    transfer = data_provider.fetch_transfer_pool().get_transfer(
+                        transfer_id
+                    )
                     self.send_response(200)
                     self.send_header("Content-type", "application/json")
                     self.end_headers()
                     self.wfile.write(json.dumps(transfer).encode("utf-8"))
                 case 3:
                     transfer_id = int(path[1])
-                    data = data_provider.fetch_transfer_pool().get_transfer_data(transfer_id, path[2])
+                    data = data_provider.fetch_transfer_pool().get_transfer_data(
+                        transfer_id, path[2]
+                    )
                     if data == None:
-                        self.send_response(404, "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.")
+                        self.send_response(
+                            404,
+                            "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.",
+                        )
                         self.end_headers()
                     else:
                         self.send_response(200)
@@ -150,9 +171,14 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                     self.wfile.write(json.dumps(item).encode("utf-8"))
                 case 3:
                     item_id = path[1]
-                    data = data_provider.fetch_item_pool().get_item_data(item_id, path[2])
+                    data = data_provider.fetch_item_pool().get_item_data(
+                        item_id, path[2]
+                    )
                     if data == None:
-                        self.send_response(404, "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.")
+                        self.send_response(
+                            404,
+                            "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.",
+                        )
                         self.end_headers()
                     else:
                         self.send_response(200)
@@ -162,7 +188,9 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                 case 4:
                     if path[2] == "inventory" and path[3] == "totals":
                         item_id = path[1]
-                        totals = data_provider.fetch_inventory_pool().get_inventory_totals_for_item(item_id)
+                        totals = data_provider.fetch_inventory_pool().get_inventory_totals_for_item(
+                            item_id
+                        )
                         self.send_response(200)
                         self.send_header("Content-type", "application/json")
                         self.end_headers()
@@ -186,16 +214,23 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                     self.wfile.write(json.dumps(item_lines).encode("utf-8"))
                 case 2:
                     item_line_id = int(path[1])
-                    item_line = data_provider.fetch_item_line_pool().get_item_line(item_line_id)
+                    item_line = data_provider.fetch_item_line_pool().get_item_line(
+                        item_line_id
+                    )
                     self.send_response(200)
                     self.send_header("Content-type", "application/json")
                     self.end_headers()
                     self.wfile.write(json.dumps(item_line).encode("utf-8"))
                 case 3:
                     item_line_id = int(path[1])
-                    data = data_provider.fetch_item_line_pool().get_item_line_data(item_line_id, path[2])
+                    data = data_provider.fetch_item_line_pool().get_item_line_data(
+                        item_line_id, path[2]
+                    )
                     if data == None:
-                        self.send_response(404, "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.")
+                        self.send_response(
+                            404,
+                            "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.",
+                        )
                         self.end_headers()
                     else:
                         self.send_response(200)
@@ -209,23 +244,32 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             paths = len(path)
             match paths:
                 case 1:
-                    item_groups = data_provider.fetch_item_group_pool().get_item_groups()
+                    item_groups = (
+                        data_provider.fetch_item_group_pool().get_item_groups()
+                    )
                     self.send_response(200)
                     self.send_header("Content-type", "application/json")
                     self.end_headers()
                     self.wfile.write(json.dumps(item_groups).encode("utf-8"))
                 case 2:
                     item_group_id = int(path[1])
-                    item_group = data_provider.fetch_item_group_pool().get_item_group(item_group_id)
+                    item_group = data_provider.fetch_item_group_pool().get_item_group(
+                        item_group_id
+                    )
                     self.send_response(200)
                     self.send_header("Content-type", "application/json")
                     self.end_headers()
                     self.wfile.write(json.dumps(item_group).encode("utf-8"))
                 case 3:
                     item_group_id = int(path[1])
-                    data = data_provider.fetch_item_group_pool().get_item_group_data(item_group_id, path[2])
+                    data = data_provider.fetch_item_group_pool().get_item_group_data(
+                        item_group_id, path[2]
+                    )
                     if data == None:
-                        self.send_response(404, "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.")
+                        self.send_response(
+                            404,
+                            "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.",
+                        )
                         self.end_headers()
                     else:
                         self.send_response(200)
@@ -246,16 +290,23 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                     self.wfile.write(json.dumps(item_types).encode("utf-8"))
                 case 2:
                     item_type_id = int(path[1])
-                    item_type = data_provider.fetch_item_type_pool().get_item_type(item_type_id)
+                    item_type = data_provider.fetch_item_type_pool().get_item_type(
+                        item_type_id
+                    )
                     self.send_response(200)
                     self.send_header("Content-type", "application/json")
                     self.end_headers()
                     self.wfile.write(json.dumps(item_type).encode("utf-8"))
                 case 3:
                     item_type_id = int(path[1])
-                    data = data_provider.fetch_item_type_pool().get_item_type_data(item_type_id, path[2])
+                    data = data_provider.fetch_item_type_pool().get_item_type_data(
+                        item_type_id, path[2]
+                    )
                     if data == None:
-                        self.send_response(404, "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.")
+                        self.send_response(
+                            404,
+                            "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.",
+                        )
                         self.end_headers()
                     else:
                         self.send_response(200)
@@ -276,16 +327,23 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                     self.wfile.write(json.dumps(inventories).encode("utf-8"))
                 case 2:
                     inventory_id = int(path[1])
-                    inventory = data_provider.fetch_inventory_pool().get_inventory(inventory_id)
+                    inventory = data_provider.fetch_inventory_pool().get_inventory(
+                        inventory_id
+                    )
                     self.send_response(200)
                     self.send_header("Content-type", "application/json")
                     self.end_headers()
                     self.wfile.write(json.dumps(inventory).encode("utf-8"))
                 case 3:
                     inventory_id = int(path[1])
-                    data = data_provider.fetch_inventory_pool().get_inventory_data(inventory_id, path[2])
+                    data = data_provider.fetch_inventory_pool().get_inventory_data(
+                        inventory_id, path[2]
+                    )
                     if data == None:
-                        self.send_response(404, "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.")
+                        self.send_response(
+                            404,
+                            "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.",
+                        )
                         self.end_headers()
                     else:
                         self.send_response(200)
@@ -306,16 +364,23 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                     self.wfile.write(json.dumps(suppliers).encode("utf-8"))
                 case 2:
                     supplier_id = int(path[1])
-                    supplier = data_provider.fetch_supplier_pool().get_supplier(supplier_id)
+                    supplier = data_provider.fetch_supplier_pool().get_supplier(
+                        supplier_id
+                    )
                     self.send_response(200)
                     self.send_header("Content-type", "application/json")
                     self.end_headers()
                     self.wfile.write(json.dumps(supplier).encode("utf-8"))
                 case 3:
                     supplier_id = int(path[1])
-                    data = data_provider.fetch_supplier_pool().get_supplier_data(supplier_id, path[2])
+                    data = data_provider.fetch_supplier_pool().get_supplier_data(
+                        supplier_id, path[2]
+                    )
                     if data == None:
-                        self.send_response(404, "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.")
+                        self.send_response(
+                            404,
+                            "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.",
+                        )
                         self.end_headers()
                     else:
                         self.send_response(200)
@@ -343,9 +408,14 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                     self.wfile.write(json.dumps(order).encode("utf-8"))
                 case 3:
                     order_id = int(path[1])
-                    data = data_provider.fetch_order_pool().get_order_data(order_id, path[2])
+                    data = data_provider.fetch_order_pool().get_order_data(
+                        order_id, path[2]
+                    )
                     if data == None:
-                        self.send_response(404, "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.")
+                        self.send_response(
+                            404,
+                            "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.",
+                        )
                         self.end_headers()
                     else:
                         self.send_response(200)
@@ -373,9 +443,14 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                     self.wfile.write(json.dumps(client).encode("utf-8"))
                 case 3:
                     client_id = int(path[1])
-                    data = data_provider.fetch_client_pool().get_client_data(client_id, path[2])
+                    data = data_provider.fetch_client_pool().get_client_data(
+                        client_id, path[2]
+                    )
                     if data == None:
-                        self.send_response(404, "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.")
+                        self.send_response(
+                            404,
+                            "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.",
+                        )
                         self.end_headers()
                     else:
                         self.send_response(200)
@@ -396,16 +471,23 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                     self.wfile.write(json.dumps(shipments).encode("utf-8"))
                 case 2:
                     shipment_id = int(path[1])
-                    shipment = data_provider.fetch_shipment_pool().get_shipment(shipment_id)
+                    shipment = data_provider.fetch_shipment_pool().get_shipment(
+                        shipment_id
+                    )
                     self.send_response(200)
                     self.send_header("Content-type", "application/json")
                     self.end_headers()
                     self.wfile.write(json.dumps(shipment).encode("utf-8"))
                 case 3:
                     shipment_id = int(path[1])
-                    data = data_provider.fetch_shipment_pool().get_shipment_data(shipment_id, path[2])
+                    data = data_provider.fetch_shipment_pool().get_shipment_data(
+                        shipment_id, path[2]
+                    )
                     if data == None:
-                        self.send_response(404, "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.")
+                        self.send_response(
+                            404,
+                            "The data you're trying to reach doesn't exist or is located elsewhere. Please try again.",
+                        )
                         self.end_headers()
                     else:
                         self.send_response(200)
@@ -466,7 +548,9 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             new_transfer = json.loads(post_data.decode())
             data_provider.fetch_transfer_pool().add_transfer(new_transfer)
             data_provider.fetch_transfer_pool().save()
-            notification_processor.push(f"Scheduled batch transfer {new_transfer['id']}")
+            notification_processor.push(
+                f"Scheduled batch transfer {new_transfer['id']}"
+            )
             self.send_response(201)
             self.end_headers()
             self.wfile.write(json.dumps(new_transfer).encode("utf-8"))
@@ -490,7 +574,6 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(201)
             self.end_headers()
             self.wfile.write(json.dumps(new_inventory).encode("utf-8"))
-
 
         elif path[0] == "suppliers":
             content_length = int(self.headers["Content-Length"])
@@ -523,7 +606,7 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             # Zorg ervoor dat de clientgegevens worden weergegeven
             self.wfile.write(json.dumps(new_client).encode("utf-8"))
-        
+
         elif path[0] == "item_groups":
             content_length = int(self.headers["Content-Length"])
             post_data = self.rfile.read(content_length)
@@ -535,7 +618,7 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             # Return the added item group data
             self.wfile.write(json.dumps(new_item_group).encode("utf-8"))
-            
+
         elif path[0] == "item_lines":
             content_length = int(self.headers["Content-Length"])
             post_data = self.rfile.read(content_length)
@@ -547,7 +630,7 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             # Return the added item line data
             self.wfile.write(json.dumps(new_item_line).encode("utf-8"))
-        
+
         elif path[0] == "item_types":
             content_length = int(self.headers["Content-Length"])
             post_data = self.rfile.read(content_length)
@@ -560,8 +643,6 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             # Return the added item type data
             self.wfile.write(json.dumps(new_item_type).encode("utf-8"))
 
-
-            
         elif path[0] == "shipments":
             content_length = int(self.headers["Content-Length"])
             post_data = self.rfile.read(content_length)
@@ -576,7 +657,6 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
             self.wfile.write(json.dumps(new_shipment).encode("utf-8"))
-
 
     def do_POST(self):
         api_key = self.headers.get("API_KEY")
@@ -603,7 +683,9 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             content_length = int(self.headers["Content-Length"])
             post_data = self.rfile.read(content_length)
             updated_warehouse = json.loads(post_data.decode())
-            data_provider.fetch_warehouse_pool().update_warehouse(warehouse_id, updated_warehouse)
+            data_provider.fetch_warehouse_pool().update_warehouse(
+                warehouse_id, updated_warehouse
+            )
             data_provider.fetch_warehouse_pool().save()
             self.send_response(200)
             self.end_headers()
@@ -612,7 +694,9 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             content_length = int(self.headers["Content-Length"])
             post_data = self.rfile.read(content_length)
             updated_location = json.loads(post_data.decode())
-            data_provider.fetch_location_pool().update_location(location_id, updated_location)
+            data_provider.fetch_location_pool().update_location(
+                location_id, updated_location
+            )
             data_provider.fetch_location_pool().save()
             self.send_response(200)
             self.end_headers()
@@ -624,30 +708,52 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                     content_length = int(self.headers["Content-Length"])
                     post_data = self.rfile.read(content_length)
                     updated_transfer = json.loads(post_data.decode())
-                    data_provider.fetch_transfer_pool().update_transfer(transfer_id, updated_transfer)
+                    data_provider.fetch_transfer_pool().update_transfer(
+                        transfer_id, updated_transfer
+                    )
                     data_provider.fetch_transfer_pool().save()
                     self.send_response(200)
                     self.end_headers()
                 case 3:
                     if path[2] == "commit":
                         transfer_id = int(path[1])
-                        transfer = data_provider.fetch_transfer_pool().get_transfer(transfer_id)
+                        transfer = data_provider.fetch_transfer_pool().get_transfer(
+                            transfer_id
+                        )
                         for x in transfer["items"]:
-                            inventories = data_provider.fetch_inventory_pool().get_inventories_for_item(x["item_id"])
+                            inventories = data_provider.fetch_inventory_pool().get_inventories_for_item(
+                                x["item_id"]
+                            )
                             for y in inventories:
                                 if y["location_id"] == transfer["transfer_from"]:
                                     y["total_on_hand"] -= x["amount"]
-                                    y["total_expected"] = y["total_on_hand"] + y["total_ordered"]
-                                    y["total_available"] = y["total_on_hand"] - y["total_allocated"]
-                                    data_provider.fetch_inventory_pool().update_inventory(y["id"], y)
+                                    y["total_expected"] = (
+                                        y["total_on_hand"] + y["total_ordered"]
+                                    )
+                                    y["total_available"] = (
+                                        y["total_on_hand"] - y["total_allocated"]
+                                    )
+                                    data_provider.fetch_inventory_pool().update_inventory(
+                                        y["id"], y
+                                    )
                                 elif y["location_id"] == transfer["transfer_to"]:
                                     y["total_on_hand"] += x["amount"]
-                                    y["total_expected"] = y["total_on_hand"] + y["total_ordered"]
-                                    y["total_available"] = y["total_on_hand"] - y["total_allocated"]
-                                    data_provider.fetch_inventory_pool().update_inventory(y["id"], y)
+                                    y["total_expected"] = (
+                                        y["total_on_hand"] + y["total_ordered"]
+                                    )
+                                    y["total_available"] = (
+                                        y["total_on_hand"] - y["total_allocated"]
+                                    )
+                                    data_provider.fetch_inventory_pool().update_inventory(
+                                        y["id"], y
+                                    )
                         transfer["transfer_status"] = "Processed"
-                        data_provider.fetch_transfer_pool().update_transfer(transfer_id, transfer)
-                        notification_processor.push(f"Processed batch transfer with id:{transfer['id']}")
+                        data_provider.fetch_transfer_pool().update_transfer(
+                            transfer_id, transfer
+                        )
+                        notification_processor.push(
+                            f"Processed batch transfer with id:{transfer['id']}"
+                        )
                         data_provider.fetch_transfer_pool().save()
                         data_provider.fetch_inventory_pool().save()
                         self.send_response(200)
@@ -672,7 +778,9 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             content_length = int(self.headers["Content-Length"])
             post_data = self.rfile.read(content_length)
             updated_item_line = json.loads(post_data.decode())
-            data_provider.fetch_item_line_pool().update_item_line(item_line_id, updated_item_line)
+            data_provider.fetch_item_line_pool().update_item_line(
+                item_line_id, updated_item_line
+            )
             data_provider.fetch_item_line_pool().save()
             self.send_response(200)
             self.end_headers()
@@ -681,7 +789,9 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             content_length = int(self.headers["Content-Length"])
             post_data = self.rfile.read(content_length)
             updated_item_group = json.loads(post_data.decode())
-            data_provider.fetch_item_group_pool().update_item_group(item_group_id, updated_item_group)
+            data_provider.fetch_item_group_pool().update_item_group(
+                item_group_id, updated_item_group
+            )
             data_provider.fetch_item_group_pool().save()
             self.send_response(200)
             self.end_headers()
@@ -690,7 +800,9 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             content_length = int(self.headers["Content-Length"])
             post_data = self.rfile.read(content_length)
             updated_item_type = json.loads(post_data.decode())
-            data_provider.fetch_item_type_pool().update_item_type(item_type_id, updated_item_type)
+            data_provider.fetch_item_type_pool().update_item_type(
+                item_type_id, updated_item_type
+            )
             data_provider.fetch_item_type_pool().save()
             self.send_response(200)
             self.end_headers()
@@ -699,7 +811,9 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             content_length = int(self.headers["Content-Length"])
             post_data = self.rfile.read(content_length)
             updated_inventory = json.loads(post_data.decode())
-            data_provider.fetch_inventory_pool().update_inventory(inventory_id, updated_inventory)
+            data_provider.fetch_inventory_pool().update_inventory(
+                inventory_id, updated_inventory
+            )
             data_provider.fetch_inventory_pool().save()
             self.send_response(200)
             self.end_headers()
@@ -708,7 +822,9 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
             content_length = int(self.headers["Content-Length"])
             post_data = self.rfile.read(content_length)
             updated_supplier = json.loads(post_data.decode())
-            data_provider.fetch_supplier_pool().update_supplier(supplier_id, updated_supplier)
+            data_provider.fetch_supplier_pool().update_supplier(
+                supplier_id, updated_supplier
+            )
             data_provider.fetch_supplier_pool().save()
             self.send_response(200)
             self.end_headers()
@@ -720,7 +836,9 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                     content_length = int(self.headers["Content-Length"])
                     post_data = self.rfile.read(content_length)
                     updated_order = json.loads(post_data.decode())
-                    data_provider.fetch_order_pool().update_order(order_id, updated_order)
+                    data_provider.fetch_order_pool().update_order(
+                        order_id, updated_order
+                    )
                     data_provider.fetch_order_pool().save()
                     self.send_response(200)
                     self.end_headers()
@@ -730,7 +848,9 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                         content_length = int(self.headers["Content-Length"])
                         post_data = self.rfile.read(content_length)
                         updated_items = json.loads(post_data.decode())
-                        data_provider.fetch_order_pool().update_items_in_order(order_id, updated_items)
+                        data_provider.fetch_order_pool().update_items_in_order(
+                            order_id, updated_items
+                        )
                         data_provider.fetch_order_pool().save()
                         self.send_response(200)
                         self.end_headers()
@@ -757,7 +877,9 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                     content_length = int(self.headers["Content-Length"])
                     post_data = self.rfile.read(content_length)
                     updated_shipment = json.loads(post_data.decode())
-                    data_provider.fetch_shipment_pool().update_shipment(shipment_id, updated_shipment)
+                    data_provider.fetch_shipment_pool().update_shipment(
+                        shipment_id, updated_shipment
+                    )
                     data_provider.fetch_shipment_pool().save()
                     self.send_response(200)
                     self.end_headers()
@@ -767,7 +889,9 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                         content_length = int(self.headers["Content-Length"])
                         post_data = self.rfile.read(content_length)
                         updated_orders = json.loads(post_data.decode())
-                        data_provider.fetch_order_pool().update_orders_in_shipment(shipment_id, updated_orders)
+                        data_provider.fetch_order_pool().update_orders_in_shipment(
+                            shipment_id, updated_orders
+                        )
                         data_provider.fetch_order_pool().save()
                         self.send_response(200)
                         self.end_headers()
@@ -776,7 +900,9 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
                         content_length = int(self.headers["Content-Length"])
                         post_data = self.rfile.read(content_length)
                         updated_items = json.loads(post_data.decode())
-                        data_provider.fetch_shipment_pool().update_items_in_shipment(shipment_id, updated_items)
+                        data_provider.fetch_shipment_pool().update_items_in_shipment(
+                            shipment_id, updated_items
+                        )
                         data_provider.fetch_shipment_pool().save()
                         self.send_response(200)
                         self.end_headers()
@@ -890,7 +1016,7 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
 
     def do_DELETE(self):
         """Handle DELETE requests."""
-        path_parts = self.path.split('/')
+        path_parts = self.path.split("/")
         if len(path_parts) == 5 and path_parts[1] == "api" and path_parts[2] == "v1":
             # Extract resource type and ID
             resource_type = path_parts[3]
@@ -907,36 +1033,58 @@ class ApiRequestHandler(http.server.BaseHTTPRequestHandler):
 
             # Perform or simulate deletion
             if resource_type == "clients":
-                response, status_code = clients_instance.remove_client(resource_id, dry_run)
+                response, status_code = clients_instance.remove_client(
+                    resource_id, dry_run
+                )
             elif resource_type == "warehouses":
-                response, status_code = warehouses_instance.remove_warehouse(resource_id, dry_run)
+                response, status_code = warehouses_instance.remove_warehouse(
+                    resource_id, dry_run
+                )
             elif resource_type == "locations":
-                response, status_code = locations_instance.remove_location(resource_id, dry_run)
+                response, status_code = locations_instance.remove_location(
+                    resource_id, dry_run
+                )
             elif resource_type == "transfers":
-                response, status_code = transfers_instance.remove_transfer(resource_id, dry_run)
+                response, status_code = transfers_instance.remove_transfer(
+                    resource_id, dry_run
+                )
             elif resource_type == "items":
                 response, status_code = items_instance.remove_item(resource_id, dry_run)
             elif resource_type == "item_lines":
-                response, status_code = item_lines_instance.remove_item_line(resource_id, dry_run)
+                response, status_code = item_lines_instance.remove_item_line(
+                    resource_id, dry_run
+                )
             elif resource_type == "item_groups":
-                response, status_code = item_groups_instance.remove_item_group(resource_id, dry_run)
+                response, status_code = item_groups_instance.remove_item_group(
+                    resource_id, dry_run
+                )
             elif resource_type == "item_types":
-                response, status_code = item_types_instance.remove_item_type(resource_id, dry_run)
+                response, status_code = item_types_instance.remove_item_type(
+                    resource_id, dry_run
+                )
             elif resource_type == "inventories":
-                response, status_code = inventories_instance.remove_inventory(resource_id, dry_run)
+                response, status_code = inventories_instance.remove_inventory(
+                    resource_id, dry_run
+                )
             elif resource_type == "suppliers":
-                response, status_code = suppliers_instance.remove_supplier(resource_id, dry_run)
+                response, status_code = suppliers_instance.remove_supplier(
+                    resource_id, dry_run
+                )
             elif resource_type == "orders":
-                response, status_code = orders_instance.remove_order(resource_id, dry_run)
+                response, status_code = orders_instance.remove_order(
+                    resource_id, dry_run
+                )
             elif resource_type == "shipments":
-                response, status_code = shipments_instance.remove_shipment(resource_id, dry_run)
+                response, status_code = shipments_instance.remove_shipment(
+                    resource_id, dry_run
+                )
             else:
                 self.send_response(404)
                 self.end_headers()
                 return
 
             self.send_response(status_code)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
             self.wfile.write(json.dumps(response).encode())
         else:
